@@ -1,0 +1,17 @@
+//comment
+/* also a comment */
+
+#preprocessor command
+
+vあr = 3 + 5 * 4;
+str = "test 不確かな text";
+
+foo_bar = baz;
+bar = 1'000'000;
+
+foo = ()
+{
+	x = 10.5;
+	x.5 =!= 'fuck';
+}
+

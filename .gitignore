@@ -1,3 +1,11 @@
+# Compilation folders
+Debug/
+Release/
+
+# Other folders
+.vs/
+ipch/
+
 # Compiled Object files
 *.slo
 *.lo
@@ -8,21 +16,6 @@
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Settings
+*.user
+*.sdf
