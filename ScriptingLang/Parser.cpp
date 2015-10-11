@@ -19,8 +19,10 @@ Parser::Parser(const Lexer& Lex)
 
 	std::stack<std::string> blocks; //block matching (mainly for tuples)
 
-	for (auto& tok : Lex.tokens)
+	for (auto i = Lex.tokens.begin(); i != Lex.tokens.end(); i++)
 	{
+		auto& tok = *i;
+
 		if (tok.type == LexerTokenType::PreprocessCmd)
 		{
 			//all arguments are directly following
@@ -71,7 +73,59 @@ Parser::Parser(const Lexer& Lex)
 		//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 		else if (tok.type == LexerTokenType::Accessor)
 		{
+			if (parent->instruction.type != InstructionType::Accessor)
+			{
+				if (parent->children.size() > 0)
+				{
+					auto previous = parent->children.back();
+					parent->children.pop_back();
 
+					parent->children.push_back({ { InstructionType::Accessor }, parent });
+					parent = &parent->children.back();
+					
+					previous.parent = parent;
+					parent->children.push_back(previous);
+				}
+				else
+				{
+					parent->children.push_back({ { InstructionType::Accessor }, parent });
+					parent = &parent->children.back();
+				}
+			}
+			i++;
+			//read all following accessors
+			while (i != Lex.tokens.end())
+			{
+				if (i->type == LexerTokenType::Accessor)
+				{
+					parent->children.push_back({ { InstructionType::Identifier, "" }, parent }); //multidot properties, .., ...
+					i++;
+				}
+				else
+				{
+					if (i->type == LexerTokenType::Identifier)
+						parent->children.push_back({ { InstructionType::Identifier, i->value }, parent });
+					else if (i->type == LexerTokenType::String)
+						parent->children.push_back({ { InstructionType::String, ParseString(i->value) }, parent });
+					else if (i->type == LexerTokenType::Number)
+					{
+						auto number = ParseNumber(i->value);
+
+						if (number.type == InstructionType::Integer)
+							parent->children.push_back({ { number.type, number.value.As<Int>() }, parent });
+						else if (number.type == InstructionType::Float)
+							parent->children.push_back({ { number.type, number.value.As<Float>() }, parent });
+					}
+					else
+						break;
+
+					i++;
+					if (i->type != LexerTokenType::Accessor)
+						break;
+					i++;
+				}
+			}
+			parent = parent->parent;
 		}
 		else if (tok.type == LexerTokenType::RegionOpen)
 		{

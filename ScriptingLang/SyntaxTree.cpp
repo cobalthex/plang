@@ -20,7 +20,7 @@ static const std::string types[] =
 
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
 {
-	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << " ";
+	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
 	if (Node.instruction.type == Plang::InstructionType::Integer)
 		Stream << Node.instruction.AsInt() << std::endl;
 	else if (Node.instruction.type == Plang::InstructionType::Float)
