@@ -3,60 +3,34 @@
 #include "pch.hpp"
 #include "Lexer.hpp"
 #include "Union.hpp"
+#include "SyntaxTree.hpp"
 
 namespace Plang
 {
-	struct Preprocessor
+	enum class Notation
 	{
-		std::string rule;
-		std::vector<std::string> values;
+		Prefix,
+		Infix,
+		Postfix
 	};
-
-	enum class ValueType
-	{
-		Undefined,
-		Null,
-		Boolean,
-		Integer,
-		Float,
-		Decimal,
-		String,
-		Tuple,
-		NamedTuple,
-		List,
-		Array,
-		Subject,
-		Predicate
-	};
-
-	enum class TupleType
-	{
-		Indexed,
-		Associative
-	};
-	struct ParserTuple
-	{
-		TupleType type;
-		Union<std::vector<std::string>, std::map<std::string, std::string>> values;
-	};
-
-	struct Instruction
-	{
-		std::string identifier;
-		ParserTuple arguments;
-	};
-
 	enum class Association
 	{
 		None,
 		LeftToRight,
 		RightToLeft
 	};
-	struct ParseIdentifier
+	struct ParseExpression
 	{
 		std::string name;
+		Notation notation;
 		Association association;
 		unsigned precedence; //lower numbers = higher precedence
+	};
+
+	struct Number
+	{
+		InstructionType type;
+		Union<Int, Float> value;
 	};
 
 	class Parser
@@ -65,11 +39,15 @@ namespace Plang
 		Parser(const Lexer& Lex);
 		~Parser() = default;
 
-		std::map<std::string, ParseIdentifier> predefinedIdentifiers; //predefined parse-identifiers
+		std::map<std::string, ParseExpression> predefinedExpressions;
 
-		std::vector<Instruction> instructions;
+		SyntaxTree syntaxTree;
+
+		static Number ParseNumber(std::string Input);
+		static String ParseString(std::string Input);
 
 	protected:
-		void CreatePredefinedIdentifiers();
+		void CreatePredefinedExpressions();
+		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parent
 	};
 };

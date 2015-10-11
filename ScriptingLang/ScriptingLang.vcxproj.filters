@@ -12,6 +12,12 @@
     <ClCompile Include="Parser.cpp">
       <Filter>Parser</Filter>
     </ClCompile>
+    <ClCompile Include="SyntaxTree.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="StringOps.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.hpp" />
@@ -27,6 +33,9 @@
     <ClInclude Include="Union.hpp">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="SyntaxTree.hpp">
+      <Filter>Parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lexer">
@@ -40,6 +49,9 @@
     <Filter Include="Util">
       <UniqueIdentifier>{4b59aafa-113f-4b80-9d0b-46ef9a429018}</UniqueIdentifier>
       <Extensions>Util\</Extensions>
+    </Filter>
+    <Filter Include="VM">
+      <UniqueIdentifier>{cc3b3ef6-10f2-49da-85ed-18bd83e164c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -1,15 +1,24 @@
 //comment
 /* also a comment */
 
-#preprocessor command
+//defines a custom binary operator
+//with left-associativity and precidence of 15
+//prefix and postfix are both urnary operators
+//ternary operators can be emulated with tuples
+#operator =!= infix left 15
 
-vあr = 3 + 5 * 4;
+vあr = 3 + 5.0 * 4;
 str = "test 不確かな text";
 
-foo_bar = baz;
-bar = 1'000'000;
+prop = 4000.5.5;
+proq = 'string';
 
-foo = ()
+foo_bar = baz.bonk;
+bar = 1'000'000;
+quux = (1, "2", 3);
+floop = 4, '3', 6;
+
+foo = (jello)
 {
 	x = 10.5;
 	x.5 =!= 'fuck';

@@ -136,10 +136,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StreamOps.cpp" />
+    <ClCompile Include="StringOps.cpp" />
+    <ClCompile Include="SyntaxTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lexer.hpp" />
     <ClInclude Include="pch.hpp" />
+    <ClInclude Include="SyntaxTree.hpp" />
     <ClInclude Include="Union.hpp" />
     <ClInclude Include="StreamOps.hpp" />
     <ClInclude Include="StringOps.hpp" />

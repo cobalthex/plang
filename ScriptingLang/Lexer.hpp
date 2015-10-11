@@ -3,20 +3,21 @@
 
 namespace Plang
 {
-	enum class LexerTokenType
+	enum class LexerTokenType : size_t
 	{
 		Invalid,
 		Comment,
-		Preprocessor,
+		PreprocessCmd,
+		PreprocessArg,
 		Terminator,
 		RegionOpen,
 		RegionClose,
 		Separator,
 		Identifier,
+		Accessor,
 		Number,
 		String
 	};
-	extern std::ostream& operator << (std::ostream& Stream, LexerTokenType TokenType);
 
 	struct LexerToken
 	{
@@ -43,3 +44,4 @@ namespace Plang
 		std::vector<LexerToken> tokens;
 	};
 };
+extern std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer);

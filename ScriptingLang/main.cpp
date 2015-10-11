@@ -1,7 +1,6 @@
 #include "pch.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include <iomanip>
 #include "StringOps.hpp"
 
 int main(int ac, const char* av[])
@@ -25,12 +24,14 @@ int main(int ac, const char* av[])
 
 	std::ofstream fout;
 	fout.open("tests/out.lex", std::ios::out);
-	for (auto& i : lex.tokens)
-		fout << std::setw(12) << i.type << ": " << i.value << std::endl;
+	fout << lex;
 	fout.close();
 
 
 	Plang::Parser parser(lex);
+	fout.open("tests/out.parse", std::ios::out);
+	fout << parser.syntaxTree << std::endl;
+	fout.close();
 
 	return 0;
 }

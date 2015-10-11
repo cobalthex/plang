@@ -1,37 +1,78 @@
-     Comment: //comment
-     Comment: /* also a comment */
-Preprocessor: preprocessor command
-  Identifier: vあr
-  Identifier: =
-      Number: 5
-  Terminator: ;
-  Identifier: str
-  Identifier: =
-      String: "test 不確かな text"
-  Terminator: ;
-  Identifier: foo_bar
-  Identifier: =
-  Identifier: baz
-  Terminator: ;
-  Identifier: bar
-  Identifier: =
-      Number: 1'000'000
-  Terminator: ;
-  Identifier: foo
-  Identifier: =
-  RegionOpen: (
- RegionClose: )
-  RegionOpen: {
-  Identifier: x
-  Identifier: =
-      Number: 10
-  Identifier: .
-      Number: 5
-  Terminator: ;
-  Identifier: x
-  Identifier: .
-      Number: 5
-  Identifier: =!=
-      String: 'fuck'
-  Terminator: ;
- RegionClose: }
+      Comment //comment
+      Comment /* also a comment */
+      Comment //defines a custom binary operator
+      Comment //with left-associativity and precidence of 15
+      Comment //prefix and postfix are both urnary operators
+      Comment //ternary operators can be emulated with tuples
+PreprocessCmd operator
+PreprocessArg =!=
+PreprocessArg infix
+PreprocessArg left
+PreprocessArg 15
+   Identifier vあr
+   Identifier =
+       Number 3
+   Identifier +
+       Number 5.0
+   Identifier *
+       Number 4
+   Terminator ;
+   Identifier str
+   Identifier =
+       String "test 不確かな text"
+   Terminator ;
+   Identifier prop
+   Identifier =
+       Number 4000.5
+     Accessor .
+       Number 5
+   Terminator ;
+   Identifier proq
+   Identifier =
+       String 'string'
+   Terminator ;
+   Identifier foo_bar
+   Identifier =
+   Identifier baz
+     Accessor .
+   Identifier bonk
+   Terminator ;
+   Identifier bar
+   Identifier =
+       Number 1'000'000
+   Terminator ;
+   Identifier quux
+   Identifier =
+   RegionOpen (
+       Number 1
+    Separator ,
+       String "2"
+    Separator ,
+       Number 3
+  RegionClose )
+   Terminator ;
+   Identifier floop
+   Identifier =
+       Number 4
+    Separator ,
+       String '3'
+    Separator ,
+       Number 6
+   Terminator ;
+   Identifier foo
+   Identifier =
+   RegionOpen (
+   Identifier jello
+  RegionClose )
+   RegionOpen {
+   Identifier x
+   Identifier =
+       Number 10.5
+   Terminator ;
+   Identifier x
+     Accessor .
+       Number 5
+   Identifier =!=
+       String 'fuck'
+   Terminator ;
+  RegionClose }
