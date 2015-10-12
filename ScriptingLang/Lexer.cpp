@@ -140,7 +140,11 @@ Lexer::Lexer(std::istream& Stream)
 		else if (ch == '.')
 			token.type = LexerTokenType::Accessor;
 		else if (CharIsRegionOpener(ch))
+		{
 			token.type = LexerTokenType::RegionOpen;
+			if (Stream.peek() == '|') //arrays
+				token.value += Stream.get();
+		}
 		else if (CharIsRegionCloser(ch))
 			token.type = LexerTokenType::RegionClose;
 		else if (CharIsSpecial(ch))
