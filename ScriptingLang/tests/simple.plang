@@ -20,7 +20,8 @@ bar = 1'000'000;
 quux = (1, "2", 3);
 floop = 4, '3', 6;
 nugget = [7, 8, 9];
-donk = [| a, b, c |]
+// donk = [| a, b, c |]
+gork = x, y, z;
 
 dotted = foo..bar;
 more = foo...bar * 5;

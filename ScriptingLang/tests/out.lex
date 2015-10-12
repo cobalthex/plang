@@ -73,15 +73,15 @@ PreprocessArg 15
        Number 9
   RegionClose ]
    Terminator ;
-   Identifier donk
+      Comment // donk = [| a, b, c |]
+   Identifier gork
    Identifier =
-   RegionOpen [|
-   Identifier a
+   Identifier x
     Separator ,
-   Identifier b
+   Identifier y
     Separator ,
-   Identifier c
-  RegionClose |]
+   Identifier z
+   Terminator ;
    Identifier dotted
    Identifier =
    Identifier foo
