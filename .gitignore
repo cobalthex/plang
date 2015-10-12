@@ -5,6 +5,7 @@ Release/
 # Other folders
 .vs/
 ipch/
+*.dSYM/
 
 # Compiled Object files
 *.slo

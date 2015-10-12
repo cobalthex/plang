@@ -64,7 +64,7 @@ namespace Plang
 	{
 	public:
 		SyntaxTree()
-			: root({ InstructionType::Block }) { }
+			: root(SyntaxTreeNode({ InstructionType::Block }, nullptr)) { }
 
 		SyntaxTreeNode root;
 	};
