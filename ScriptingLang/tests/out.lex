@@ -66,6 +66,16 @@ PreprocessArg 15
      Accessor .
    Identifier bar
    Terminator ;
+   Identifier more
+   Identifier =
+   Identifier foo
+     Accessor .
+     Accessor .
+     Accessor .
+   Identifier bar
+   Identifier *
+       Number 5
+   Terminator ;
    Identifier foo
    Identifier =
    RegionOpen (

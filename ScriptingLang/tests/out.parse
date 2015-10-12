@@ -43,6 +43,15 @@ Block
         Identifier  foo
         Identifier  
         Identifier  bar
+    Identifier  more
+    Identifier  =
+    Accessor    
+        Identifier  foo
+        Identifier  
+        Identifier  
+        Identifier  bar
+    Identifier  *
+    Integer     5
     Identifier  foo
     Expression  
         Identifier  =
@@ -55,5 +64,6 @@ Block
             Accessor    
                 Identifier  x
                 Integer     5
+            Identifier  =!=
             String      fuck
 

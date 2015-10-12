@@ -119,7 +119,6 @@ Parser::Parser(const Lexer& Lex)
 					else
 						break;
 
-					i++;
 					if (i->type != LexerTokenType::Accessor)
 						break;
 					i++;
@@ -133,7 +132,10 @@ Parser::Parser(const Lexer& Lex)
 
 			InstructionType it;
 			if (tok.value == "(")
+			{
 				it = InstructionType::Tuple;
+				//todo: evaluate if previous value is an identifier, making this a call
+			}
 			else if (tok.value == "[")
 				it = InstructionType::List;
 			else if (tok.value == "[|")
@@ -182,6 +184,7 @@ Parser::Parser(const Lexer& Lex)
 		}
 		else if (tok.type == LexerTokenType::Identifier)
 		{
+			//todo: evaluate predefined expressions to determine if identifier is an expression
 			parent->children.push_back({ { InstructionType::Identifier, tok.value }, parent });
 		}
 	}
