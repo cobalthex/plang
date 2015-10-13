@@ -45,6 +45,7 @@ namespace Plang
 
 		static Number ParseNumber(std::string Input);
 		static String ParseString(std::string Input);
+		static std::string MatchingRegionSymbol(const std::string& Symbol); //returns an empty string on unknown
 
 	protected:
 		void CreatePredefinedExpressions();

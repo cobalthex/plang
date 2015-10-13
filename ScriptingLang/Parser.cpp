@@ -11,6 +11,21 @@ void Parser::Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent)
 		Reparent(&i, Node);
 }
 
+std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
+{
+	if (Symbol == "{") return "}";
+	if (Symbol == "(") return ")";
+	if (Symbol == "[") return "]";
+	if (Symbol == "[|") return "|]";
+
+	if (Symbol == "}") return "{";
+	if (Symbol == ")") return "(";
+	if (Symbol == "]") return "[";
+	if (Symbol == "|]") return "[|";
+
+	return "";
+}
+
 Parser::Parser(const Lexer& Lex)
 {
 	CreatePredefinedExpressions();
@@ -39,17 +54,20 @@ Parser::Parser(const Lexer& Lex)
 			parent->children.push_back({ { InstructionType::String, ParseString(tok.value) }, parent });
 		else if (tok.type == LexerTokenType::Terminator)
 		{
-			//create a nested tuple (and retroactively apply to previous set leading up to a tuple)
+			std::string symbol = "";
 			if (parent->instruction.type == InstructionType::Tuple)
-			{
-				if (blocks.size() > 0 && blocks.top() == "(") // handle unbounded tuples
-					assert(false); //todo: Coming later
-				else if (blocks.size() < 1)
-					parent = parent->parent;
+				symbol = "(";
+			if (parent->instruction.type == InstructionType::List)
+				symbol = "[";
+			if (parent->instruction.type == InstructionType::Array)
+				symbol = "[|";
 
-				//todo: lists, arrays
+			if (symbol != "")
+			{
+				//todo: nested collections
+				if (blocks.size() < 1 || blocks.top() != MatchingRegionSymbol(symbol)) //handle unbounded types
+					parent = parent->parent;
 			}
-			//
 			else if (parent->instruction.type == InstructionType::Identifier)
 			{
 			}
@@ -66,8 +84,8 @@ Parser::Parser(const Lexer& Lex)
 				parent = &parent->children.back();
 
 				//move previous item to tuple
-				parent->children.push_back(previous);
 				previous.parent = parent;
+				parent->children.push_back(previous);
 			}
 		}
 		//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
@@ -82,7 +100,7 @@ Parser::Parser(const Lexer& Lex)
 
 					parent->children.push_back({ { InstructionType::Accessor }, parent });
 					parent = &parent->children.back();
-					
+
 					previous.parent = parent;
 					parent->children.push_back(previous);
 				}
@@ -151,11 +169,11 @@ Parser::Parser(const Lexer& Lex)
 					SyntaxTreeNode node = { { InstructionType::Expression }, parent };
 
 					//todo: handle precidence for things like a + () { }
-					
+
 					size_t strip = (children.size() > 1 && children[children.size() - 2].instruction.type == InstructionType::Identifier ? 2 : 1);
 					std::move(children.end() - strip, children.end(), std::back_inserter(node.children));
 					children.erase(children.end() - strip, children.end());
-				
+
 					node.children.emplace_back(it, &node);
 					parent->children.push_back(node);
 					parent = &parent->children.back().children.back();

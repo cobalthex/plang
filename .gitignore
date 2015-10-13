@@ -1,6 +1,7 @@
 # Compilation folders
 Debug/
 Release/
+bin/
 
 # Other folders
 .vs/

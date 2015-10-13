@@ -1,12 +1,16 @@
 source_dir=ScriptingLang/
+cpp_opts=--std=c++14
 
-debug:	
-	mkdir -p Debug
-	clang++ -o Debug/plang -g --std=c++14 $(source_dir)*.cpp
+pch = clang++ $(cpp_opts) $(source_dir)pch.hpp -emit-pch -o $(1)/pch.pch
 
+debug:
+	@mkdir -p bin/debug
+	$(call pch,"bin/debug")
+	clang++ -g $(cpp_opts) $(source_dir)*.cpp -include-pch bin/debug/pch.pch -o bin/debug/plang
 release:
-	mkdir -p Release
-	clang++ -o Release/plang --std=c++14 $(source_dir)*.cpp
+	@mkdir -p bin/release
+	$(call pch,"bin/release")
+	clang++ $(cpp_opts) -o bin/release/plang $(source_dir)*.cpp
 
 clean:
-	rm -rf Debug/ Release/
+	rm -rf bin/
