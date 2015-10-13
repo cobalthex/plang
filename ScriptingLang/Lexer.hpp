@@ -30,6 +30,8 @@ namespace Plang
 	class Lexer
 	{
 	public:
+		using TokenList = std::vector<LexerToken>;
+
 		Lexer() = default;
 		Lexer(std::istream& Input);
 		~Lexer() = default;
@@ -41,7 +43,7 @@ namespace Plang
 		static bool CharIsSpecial(codepoint Char); //characters that are valid sub-symbol characters (can only be by themselves, e.g: + - * %)
 		static bool CharIsLiteral(codepoint Char); //char is not a splitter, encloser, or whitespace
 
-		std::vector<LexerToken> tokens;
+		TokenList tokens;
 	};
 };
 extern std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer);

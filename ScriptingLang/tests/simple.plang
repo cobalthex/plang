@@ -17,11 +17,14 @@ foo::bar;
 
 foo_bar = baz.bonk;
 bar = 1'000'000;
-quux = (1, "2", 3);
-floop = 4, '3', 6;
-nugget = [7, 8, 9];
-// donk = [| a, b, c |]
-gork = x, y, z;
+quux = (1, "2", 3); //tuple
+floop = 4, '3', 6; //tuple
+nugget = [7, 8, 9]; //list
+donk = [| a, b, c |] //array
+gork = x, y, z; //tuple
+
+a = (x: 1, y: 2, z: 3); //named tuple
+b = u: 4, v: 5, w: 6; //named tuple
 
 dotted = foo..bar;
 more = foo...bar * 5;
@@ -31,10 +34,12 @@ foo = (jello)
 	x = 10.5;
 	x.5 =!= 'fuck';
 }
-/*
 bar =
 {
 	asdf: 5;
 	donk: "6";
 }
-*/
+if (x == 5)
+{
+	blah;
+}

@@ -7,7 +7,7 @@ template<typename F> struct SizeofLargestType <F> { static const size_t size = s
 
 //A simple union wrapper that can store any value in Ty. Does not have any type-checking
 //Note, manual deconstruction will be required
-template <typename... Ty>
+template <typename... Ts>
 class Union
 {
 public:
@@ -28,5 +28,5 @@ public:
 	void Destroy() { ((T*)value)->~T(); }
 
 private:
-	uint8_t value[SizeofLargestType<Ty...>::size];
+	uint8_t value[SizeofLargestType<Ts...>::size];
 };

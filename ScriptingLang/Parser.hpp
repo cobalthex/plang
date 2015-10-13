@@ -7,6 +7,8 @@
 
 namespace Plang
 {
+	//Notation
+	//Only prefix can be called with an unbounded, uncommented tuple
 	enum class Notation
 	{
 		Prefix,
@@ -50,5 +52,10 @@ namespace Plang
 	protected:
 		void CreatePredefinedExpressions();
 		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parent
+
+		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
+
+		std::stack<std::string> blocks; //block matching
+		SyntaxTreeNode* parent;
 	};
 };

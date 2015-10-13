@@ -40,12 +40,48 @@ Block
         Integer     4
         String      3
         Integer     6
+    Identifier  nugget
+    Identifier  =
+    List        
+        Integer     7
+        Integer     8
+        Integer     9
+    Identifier  donk
+    Identifier  =
+    Array       
+        Identifier  a
+        Identifier  b
+        Identifier  c
     Identifier  gork
     Identifier  =
     Tuple       
         Identifier  x
         Identifier  y
         Identifier  z
+    Identifier  a
+    Identifier  =
+    Tuple       
+        Identifier  x
+        Identifier  :
+        Integer     1
+        Identifier  y
+        Identifier  :
+        Integer     2
+        Identifier  z
+        Identifier  :
+        Integer     3
+    Identifier  b
+    Identifier  =
+    Identifier  u
+    Identifier  :
+    Tuple       
+        Integer     4
+        Identifier  v
+        Identifier  :
+        Integer     5
+        Identifier  w
+        Identifier  :
+        Integer     6
     Identifier  dotted
     Identifier  =
     Accessor    
@@ -75,4 +111,21 @@ Block
                 Integer     5
             Identifier  =!=
             String      fuck
+    Identifier  bar
+    Identifier  =
+    Block       
+        Identifier  asdf
+        Identifier  :
+        Integer     5
+        Identifier  donk
+        Identifier  :
+        String      6
+    Expression  
+        Identifier  if
+        Tuple       
+            Identifier  x
+            Identifier  ==
+            Integer     5
+        Block       
+            Identifier  blah
 

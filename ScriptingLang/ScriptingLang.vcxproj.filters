@@ -30,11 +30,11 @@
     <ClInclude Include="StreamOps.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="Union.hpp">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="SyntaxTree.hpp">
       <Filter>Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Union.hpp">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

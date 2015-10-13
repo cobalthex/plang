@@ -29,6 +29,7 @@ namespace Plang
 		Array,
 
 		Expression, //functions, control statements
+		Call, //call to an expression
 	};
 	class Instruction
 	{
@@ -40,9 +41,15 @@ namespace Plang
 		Instruction(InstructionType Type, String Value) : type(Type), value(Value) { }
 
 		InstructionType type;
-		Int AsInt() const { return value.As<Int>(); }
-		Float AsFloat() const { return value.As<Float>(); }
-		String AsString() const { return value.As<String>(); }
+
+		Int& AsInt() { return value.As<Int>(); }
+		const Int& AsInt() const { return value.As<Int>(); }
+
+		Float& AsFloat() { return value.As<Float>(); }
+		const Float& AsFloat() const { return value.As<Float>(); }
+
+		String& AsString() { return value.As<String>(); }
+		const String& AsString() const { return value.As<String>(); }
 
 	private:
 		Union<Int, Float, String> value;
@@ -64,10 +71,12 @@ namespace Plang
 	{
 	public:
 		SyntaxTree()
-			: root(SyntaxTreeNode({ InstructionType::Block }, nullptr)) { }
+			: root({ InstructionType::Block }) { }
 
 		SyntaxTreeNode root;
 	};
 };
 
 std::ostream& operator << (std::ostream& Stream, Plang::SyntaxTree& SyntaxTree);
+
+//todo: proper string deconstruction (possibly store all strings in a set)

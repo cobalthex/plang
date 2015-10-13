@@ -15,7 +15,8 @@ static const std::string types[] =
 	"NamedTuple",
 	"List",
 	"Array",
-	"Expression"
+	"Expression",
+	"Call"
 };
 
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
@@ -25,7 +26,9 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 		Stream << Node.instruction.AsInt() << std::endl;
 	else if (Node.instruction.type == Plang::InstructionType::Float)
 		Stream << Node.instruction.AsFloat() << std::endl;
-	else if (Node.instruction.type == Plang::InstructionType::String || Node.instruction.type == Plang::InstructionType::Identifier)
+	else if (Node.instruction.type == Plang::InstructionType::String
+		|| Node.instruction.type == Plang::InstructionType::Identifier
+		|| Node.instruction.type == Plang::InstructionType::Call)
 		Stream << Node.instruction.AsString() << std::endl;
 	else
 		Stream << std::endl;

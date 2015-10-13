@@ -13,5 +13,6 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
+#include <tuple>
 
 using codepoint = uint32_t;

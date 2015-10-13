@@ -55,6 +55,7 @@ PreprocessArg 15
        Number 3
   RegionClose )
    Terminator ;
+      Comment //tuple
    Identifier floop
    Identifier =
        Number 4
@@ -63,6 +64,7 @@ PreprocessArg 15
     Separator ,
        Number 6
    Terminator ;
+      Comment //tuple
    Identifier nugget
    Identifier =
    RegionOpen [
@@ -73,7 +75,17 @@ PreprocessArg 15
        Number 9
   RegionClose ]
    Terminator ;
-      Comment // donk = [| a, b, c |]
+      Comment //list
+   Identifier donk
+   Identifier =
+   RegionOpen [|
+   Identifier a
+    Separator ,
+   Identifier b
+    Separator ,
+   Identifier c
+  RegionClose |]
+      Comment //array
    Identifier gork
    Identifier =
    Identifier x
@@ -82,6 +94,39 @@ PreprocessArg 15
     Separator ,
    Identifier z
    Terminator ;
+      Comment //tuple
+   Identifier a
+   Identifier =
+   RegionOpen (
+   Identifier x
+   Identifier :
+       Number 1
+    Separator ,
+   Identifier y
+   Identifier :
+       Number 2
+    Separator ,
+   Identifier z
+   Identifier :
+       Number 3
+  RegionClose )
+   Terminator ;
+      Comment //named tuple
+   Identifier b
+   Identifier =
+   Identifier u
+   Identifier :
+       Number 4
+    Separator ,
+   Identifier v
+   Identifier :
+       Number 5
+    Separator ,
+   Identifier w
+   Identifier :
+       Number 6
+   Terminator ;
+      Comment //named tuple
    Identifier dotted
    Identifier =
    Identifier foo
@@ -116,10 +161,25 @@ PreprocessArg 15
        String 'fuck'
    Terminator ;
   RegionClose }
-      Comment /*
-bar =
-{
-	asdf: 5;
-	donk: "6";
-}
-*/
+   Identifier bar
+   Identifier =
+   RegionOpen {
+   Identifier asdf
+   Identifier :
+       Number 5
+   Terminator ;
+   Identifier donk
+   Identifier :
+       String "6"
+   Terminator ;
+  RegionClose }
+   Identifier if
+   RegionOpen (
+   Identifier x
+   Identifier ==
+       Number 5
+  RegionClose )
+   RegionOpen {
+   Identifier blah
+   Terminator ;
+  RegionClose }
