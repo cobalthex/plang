@@ -5,7 +5,7 @@
 
 using namespace Plang;
 
-std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer)
+std::ostream& operator << (std::ostream& Stream, const Plang::LexerToken& Token)
 {
 	static const std::string types[] = {
 		"invalid",
@@ -21,8 +21,13 @@ std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer)
 		"Number",
 		"String",
 	};
+	Stream << std::right << std::setw(13) << types[(size_t)Token.type] << " " << Token.value;
+	return Stream;
+}
+std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer)
+{
 	for (auto& i : Lexer.tokens)
-		Stream << std::right << std::setw(13) << types[(size_t)i.type] << " " << i.value << std::endl;
+		Stream << i << std::endl;
 	return Stream;
 }
 
@@ -106,7 +111,7 @@ Lexer::Lexer(std::istream& Stream)
 		LexerToken token;
 		codepoint ch = 0, nc = 0;
 		token.value = ch = Stream.get();
-		
+
 		if (ch == '#')
 		{
 			token.type = LexerTokenType::PreprocessCmd;

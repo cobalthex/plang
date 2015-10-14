@@ -23,13 +23,11 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 {
 	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
 	if (Node.instruction.type == Plang::InstructionType::Integer)
-		Stream << Node.instruction.AsInt() << std::endl;
+		Stream << Node.instruction.value.get<Plang::Int>() << std::endl;
 	else if (Node.instruction.type == Plang::InstructionType::Float)
-		Stream << Node.instruction.AsFloat() << std::endl;
-	else if (Node.instruction.type == Plang::InstructionType::String
-		|| Node.instruction.type == Plang::InstructionType::Identifier
-		|| Node.instruction.type == Plang::InstructionType::Call)
-		Stream << Node.instruction.AsString() << std::endl;
+		Stream << Node.instruction.value.get<Plang::Float>() << std::endl;
+	else if (Node.instruction.value.is<Plang::String>())
+		Stream << Node.instruction.value.get<Plang::String>() << std::endl;
 	else
 		Stream << std::endl;
 
@@ -37,8 +35,14 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 		PrintDepth(Stream, Depth + 1, i);
 }
 
-std::ostream& operator << (std::ostream& Stream, Plang::SyntaxTree& SyntaxTree)
+std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& SyntaxTree)
 {
 	PrintDepth(Stream, 0, SyntaxTree.root);
+	return Stream;
+}
+
+std::ostream& operator << (std::ostream& Stream, const Plang::Instruction& Instruction)
+{
+	PrintDepth(Stream, 0, Instruction);
 	return Stream;
 }

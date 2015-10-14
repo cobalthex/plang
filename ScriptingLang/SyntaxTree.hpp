@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.hpp"
-#include "Union.hpp"
+#include "variant.hpp"
 
 namespace Plang
 {
@@ -41,18 +41,7 @@ namespace Plang
 		Instruction(InstructionType Type, String Value) : type(Type), value(Value) { }
 
 		InstructionType type;
-
-		Int& AsInt() { return value.As<Int>(); }
-		const Int& AsInt() const { return value.As<Int>(); }
-
-		Float& AsFloat() { return value.As<Float>(); }
-		const Float& AsFloat() const { return value.As<Float>(); }
-
-		String& AsString() { return value.As<String>(); }
-		const String& AsString() const { return value.As<String>(); }
-
-	private:
-		Union<Int, Float, String> value;
+		mapbox::util::variant<Int, Float, String> value;
 	};
 
 	struct SyntaxTreeNode
@@ -70,13 +59,13 @@ namespace Plang
 	class SyntaxTree
 	{
 	public:
-		SyntaxTree()
-			: root({ InstructionType::Block }) { }
+		SyntaxTree() { root.instruction.type = InstructionType::Block; }
 
 		SyntaxTreeNode root;
 	};
 };
 
-std::ostream& operator << (std::ostream& Stream, Plang::SyntaxTree& SyntaxTree);
+std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& SyntaxTree);
+std::ostream& operator << (std::ostream& Stream, const Plang::Instruction& Instruction);
 
 //todo: proper string deconstruction (possibly store all strings in a set)

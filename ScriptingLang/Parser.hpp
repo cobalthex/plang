@@ -2,7 +2,7 @@
 
 #include "pch.hpp"
 #include "Lexer.hpp"
-#include "Union.hpp"
+#include "variant.hpp"
 #include "SyntaxTree.hpp"
 
 namespace Plang
@@ -31,8 +31,18 @@ namespace Plang
 
 	struct Number
 	{
+		Number(InstructionType Type, Int I) : type(Type), value(I) { }
+		Number(InstructionType Type, Float F) : type(Type), value(F) { }
+
 		InstructionType type;
-		Union<Int, Float> value;
+		union NumberValue
+		{
+			NumberValue(Int I) : i(I) { }
+			NumberValue(Float F) : f(F) { }
+
+			Int i;
+			Float f;
+		} value;
 	};
 
 	class Parser
@@ -47,11 +57,13 @@ namespace Plang
 
 		static Number ParseNumber(std::string Input);
 		static String ParseString(std::string Input);
+		static std::string GetRegionSymbol(InstructionType Type); //returns an empty string on unknown
 		static std::string MatchingRegionSymbol(const std::string& Symbol); //returns an empty string on unknown
 
 	protected:
 		void CreatePredefinedExpressions();
-		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parent
+		void CreateExpression(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence);
+		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
 
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 

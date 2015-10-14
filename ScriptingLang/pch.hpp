@@ -13,6 +13,11 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
-#include <tuple>
+
+#include <utility>
+#include <typeinfo>
+#include <type_traits>
+#include <stdexcept> // runtime_error
+#include <new> // operator new
 
 using codepoint = uint32_t;

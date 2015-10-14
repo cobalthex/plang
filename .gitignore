@@ -21,3 +21,5 @@ ipch/
 # Settings
 *.user
 *.sdf
+
+.DS_STORE

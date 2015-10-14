@@ -11,6 +11,15 @@ void Parser::Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent)
 		Reparent(&i, Node);
 }
 
+std::string Parser::GetRegionSymbol(InstructionType Type)
+{
+	if (Type == InstructionType::Tuple) return "(";
+	if (Type == InstructionType::List) return "[";
+	if (Type == InstructionType::Array) return "[|";
+
+	return "";
+}
+
 std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
 {
 	if (Symbol == "{") return "}";
@@ -32,12 +41,8 @@ Parser::Parser(const Lexer& Lex)
 
 	parent = &syntaxTree.root;
 
-	int n = 0;
 	for (auto i = Lex.tokens.cbegin(); i != Lex.tokens.end(); i++)
-	{
 		ParseToken(i, Lex.tokens);
-		n++;
-	}
 	//second pass to evaluate callables (tuples are deconstructed), and further eliminate any single value tuples
 }
 
@@ -51,22 +56,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		auto number = ParseNumber(Token->value);
 		if (number.type == InstructionType::Integer)
-			parent->children.push_back({ { number.type, number.value.As<Int>() }, parent });
+			parent->children.push_back({ { number.type, number.value.i }, parent });
 		else if (number.type == InstructionType::Float)
-			parent->children.push_back({ { number.type, number.value.As<Float>() }, parent });
+			parent->children.push_back({ { number.type, number.value.f }, parent });
 	}
 	else if (Token->type == LexerTokenType::String)
 		parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent });
 	else if (Token->type == LexerTokenType::Terminator)
 	{
-		std::string symbol = "";
-		if (parent->instruction.type == InstructionType::Tuple)
-			symbol = "(";
-		if (parent->instruction.type == InstructionType::List)
-			symbol = "[";
-		if (parent->instruction.type == InstructionType::Array)
-			symbol = "[|";
-
+		std::string symbol = GetRegionSymbol(parent->instruction.type);
 		if (symbol != "")
 		{
 			//todo: nested collections
@@ -92,6 +90,17 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			//move previous item to tuple
 			parent->children.push_back(previous);
 			Reparent(&parent->children.back(), parent);
+
+			Token++;
+			//read the rest of the tuple parameters
+			if (blocks.top() == GetRegionSymbol(parent->instruction.type))
+			{
+				size_t n = blocks.size();
+				while (Token != List.end() && blocks.size() >= n)
+					ParseToken(Token++, List);
+			}
+			else
+
 
 			//todo: named tuples
 		}
@@ -130,7 +139,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			else
 			{
 				ParseToken(Token, List);
-
 				if (Token->type != LexerTokenType::Accessor)
 					break;
 				Token++;
@@ -200,17 +208,19 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Identifier)
 	{
-		auto& pExpr = predefinedExpressions.find(Token->value);
-		/*if (pExpr != predefinedExpressions.end())
+		auto pExpr = predefinedExpressions.find(Token->value);
+		if (pExpr != predefinedExpressions.end())
 		{
-			parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-			auto& call = parent->children.back();
-
 			auto& expr = pExpr->second;
 			if (expr.notation == Notation::Prefix)
+			{
+				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
+				parent = &parent->children.back();
+				Token++;
 				ParseToken(Token, List);
+			}
 		}
-		else*/
+		else
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 	}
 }
@@ -236,22 +246,15 @@ std::string Parser::ParseString(std::string Input)
 	return Input;
 }
 
+void Parser::CreateExpression(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence)
+{
+	predefinedExpressions[Name] = { Name, Notat, Assoc, Precedence };
+}
 void Parser::CreatePredefinedExpressions()
 {
-	ParseExpression pi;
-
-	pi.name = "+";
-	pi.association = Association::LeftToRight;
-	pi.precedence = 5;
-	predefinedExpressions[pi.name] = pi;
-
-	pi.name = "*";
-	pi.association = Association::LeftToRight;
-	pi.precedence = 4;
-	predefinedExpressions[pi.name] = pi;
-
-	pi.name = "=";
-	pi.association = Association::RightToLeft;
-	pi.precedence = 15;
-	predefinedExpressions[pi.name] = pi;
+	CreateExpression("!", Notation::Prefix, Association::LeftToRight, 3);
+	CreateExpression("+", Notation::Infix, Association::RightToLeft, 5);
+	CreateExpression("*", Notation::Infix, Association::RightToLeft, 5);
+	CreateExpression("=", Notation::Infix, Association::RightToLeft, 10);
+	CreateExpression(":", Notation::Infix, Association::RightToLeft, 10);
 }

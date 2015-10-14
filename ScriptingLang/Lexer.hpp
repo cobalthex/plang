@@ -47,3 +47,4 @@ namespace Plang
 	};
 };
 extern std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer);
+extern std::ostream& operator << (std::ostream& Stream, const Plang::LexerToken& Token);
