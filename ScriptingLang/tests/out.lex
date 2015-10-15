@@ -183,3 +183,41 @@ PreprocessArg 15
    Identifier blah
    Terminator ;
   RegionClose }
+   Identifier zoop
+   Identifier =
+   Identifier !
+       Number 5
+   Identifier +
+       Number 3
+   Terminator ;
+   RegionOpen (
+       Number 1
+  RegionClose )
+    Separator ,
+       Number 2
+    Separator ,
+       Number 3
+   Terminator ;
+   Identifier !
+       Number 5
+    Separator ,
+       Number 6
+    Separator ,
+       Number 7
+   Terminator ;
+   Identifier !
+   RegionOpen (
+       Number 8
+       Number 9
+       Number 10
+  RegionClose )
+   Terminator ;
+   Identifier !
+   RegionOpen (
+       Number 8
+    Separator ,
+       Number 9
+    Separator ,
+       Number 10
+  RegionClose )
+   Terminator ;

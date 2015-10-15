@@ -16,7 +16,6 @@ std::string Parser::GetRegionSymbol(InstructionType Type)
 	if (Type == InstructionType::Tuple) return "(";
 	if (Type == InstructionType::List) return "[";
 	if (Type == InstructionType::Array) return "[|";
-	//if (Type == InstructionType::Block) return "{";
 
 	return "";
 }
@@ -50,7 +49,7 @@ Parser::Parser(const Lexer& Lex)
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
 {
 	if (Token->type == LexerTokenType::PreprocessCmd)
-	{
+	{parent->children.push_back({ { InstructionType::Identifier, "" }, parent });
 		//all arguments are directly following
 	}
 	else if (Token->type == LexerTokenType::Number)
@@ -72,8 +71,10 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			if (blocks.size() < 1 || blocks.top() != MatchingRegionSymbol(symbol)) //handle unbounded types
 				parent = parent->parent;
 		}
-		else if (parent->instruction.type == InstructionType::Identifier)
+		else if (parent->instruction.type == InstructionType::Identifier || parent->instruction.type == InstructionType::Call)
+		{
 			parent = parent->parent;
+		}
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
@@ -92,17 +93,21 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			parent->children.push_back(previous);
 			Reparent(&parent->children.back(), parent);
 
-			//Token++;
-			////read the rest of the tuple parameters
-			//if (blocks.size() > 0 && blocks.top() == GetRegionSymbol(parent->instruction.type))
-			//{
-			//	size_t n = blocks.size();
-			//	while (Token != List.end() && blocks.size() >= n)
-			//		ParseToken(Token++, List);
-			//	n++;
-			//}
-			//else
-			//	;
+			Token++;
+			//read the rest of the tuple parameters
+			if (blocks.size() > 0 && blocks.top() == GetRegionSymbol(parent->instruction.type))
+			{
+				size_t n = blocks.size();
+				while (Token != List.end() && blocks.size() >= n)
+				{
+					ParseToken(Token, List);
+					Token++;
+				}
+			}
+			else
+			{
+				//read to ;
+			}
 
 			//todo: named tuples
 		}

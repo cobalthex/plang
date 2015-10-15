@@ -1,110 +1,82 @@
 Block       
+    Identifier  
     Identifier  vあr
-    Identifier  =
     Integer     3
-    Identifier  +
     Float       5
-    Identifier  *
     Integer     4
     Identifier  str
-    Identifier  =
     String      test 不確かな text
     Identifier  prop
-    Identifier  =
     Accessor    
         Float       4000.5
         Integer     5
     Identifier  proq
-    Identifier  =
     String      string
     Identifier  foo
     Identifier  ::
     Identifier  bar
     Identifier  foo_bar
-    Identifier  =
     Accessor    
         Identifier  baz
         Identifier  bonk
     Identifier  bar
-    Identifier  =
     Integer     1000000
     Identifier  quux
-    Identifier  =
     Tuple       
         Integer     1
         String      2
         Integer     3
     Identifier  floop
-    Identifier  =
     Tuple       
         Integer     4
-        String      3
         Integer     6
     Identifier  nugget
-    Identifier  =
     List        
         Integer     7
         Integer     8
         Integer     9
     Identifier  donk
-    Identifier  =
     Array       
         Identifier  a
         Identifier  b
         Identifier  c
     Identifier  gork
-    Identifier  =
     Tuple       
         Identifier  x
-        Identifier  y
         Identifier  z
     Identifier  a
-    Identifier  =
     Tuple       
         Identifier  x
-        Identifier  :
         Integer     1
         Identifier  y
-        Identifier  :
         Integer     2
         Identifier  z
-        Identifier  :
         Integer     3
     Identifier  b
-    Identifier  =
     Identifier  u
-    Identifier  :
     Tuple       
         Integer     4
-        Identifier  v
-        Identifier  :
         Integer     5
         Identifier  w
-        Identifier  :
         Integer     6
     Identifier  dotted
-    Identifier  =
     Accessor    
         Identifier  foo
         Identifier  
         Identifier  bar
     Identifier  more
-    Identifier  =
     Accessor    
         Identifier  foo
         Identifier  
         Identifier  
         Identifier  bar
-    Identifier  *
     Integer     5
-    Identifier  foo
     Expression  
-        Identifier  =
+        Identifier  foo
         Tuple       
             Identifier  jello
         Block       
             Identifier  x
-            Identifier  =
             Float       10.5
             Accessor    
                 Identifier  x
@@ -112,13 +84,10 @@ Block
             Identifier  =!=
             String      fuck
     Identifier  bar
-    Identifier  =
     Block       
         Identifier  asdf
-        Identifier  :
         Integer     5
         Identifier  donk
-        Identifier  :
         String      6
     Expression  
         Identifier  if
@@ -128,4 +97,26 @@ Block
             Integer     5
         Block       
             Identifier  blah
+    Identifier  zoop
+    Call        !
+        Integer     5
+        Integer     3
+    Tuple       
+        Tuple       
+            Integer     1
+        Integer     3
+    Call        !
+        Tuple       
+            Integer     5
+            Integer     7
+        Call        !
+            Tuple       
+                Integer     8
+                Integer     9
+                Integer     10
+        Call        !
+            Tuple       
+                Integer     8
+                Integer     9
+                Integer     10
 
