@@ -31,9 +31,9 @@ PreprocessArg 15
    Identifier =
        String 'string'
    Terminator ;
-   Identifier foo
+   Identifier a
    Identifier ::
-   Identifier bar
+   Identifier b
    Terminator ;
    Identifier foo_bar
    Identifier =
@@ -41,7 +41,7 @@ PreprocessArg 15
      Accessor .
    Identifier bonk
    Terminator ;
-   Identifier bar
+   Identifier z4d
    Identifier =
        Number 1'000'000
    Terminator ;
@@ -129,22 +129,22 @@ PreprocessArg 15
       Comment //named tuple
    Identifier dotted
    Identifier =
-   Identifier foo
+   Identifier lal
      Accessor .
      Accessor .
-   Identifier bar
+   Identifier lol
    Terminator ;
    Identifier more
    Identifier =
-   Identifier foo
+   Identifier zoo
      Accessor .
      Accessor .
      Accessor .
-   Identifier bar
+   Identifier mop
    Identifier *
        Number 5
    Terminator ;
-   Identifier foo
+   Identifier b13
    Identifier =
    RegionOpen (
    Identifier jello
@@ -161,14 +161,18 @@ PreprocessArg 15
        String 'fuck'
    Terminator ;
   RegionClose }
-   Identifier bar
+   Identifier zzz
+   Identifier =
+   Identifier true
+   Terminator ;
+   Identifier eor
    Identifier =
    RegionOpen {
-   Identifier asdf
+   Identifier a3sdfm
    Identifier :
        Number 5
    Terminator ;
-   Identifier donk
+   Identifier z3fsdf
    Identifier :
        String "6"
    Terminator ;
@@ -180,7 +184,7 @@ PreprocessArg 15
        Number 5
   RegionClose )
    RegionOpen {
-   Identifier blah
+   Identifier v313
    Terminator ;
   RegionClose }
    Identifier zoop
@@ -220,4 +224,32 @@ PreprocessArg 15
     Separator ,
        Number 10
   RegionClose )
+   Terminator ;
+   Identifier nest
+   Identifier =
+   RegionOpen (
+  RegionClose )
+   RegionOpen {
+   Identifier deeper
+   Identifier :
+   RegionOpen (
+  RegionClose )
+   RegionOpen {
+   Identifier deepest
+   Identifier :
+       Number 5
+   Terminator ;
+  RegionClose }
+   Identifier otherd
+   Identifier :
+   RegionOpen {
+   Identifier otherst
+   Identifier :
+       String "blah"
+   Terminator ;
+  RegionClose }
+  RegionClose }
+   Identifier back
+   Identifier =
+   Identifier out
    Terminator ;

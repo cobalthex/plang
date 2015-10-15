@@ -1,122 +1,177 @@
-Block       
-    Identifier  
-    Identifier  vあr
-    Integer     3
-    Float       5
-    Integer     4
-    Identifier  str
-    String      test 不確かな text
-    Identifier  prop
-    Accessor    
-        Float       4000.5
-        Integer     5
-    Identifier  proq
-    String      string
-    Identifier  foo
-    Identifier  ::
-    Identifier  bar
-    Identifier  foo_bar
-    Accessor    
-        Identifier  baz
-        Identifier  bonk
-    Identifier  bar
-    Integer     1000000
-    Identifier  quux
-    Tuple       
-        Integer     1
-        String      2
-        Integer     3
-    Identifier  floop
-    Tuple       
-        Integer     4
-        Integer     6
-    Identifier  nugget
-    List        
-        Integer     7
-        Integer     8
-        Integer     9
-    Identifier  donk
-    Array       
-        Identifier  a
-        Identifier  b
-        Identifier  c
-    Identifier  gork
-    Tuple       
-        Identifier  x
-        Identifier  z
-    Identifier  a
-    Tuple       
-        Identifier  x
-        Integer     1
-        Identifier  y
-        Integer     2
-        Identifier  z
-        Integer     3
-    Identifier  b
-    Identifier  u
-    Tuple       
-        Integer     4
-        Integer     5
-        Identifier  w
-        Integer     6
-    Identifier  dotted
-    Accessor    
-        Identifier  foo
-        Identifier  
-        Identifier  bar
-    Identifier  more
-    Accessor    
-        Identifier  foo
-        Identifier  
-        Identifier  
-        Identifier  bar
-    Integer     5
-    Expression  
-        Identifier  foo
-        Tuple       
-            Identifier  jello
-        Block       
-            Identifier  x
-            Float       10.5
-            Accessor    
-                Identifier  x
-                Integer     5
-            Identifier  =!=
-            String      fuck
-    Identifier  bar
-    Block       
-        Identifier  asdf
-        Integer     5
-        Identifier  donk
-        String      6
-    Expression  
-        Identifier  if
-        Tuple       
-            Identifier  x
-            Identifier  ==
-            Integer     5
-        Block       
-            Identifier  blah
-    Identifier  zoop
-    Call        !
-        Integer     5
-        Integer     3
-    Tuple       
-        Tuple       
-            Integer     1
-        Integer     3
-    Call        !
-        Tuple       
-            Integer     5
-            Integer     7
-        Call        !
-            Tuple       
-                Integer     8
-                Integer     9
-                Integer     10
-        Call        !
-            Tuple       
-                Integer     8
-                Integer     9
-                Integer     10
+(0|67f7e0) Program     
+    (67f7e0|6e9e60) Identifier  vあr
+    (67f7e0|6e9ea8) Identifier  =
+    (67f7e0|6e9ef0) Integer     3
+    (67f7e0|6e9f38) Identifier  +
+    (67f7e0|6e9f80) Float       5
+    (67f7e0|6e9fc8) Identifier  *
+    (67f7e0|6ea010) Integer     4
+    (67f7e0|6ea058) Identifier  str
+    (67f7e0|6ea0a0) Identifier  =
+    (67f7e0|6ea0e8) String      test 不確かな text
+    (67f7e0|6ea130) Identifier  prop
+    (67f7e0|6ea178) Identifier  =
+    (67f7e0|6ea1c0) Accessor    
+        (6ea1c0|6d4cf0) Float       4000.5
+        (6ea1c0|6d4d38) Integer     5
+    (67f7e0|6ea208) Identifier  proq
+    (67f7e0|6ea250) Identifier  =
+    (67f7e0|6ea298) String      string
+    (67f7e0|6ea2e0) Identifier  a
+    (67f7e0|6ea328) Identifier  ::
+    (67f7e0|6ea370) Identifier  b
+    (67f7e0|6ea3b8) Identifier  foo_bar
+    (67f7e0|6ea400) Identifier  =
+    (67f7e0|6ea448) Accessor    
+        (6ea448|6d4db0) Identifier  baz
+        (6ea448|6d4df8) Identifier  bonk
+    (67f7e0|6ea490) Identifier  z4d
+    (67f7e0|6ea4d8) Identifier  =
+    (67f7e0|6ea520) Integer     f4240
+    (67f7e0|6ea568) Identifier  quux
+    (67f7e0|6ea5b0) Identifier  =
+    (67f7e0|6ea5f8) Tuple       
+        (6ea5f8|6d6e30) Integer     1
+        (6ea5f8|6d6e78) String      2
+        (6ea5f8|6d6ec0) Integer     3
+    (67f7e0|6ea640) Identifier  floop
+    (67f7e0|6ea688) Identifier  =
+    (67f7e0|6ea6d0) Tuple       
+        (6ea6d0|6d6f38) Integer     4
+        (6ea6d0|6d6f80) String      3
+    (67f7e0|6ea718) Identifier  nugget
+    (67f7e0|6ea760) Identifier  =
+    (67f7e0|6ea7a8) List        
+        (6ea7a8|6da670) Integer     7
+        (6ea7a8|6da6b8) Integer     8
+        (6ea7a8|6da700) Integer     9
+    (67f7e0|6ea7f0) Identifier  donk
+    (67f7e0|6ea838) Identifier  =
+    (67f7e0|6ea880) Array       
+        (6ea880|6da778) Identifier  a
+        (6ea880|6da7c0) Identifier  b
+        (6ea880|6da808) Identifier  c
+    (67f7e0|6ea8c8) Identifier  gork
+    (67f7e0|6ea910) Identifier  =
+    (67f7e0|6ea958) Tuple       
+        (6ea958|6da5b0) Identifier  x
+        (6ea958|6da5f8) Identifier  y
+    (67f7e0|6ea9a0) Identifier  a
+    (67f7e0|6ea9e8) Identifier  =
+    (67f7e0|6eaa30) Tuple       
+        (6eaa30|6dddb0) Identifier  x
+        (6eaa30|6dddf8) Identifier  :
+        (6eaa30|6dde40) Integer     1
+        (6eaa30|6dde88) Identifier  y
+        (6eaa30|6dded0) Identifier  :
+        (6eaa30|6ddf18) Integer     2
+        (6eaa30|6ddf60) Identifier  z
+        (6eaa30|6ddfa8) Identifier  :
+        (6eaa30|6ddff0) Integer     3
+    (67f7e0|6eaa78) Identifier  b
+    (67f7e0|6eaac0) Identifier  =
+    (67f7e0|6eab08) Identifier  u
+    (67f7e0|6eab50) Identifier  :
+    (67f7e0|6eab98) Tuple       
+        (6eab98|6d9288) Integer     4
+        (6eab98|6d92d0) Identifier  v
+        (6eab98|6d9318) Integer     5
+        (6eab98|6d9360) Identifier  w
+        (6eab98|6d93a8) Identifier  :
+        (6eab98|6d93f0) Integer     6
+    (67f7e0|6eabe0) Identifier  dotted
+    (67f7e0|6eac28) Identifier  =
+    (67f7e0|6eac70) Accessor    
+        (6eac70|6d9468) Identifier  lal
+        (6eac70|6d94b0) Identifier  
+        (6eac70|6d94f8) Identifier  lol
+    (67f7e0|6eacb8) Identifier  more
+    (67f7e0|6ead00) Identifier  =
+    (67f7e0|6ead48) Accessor    
+        (6ead48|6d9138) Identifier  zoo
+        (6ead48|6d9180) Identifier  
+        (6ead48|6d91c8) Identifier  
+        (6ead48|6d9210) Identifier  mop
+    (67f7e0|6ead90) Identifier  *
+    (67f7e0|6eadd8) Integer     5
+    (67f7e0|6eae20) Identifier  b13
+    (67f7e0|6eae68) Identifier  =
+    (67f7e0|6eaeb0) Expression  
+        (6eaeb0|6da880) Tuple       
+            (6da880|6d90a8) Identifier  jello
+        (6eaeb0|6da8c8) Block       
+            (6da8c8|6de380) Identifier  x
+            (6da8c8|6de3c8) Identifier  =
+            (6da8c8|6de410) Float       10.5
+            (6da8c8|6de458) Accessor    
+                (6de458|6de068) Identifier  x
+                (6de458|6de0b0) Integer     5
+            (6da8c8|6de4a0) Identifier  =!=
+            (6da8c8|6de4e8) String      fuck
+    (67f7e0|6eaef8) Identifier  zzz
+    (67f7e0|6eaf40) Identifier  =
+    (67f7e0|6eaf88) Identifier  true
+    (67f7e0|6eafd0) Identifier  eor
+    (67f7e0|6eb018) Identifier  =
+    (67f7e0|6eb060) Block       
+        (6eb060|6eb908) Identifier  a3sdfm
+        (6eb060|6eb950) Identifier  :
+        (6eb060|6eb998) Integer     5
+        (6eb060|6eb9e0) Identifier  z3fsdf
+        (6eb060|6eba28) Identifier  :
+        (6eb060|6eba70) String      6
+    (67f7e0|6eb0a8) Identifier  if
+    (67f7e0|6eb0f0) Expression  
+        (6eb0f0|6de560) Tuple       
+            (6de560|6de128) Identifier  x
+            (6de560|6de170) Identifier  ==
+            (6de560|6de1b8) Integer     5
+        (6eb0f0|6de5a8) Block       
+            (6de5a8|6d9030) Identifier  v313
+    (67f7e0|6eb138) Identifier  zoop
+    (67f7e0|6eb180) Identifier  =
+    (67f7e0|6eb1c8) Call        !
+        (6eb1c8|6d4c78) Integer     5
+    (67f7e0|6eb210) Identifier  +
+    (67f7e0|6eb258) Integer     3
+    (67f7e0|6eb2a0) Tuple       
+        (6eb2a0|6ebb60) Tuple       
+            (6ebb60|6ebae8) Integer     1
+        (6eb2a0|6ebba8) Integer     2
+    (67f7e0|6eb2e8) Tuple       
+        (6eb2e8|6ebc98) Call        !
+            (6ebc98|6ebc20) Integer     5
+        (6eb2e8|6ebce0) Integer     6
+    (67f7e0|6eb330) Call        !
+        (6eb330|6de230) Tuple       
+        (6eb330|6de278) Integer     8
+        (6eb330|6de2c0) Integer     9
+        (6eb330|6de308) Integer     a
+    (67f7e0|6eb378) Call        !
+        (6eb378|6ebdd0) Tuple       
+        (6eb378|6ebe18) Tuple       
+            (6ebe18|6ebe90) Integer     8
+            (6ebe18|6ebed8) Integer     9
+    (67f7e0|6eb3c0) Identifier  nest
+    (67f7e0|6eb408) Identifier  =
+    (67f7e0|6eb450) Expression  
+        (6eb450|6d5fd8) Tuple       
+        (6eb450|6d6020) Block       
+            (6d6020|6d6578) Identifier  deeper
+            (6d6020|6d65c0) Identifier  :
+            (6d6020|6d6608) Expression  
+                (6d6608|6d6098) Tuple       
+                (6d6608|6d60e0) Block       
+                    (6d60e0|6d6320) Identifier  deepest
+                    (6d60e0|6d6368) Identifier  :
+                    (6d60e0|6d63b0) Integer     5
+            (6d6020|6d6650) Identifier  otherd
+            (6d6020|6d6698) Identifier  :
+            (6d6020|6d66e0) Block       
+                (6d66e0|6d6158) Identifier  otherst
+                (6d66e0|6d61a0) Identifier  :
+                (6d66e0|6d61e8) String      blah
+    (67f7e0|6eb498) Identifier  back
+    (67f7e0|6eb4e0) Identifier  =
+    (67f7e0|6eb528) Identifier  out
 

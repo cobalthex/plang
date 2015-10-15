@@ -43,14 +43,18 @@ Parser::Parser(const Lexer& Lex)
 
 	for (auto i = Lex.tokens.cbegin(); i != Lex.tokens.end(); i++)
 		ParseToken(i, Lex.tokens);
+	Reparent(parent, nullptr);
 	//second pass to evaluate callables (tuples are deconstructed), and further eliminate any single value tuples
+	//control structures
 }
 
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
 {
+	//all arguments are directly following
 	if (Token->type == LexerTokenType::PreprocessCmd)
-	{parent->children.push_back({ { InstructionType::Identifier, "" }, parent });
-		//all arguments are directly following
+	{
+		if (Token->value == "exit")
+			Token = List.end() - 1;
 	}
 	else if (Token->type == LexerTokenType::Number)
 	{
@@ -94,22 +98,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			Reparent(&parent->children.back(), parent);
 
 			Token++;
-			//read the rest of the tuple parameters
-			if (blocks.size() > 0 && blocks.top() == GetRegionSymbol(parent->instruction.type))
+			size_t n = blocks.size();
+			while (Token != List.end())
 			{
-				size_t n = blocks.size();
-				while (Token != List.end() && blocks.size() >= n)
-				{
-					ParseToken(Token, List);
-					Token++;
-				}
-			}
-			else
-			{
-				//read to ;
-			}
+				ParseToken(Token, List);
+				Token++;
 
-			//todo: named tuples
+				if (Token->type != LexerTokenType::Separator)
+					break;
+			}
 		}
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
@@ -161,7 +158,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		if (Token->value == "(")
 		{
 			it = InstructionType::Tuple;
-			//todo: evaluate if previous value is an identifier, making this a call
 		}
 		else if (Token->value == "[")
 			it = InstructionType::List;
@@ -175,18 +171,16 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			auto& children = parent->children;
 			if (children.size() > 0 && (children.back().instruction.type == InstructionType::Tuple || children.back().instruction.type == InstructionType::NamedTuple))
 			{
-				SyntaxTreeNode node = { { InstructionType::Expression }, parent };
+				auto tuple = children.back();
+				children.pop_back();
+				children.push_back({ { InstructionType::Expression }, parent });
+				parent = &children.back();
 
-				//todo: handle precidence for things like a + () { }
+				parent->children.push_back(tuple);
+				parent->children.push_back({ it, parent });
 
-				size_t strip = (children.size() > 1 && children[children.size() - 2].instruction.type == InstructionType::Identifier ? 2 : 1);
-				std::move(children.end() - strip, children.end(), std::back_inserter(node.children));
-				children.erase(children.end() - strip, children.end());
-
-				node.children.emplace_back(it, &node);
-				parent->children.push_back(node);
-				parent = &parent->children.back().children.back();
 				Reparent(parent, parent->parent);
+				parent = &parent->children.back();
 
 				return;
 			}
@@ -225,7 +219,10 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				parent = &parent->children.back();
 				Token++;
 				ParseToken(Token, List);
+				parent = parent->parent;
 			}
+			else
+				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 		}
 		else
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });

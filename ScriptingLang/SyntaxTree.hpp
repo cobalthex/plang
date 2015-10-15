@@ -12,6 +12,7 @@ namespace Plang
 	enum class InstructionType : size_t
 	{
 		Unknown,
+		Program,
 
 		Block,
 		Identifier,
@@ -59,7 +60,7 @@ namespace Plang
 	class SyntaxTree
 	{
 	public:
-		SyntaxTree() { root.instruction.type = InstructionType::Block; }
+		SyntaxTree() { root.instruction.type = InstructionType::Program; }
 
 		SyntaxTreeNode root;
 	};

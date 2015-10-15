@@ -4,6 +4,7 @@
 static const std::string types[] =
 {
 	"Unknown",
+	"Program",
 	"Block",
 	"Identifier",
 	"Accessor",
@@ -19,9 +20,21 @@ static const std::string types[] =
 	"Call"
 };
 
+size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)
+{
+	size_t length = 0;
+
+	if (Node != nullptr)
+	{
+		for (auto& i : Node->children)
+			length = std::max(length, types[(size_t)i.instruction.type].length());
+	}
+	return length;
+}
+
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
 {
-	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
+	Stream << std::string(Depth * 4, ' ') << "(" << std::hex << (size_t)Node.parent << "|" << (size_t)&Node << ") " << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
 	if (Node.instruction.type == Plang::InstructionType::Integer)
 		Stream << Node.instruction.value.get<Plang::Int>() << std::endl;
 	else if (Node.instruction.type == Plang::InstructionType::Float)
