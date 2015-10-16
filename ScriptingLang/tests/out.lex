@@ -21,6 +21,24 @@ PreprocessArg 15
    Identifier =
        String "test 不確かな text"
    Terminator ;
+   Identifier z
+   Identifier =
+       Number .5
+   Terminator ;
+   Identifier noq
+   Identifier =
+   Identifier zee
+     Accessor .
+       Number 5
+   Terminator ;
+   Identifier floq
+   Identifier =
+   RegionOpen (
+       Number 1
+  RegionClose )
+     Accessor .
+       Number 3
+   Terminator ;
    Identifier prop
    Identifier =
        Number 4000.5

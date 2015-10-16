@@ -10,6 +10,12 @@
 vあr = 3 + 5.0 * 4;
 str = "test 不確かな text";
 
+
+z = .5;
+
+noq = zee.5;
+floq = (1).3;
+
 prop = 4000.5.5;
 proq = 'string';
 
@@ -20,7 +26,7 @@ z4d = 1'000'000;
 quux = (1, "2", 3); //tuple
 floop = 4, '3', 6; //tuple
 nugget = [7, 8, 9]; //list
-donk = [| a, b, c |] //array
+donk = [| a, b, c |]; //array
 gork = x, y, z; //tuple
 
 a = (x: 1, y: 2, z: 3); //named tuple

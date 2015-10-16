@@ -34,7 +34,8 @@ size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)
 
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
 {
-	Stream << std::string(Depth * 4, ' ') << "(" << std::hex << (size_t)Node.parent << "|" << (size_t)&Node << ") " << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
+	//Stream << std::string(Depth * 4, ' ') << "(" << std::hex << (size_t)Node.parent << "|" << (size_t)&Node << ") " << std::left << std::setw(10) << types[(size_t)Node.instruction.type] << "  ";
+	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(GetChildrenMaxNameLength(Node.parent)) << types[(size_t)Node.instruction.type] << "  ";
 	if (Node.instruction.type == Plang::InstructionType::Integer)
 		Stream << Node.instruction.value.get<Plang::Int>() << std::endl;
 	else if (Node.instruction.type == Plang::InstructionType::Float)

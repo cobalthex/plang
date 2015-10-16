@@ -143,7 +143,19 @@ Lexer::Lexer(std::istream& Stream)
 		else if (ch == ',')
 			token.type = LexerTokenType::Separator;
 		else if (ch == '.')
-			token.type = LexerTokenType::Accessor;
+		{
+			ch = Stream.unget().unget().get();
+			Stream.get();
+
+			//read numbers like .5
+			if (tokens.size() < 1 || CharIsWhitespace(ch) || CharIsSpecial(ch) || ch == ';' || ch == '#')
+			{
+				token.type = LexerTokenType::Number;
+				token.value += StreamOps::ReadWhile(Stream, CharIsLiteral);
+			}
+			else
+				token.type = LexerTokenType::Accessor;
+		}
 		else if (CharIsRegionOpener(ch))
 		{
 			token.type = LexerTokenType::RegionOpen;
