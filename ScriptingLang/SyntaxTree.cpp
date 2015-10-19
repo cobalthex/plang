@@ -5,6 +5,9 @@ static const std::string types[] =
 {
 	"Unknown",
 	"Program",
+	"Statement",
+	"Expression",
+	"Call",
 	"Block",
 	"Identifier",
 	"Accessor",
@@ -15,9 +18,7 @@ static const std::string types[] =
 	"Tuple",
 	"NamedTuple",
 	"List",
-	"Array",
-	"Expression",
-	"Call"
+	"Array"
 };
 
 size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)

@@ -35,16 +35,28 @@ std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
 	return "";
 }
 
+void Plang::Parser::NextStatement()
+{
+	if (parent->children.size() > 0) //may be able to be removed; all statements may use parent = parent->parent
+	{
+		parent->children.push_back({ { InstructionType::Statement }, parent });
+		parent = &parent->children.back();
+	}
+}
+
 Parser::Parser(const Lexer& Lex)
 {
 	CreatePredefinedExpressions();
 
 	parent = &syntaxTree.root;
+	parent->children.push_back({ { InstructionType::Statement }, parent });
+	parent = &parent->children.back();
 
 	for (auto i = Lex.tokens.cbegin(); i != Lex.tokens.end(); i++)
 		ParseToken(i, Lex.tokens);
-	Reparent(parent, nullptr);
-	//second pass to evaluate callables (tuples are deconstructed), and further eliminate any single value tuples
+
+	Reparent(&syntaxTree.root, nullptr);
+	//second pass to evaluate callables (tuples are deconstructed where necessary), and further eliminate any single value tuples
 	//control structures
 }
 
@@ -75,10 +87,9 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			if (blocks.size() < 1 || blocks.top() != MatchingRegionSymbol(symbol)) //handle unbounded types
 				parent = parent->parent;
 		}
-		else if (parent->instruction.type == InstructionType::Identifier || parent->instruction.type == InstructionType::Call)
-		{
-			parent = parent->parent;
-		}
+		parent = parent->parent;
+
+		NextStatement();
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
@@ -171,16 +182,22 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			auto& children = parent->children;
 			if (children.size() > 0 && (children.back().instruction.type == InstructionType::Tuple || children.back().instruction.type == InstructionType::NamedTuple))
 			{
+				//get the arguments
 				auto tuple = children.back();
 				children.pop_back();
 				children.push_back({ { InstructionType::Expression }, parent });
 				parent = &children.back();
 
+				//add arguments and block
 				parent->children.push_back(tuple);
 				parent->children.push_back({ it, parent });
 
+				//make sure tree is up to date and set block to parent
 				Reparent(parent, parent->parent);
 				parent = &parent->children.back();
+
+				//add statement tuple to block
+				NextStatement();
 
 				return;
 			}
@@ -200,35 +217,17 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		if (parent->instruction.type == InstructionType::Block)
 		{
 			assert(Token->value == "}");
-			if (parent->parent->instruction.type == InstructionType::Expression)
-				parent = parent->parent;
+			parent = parent->parent->parent->parent;
+
+			NextStatement();
 		}
 
 		blocks.pop();
 		parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::Identifier)
-	{
-		auto pExpr = predefinedExpressions.find(Token->value);
-		if (pExpr != predefinedExpressions.end())
-		{
-			auto& expr = pExpr->second;
-			if (expr.notation == Notation::Prefix)
-			{
-				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-				parent = &parent->children.back();
-				Token++;
-				ParseToken(Token, List);
-				parent = parent->parent;
-			}
-			else
-				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
-		}
-		else
-			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
-	}
+		parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 }
-
 
 Number Parser::ParseNumber(std::string Input)
 {

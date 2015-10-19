@@ -14,6 +14,10 @@ namespace Plang
 		Unknown,
 		Program,
 
+		Statement,
+		Expression, //functions, control statements
+		Call, //call to an expression
+
 		Block,
 		Identifier,
 		Accessor,
@@ -27,10 +31,7 @@ namespace Plang
 		NamedTuple,
 
 		List,
-		Array,
-
-		Expression, //functions, control statements
-		Call, //call to an expression
+		Array
 	};
 	class Instruction
 	{

@@ -9,6 +9,8 @@ PreprocessArg =!=
 PreprocessArg infix
 PreprocessArg left
 PreprocessArg 15
+   Terminator ;
+   Terminator ;
    Identifier vあr
    Identifier =
        Number 3
@@ -82,7 +84,7 @@ PreprocessArg 15
     Separator ,
        Number 6
    Terminator ;
-      Comment //tuple
+      Comment //tuple ---- missing 6
    Identifier nugget
    Identifier =
    RegionOpen [
@@ -103,6 +105,7 @@ PreprocessArg 15
     Separator ,
    Identifier c
   RegionClose |]
+   Terminator ;
       Comment //array
    Identifier gork
    Identifier =
@@ -112,7 +115,7 @@ PreprocessArg 15
     Separator ,
    Identifier z
    Terminator ;
-      Comment //tuple
+      Comment //tuple ---- missing z
    Identifier a
    Identifier =
    RegionOpen (
@@ -183,6 +186,8 @@ PreprocessArg 15
    Identifier =
    Identifier true
    Terminator ;
+PreprocessCmd exit
+PreprocessArg 
    Identifier eor
    Identifier =
    RegionOpen {
@@ -271,3 +276,16 @@ PreprocessArg 15
    Identifier =
    Identifier out
    Terminator ;
+   Identifier rest
+   Identifier =
+   RegionOpen (
+   Identifier a
+    Separator ,
+   Identifier b
+    Separator ,
+   RegionOpen (
+   Identifier c
+  RegionClose )
+  RegionClose )
+   RegionOpen {
+  RegionClose }

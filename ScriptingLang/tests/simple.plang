@@ -7,6 +7,8 @@
 //ternary operators can be emulated with tuples
 #operator =!= infix left 15
 
+;;
+
 vあr = 3 + 5.0 * 4;
 str = "test 不確かな text";
 
@@ -24,10 +26,10 @@ a::b;
 foo_bar = baz.bonk;
 z4d = 1'000'000;
 quux = (1, "2", 3); //tuple
-floop = 4, '3', 6; //tuple
+floop = 4, '3', 6; //tuple ---- missing 6
 nugget = [7, 8, 9]; //list
 donk = [| a, b, c |]; //array
-gork = x, y, z; //tuple
+gork = x, y, z; //tuple ---- missing z
 
 a = (x: 1, y: 2, z: 3); //named tuple
 b = u: 4, v: 5, w: 6; //named tuple
@@ -41,7 +43,7 @@ b13 = (jello)
 	x.5 =!= 'fuck';
 }
 zzz = true;
-
+#exit
 eor =
 {
 	a3sdfm: 5;
@@ -72,3 +74,5 @@ nest = ()
 }
 
 back = out;
+
+rest = (a, b, (c)) { }
