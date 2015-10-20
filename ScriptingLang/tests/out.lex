@@ -186,8 +186,6 @@ PreprocessArg 15
    Identifier =
    Identifier true
    Terminator ;
-PreprocessCmd exit
-PreprocessArg 
    Identifier eor
    Identifier =
    RegionOpen {
@@ -200,6 +198,12 @@ PreprocessArg
        String "6"
    Terminator ;
   RegionClose }
+   Identifier lolo
+   Identifier =
+   Identifier null
+   Terminator ;
+PreprocessCmd exit
+PreprocessArg 
    Identifier if
    RegionOpen (
    Identifier x

@@ -133,21 +133,40 @@ Program
         Identifier  b13
         Identifier  =
         Expression  
-            Tuple       
+            Tuple  
                 Identifier  jello
-            Block       
-                Identifier  x
-                Identifier  =
-                Float       10.5
-            Statement   
-                Accessor    
+            Block  
+                Statement  
                     Identifier  x
-                    Integer     5
-                Identifier  =!=
-                String      fuck
-            Statement   
-            Identifier  zzz
-            Identifier  =
-            Identifier  true
-        Statement   
+                    Identifier  =
+                    Float       10.5
+                Statement  
+                    Accessor    
+                        Identifier  x
+                        Integer     5
+                    Identifier  =!=
+                    String      fuck
+                Statement  
+    Statement  
+        Identifier  zzz
+        Identifier  =
+        Identifier  true
+    Statement  
+        Identifier  eor
+        Identifier  =
+        Block       
+            Statement  
+                Identifier  a3sdfm
+                Identifier  :
+                Integer     5
+            Statement  
+                Identifier  z3fsdf
+                Identifier  :
+                String      6
+            Statement  
+    Statement  
+        Identifier  lolo
+        Identifier  =
+        Identifier  null
+    Statement  
 

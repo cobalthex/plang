@@ -43,12 +43,13 @@ b13 = (jello)
 	x.5 =!= 'fuck';
 }
 zzz = true;
-#exit
 eor =
 {
 	a3sdfm: 5;
 	z3fsdf: "6";
 }
+lolo = null;
+#exit
 if (x == 5)
 {
 	v313;

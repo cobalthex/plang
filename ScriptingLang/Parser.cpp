@@ -37,11 +37,8 @@ std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
 
 void Plang::Parser::NextStatement()
 {
-	if (parent->children.size() > 0) //may be able to be removed; all statements may use parent = parent->parent
-	{
-		parent->children.push_back({ { InstructionType::Statement }, parent });
-		parent = &parent->children.back();
-	}
+	parent->children.push_back({ { InstructionType::Statement }, parent });
+	parent = &parent->children.back();
 }
 
 Parser::Parser(const Lexer& Lex)
@@ -201,6 +198,11 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 				return;
 			}
+
+			parent->children.emplace_back(it, parent);
+			parent = &parent->children.back();
+			NextStatement();
+			return;
 		}
 		parent->children.emplace_back(it, parent);
 		parent = &parent->children.back();
@@ -210,16 +212,23 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		//can only close inner-most region
 		if (parent->instruction.type == InstructionType::Tuple || parent->instruction.type == InstructionType::NamedTuple)
 			assert(Token->value == ")");
-		if (parent->instruction.type == InstructionType::List)
+		else if (parent->instruction.type == InstructionType::List)
 			assert(Token->value == "]");
-		if (parent->instruction.type == InstructionType::Array)
+		else if (parent->instruction.type == InstructionType::Array)
 			assert(Token->value == "|]");
-		if (parent->instruction.type == InstructionType::Block)
+		else if (parent->parent->instruction.type == InstructionType::Block)
 		{
 			assert(Token->value == "}");
-			parent = parent->parent->parent->parent;
+			parent = parent->parent->parent;
+			if (parent->instruction.type == InstructionType::Expression)
+				parent = parent->parent->parent; //statement>block>expression>statement
+			else
+				parent = parent->parent; //statement>block>>statement
+			
 
 			NextStatement();
+			blocks.pop();
+			return;
 		}
 
 		blocks.pop();
