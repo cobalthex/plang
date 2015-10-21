@@ -49,7 +49,7 @@ eor =
 	z3fsdf: "6";
 }
 lolo = null;
-#exit
+
 if (x == 5)
 {
 	v313;

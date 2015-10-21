@@ -104,17 +104,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			//move previous item to tuple
 			parent->children.push_back(previous);
 			Reparent(&parent->children.back(), parent);
-
-			Token++;
-			size_t n = blocks.size();
-			while (Token != List.end())
-			{
-				ParseToken(Token, List);
-				Token++;
-
-				if (Token->type != LexerTokenType::Separator)
-					break;
-			}
 		}
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }

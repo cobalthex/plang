@@ -202,8 +202,6 @@ PreprocessArg 15
    Identifier =
    Identifier null
    Terminator ;
-PreprocessCmd exit
-PreprocessArg 
    Identifier if
    RegionOpen (
    Identifier x

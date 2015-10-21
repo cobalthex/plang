@@ -67,6 +67,7 @@ Program
         Tuple       
             Integer  4
             String   3
+            Integer  6
     Statement  
         Identifier  nugget
         Identifier  =
@@ -87,6 +88,7 @@ Program
         Tuple       
             Identifier  x
             Identifier  y
+            Identifier  z
     Statement  
         Identifier  a
         Identifier  =
@@ -108,6 +110,7 @@ Program
         Tuple       
             Integer     4
             Identifier  v
+            Identifier  :
             Integer     5
             Identifier  w
             Identifier  :
@@ -168,5 +171,89 @@ Program
         Identifier  lolo
         Identifier  =
         Identifier  null
+    Statement  
+        Identifier  if
+        Expression  
+            Tuple  
+                Identifier  x
+                Identifier  ==
+                Integer     5
+            Block  
+                Statement  
+                    Identifier  v313
+                Statement  
+    Statement  
+        Identifier  zoop
+        Identifier  =
+        Identifier  !
+        Integer     5
+        Identifier  +
+        Integer     3
+    Statement  
+        Tuple  
+            Tuple    
+                Integer  1
+            Integer  2
+            Integer  3
+    Statement  
+        Identifier  !
+        Tuple       
+            Integer  5
+            Integer  6
+            Integer  7
+    Statement  
+        Identifier  !
+        Tuple       
+            Integer  8
+            Integer  9
+            Integer  10
+    Statement  
+        Identifier  !
+        Tuple       
+            Integer  8
+            Integer  9
+            Integer  10
+    Statement  
+        Identifier  nest
+        Identifier  =
+        Expression  
+            Tuple  
+            Block  
+                Statement  
+                    Identifier  deeper
+                    Identifier  :
+                    Expression  
+                        Tuple  
+                        Block  
+                            Statement  
+                                Identifier  deepest
+                                Identifier  :
+                                Integer     5
+                            Statement  
+                Statement  
+                    Identifier  otherd
+                    Identifier  :
+                    Block       
+                        Statement  
+                            Identifier  otherst
+                            Identifier  :
+                            String      blah
+                        Statement  
+                Statement  
+    Statement  
+        Identifier  back
+        Identifier  =
+        Identifier  out
+    Statement  
+        Identifier  rest
+        Identifier  =
+        Expression  
+            Tuple  
+                Identifier  a
+                Identifier  b
+                Tuple       
+                    Identifier  c
+            Block  
+                Statement  
     Statement  
 
