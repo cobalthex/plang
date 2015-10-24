@@ -171,6 +171,8 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				//get the arguments
 				auto tuple = children.back();
 				children.pop_back();
+
+				//create expression
 				children.push_back({ { InstructionType::Expression }, parent });
 				parent = &children.back();
 
@@ -213,7 +215,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				parent = parent->parent->parent; //statement>block>expression>statement
 			else
 				parent = parent->parent; //statement>block>>statement
-			
 
 			NextStatement();
 			blocks.pop();
