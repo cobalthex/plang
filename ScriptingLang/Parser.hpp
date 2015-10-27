@@ -21,7 +21,7 @@ namespace Plang
 		LeftToRight,
 		RightToLeft
 	};
-	struct ParseExpression
+	struct Operator
 	{
 		std::string name;
 		Notation notation;
@@ -51,7 +51,7 @@ namespace Plang
 		Parser(const Lexer& Lex);
 		~Parser() = default;
 
-		std::map<std::string, ParseExpression> predefinedExpressions;
+		std::map<std::string, Operator> operators; //predefined operators
 
 		SyntaxTree syntaxTree;
 
@@ -59,10 +59,11 @@ namespace Plang
 		static String ParseString(std::string Input);
 		static std::string GetRegionSymbol(InstructionType Type); //returns an empty string on unknown
 		static std::string MatchingRegionSymbol(const std::string& Symbol); //returns an empty string on unknown
+		static bool TokenIsArgumentable(LexerTokenType TokenType); //returns true if the token can be used as an argument
 
 	protected:
-		void CreatePredefinedExpressions();
-		void CreateExpression(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence);
+		void CreateOperators();
+		void CreateOperator(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence);
 		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
 
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
@@ -70,6 +71,5 @@ namespace Plang
 
 		std::stack<std::string> blocks; //block matching
 		SyntaxTreeNode* parent;
-		SyntaxTreeNode* lastStatement;
 	};
 };

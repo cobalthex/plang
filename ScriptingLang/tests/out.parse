@@ -185,8 +185,8 @@ Program
     Statement  
         Identifier  zoop
         Identifier  =
-        Identifier  !
-        Integer     5
+        Call        !
+            Integer  5
         Identifier  +
         Integer     3
     Statement  
@@ -196,23 +196,41 @@ Program
             Integer  2
             Integer  3
     Statement  
-        Identifier  !
-        Tuple       
-            Integer  5
+        Tuple  
+            Call     !
+                Integer  5
             Integer  6
             Integer  7
     Statement  
-        Identifier  !
-        Tuple       
-            Integer  8
-            Integer  9
-            Integer  10
+        Call  !
+            Tuple  
+                Integer  8
+                Integer  9
+                Integer  10
     Statement  
-        Identifier  !
-        Tuple       
-            Integer  8
-            Integer  9
-            Integer  10
+        Call  !
+            Tuple  
+                Integer  8
+                Integer  9
+                Integer  10
+    Statement  
+        Tuple  
+            Identifier  a
+            Block       
+                Statement  
+                    Identifier  b
+                    Identifier  :
+                    Identifier  c
+            Expression  
+                Tuple  
+                    Identifier  q
+                Block  
+                    Statement  
+                        Identifier  d
+                        Identifier  =
+                        Identifier  e
+                    Statement  
+            Identifier  f
     Statement  
         Identifier  nest
         Identifier  =

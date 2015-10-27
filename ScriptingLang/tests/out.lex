@@ -250,6 +250,28 @@ PreprocessArg 15
        Number 10
   RegionClose )
    Terminator ;
+   RegionOpen (
+   Identifier a
+    Separator ,
+   RegionOpen {
+   Identifier b
+   Identifier :
+   Identifier c
+  RegionClose }
+    Separator ,
+   RegionOpen (
+   Identifier q
+  RegionClose )
+   RegionOpen {
+   Identifier d
+   Identifier =
+   Identifier e
+   Terminator ;
+  RegionClose }
+    Separator ,
+   Identifier f
+  RegionClose )
+   Terminator ;
    Identifier nest
    Identifier =
    RegionOpen (

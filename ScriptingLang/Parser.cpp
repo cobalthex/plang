@@ -35,6 +35,21 @@ std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
 	return "";
 }
 
+bool Plang::Parser::TokenIsArgumentable(LexerTokenType TokenType)
+{
+	switch (TokenType)
+	{
+	case LexerTokenType::Identifier:
+	case LexerTokenType::Number:
+	case LexerTokenType::String:
+	case LexerTokenType::RegionOpen:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 void Plang::Parser::NextStatement()
 {
 	parent->children.push_back({ { InstructionType::Statement }, parent });
@@ -43,7 +58,7 @@ void Plang::Parser::NextStatement()
 
 Parser::Parser(const Lexer& Lex)
 {
-	CreatePredefinedExpressions();
+	CreateOperators();
 
 	parent = &syntaxTree.root;
 	parent->children.push_back({ { InstructionType::Statement }, parent });
@@ -153,9 +168,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		InstructionType it;
 		if (Token->value == "(")
-		{
 			it = InstructionType::Tuple;
-		}
 		else if (Token->value == "[")
 			it = InstructionType::List;
 		else if (Token->value == "[|")
@@ -212,11 +225,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			assert(Token->value == "}");
 			parent = parent->parent->parent;
 			if (parent->instruction.type == InstructionType::Expression)
-				parent = parent->parent->parent; //statement>block>expression>statement
-			else
+				parent = parent->parent; //statement>block>expression
+			
+			//blocks don't need semicolons to move to the next statement, but should only move if they are in a statement (handling for nesting, such as (a, b, {c:d}, e))
+			if (parent->instruction.type == InstructionType::Statement)
+			{
 				parent = parent->parent; //statement>block>>statement
+				NextStatement();
+			}
 
-			NextStatement();
 			blocks.pop();
 			return;
 		}
@@ -225,7 +242,47 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::Identifier)
-		parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
+	{
+		auto& expr = operators.find(Token->value);
+		if (expr != operators.end())
+		{
+			if (expr->second.notation == Notation::Prefix)
+			{
+				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
+				parent = &parent->children.back();
+				auto call = parent;
+				Token++;
+				if (Token != List.end())
+				{
+					ParseToken(Token, List);
+					//Read nested collections
+					while (Token != List.end() && parent != call)
+						ParseToken(++Token, List);
+					parent = parent->parent;
+				}
+			}
+			else if (expr->second.notation == Notation::Postfix)
+			{
+				assert(parent->instruction.type == InstructionType::Statement);
+
+
+			}
+			else
+				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
+		}
+		else
+		{
+			auto& next = Token + 1;
+			if (next != List.end())
+			{
+				if (TokenIsArgumentable(next->type))
+				{
+					//if previous argument is identifier, make call
+				}
+			}
+			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
+		}
+	}
 }
 
 Number Parser::ParseNumber(std::string Input)
@@ -248,15 +305,15 @@ std::string Parser::ParseString(std::string Input)
 	return Input;
 }
 
-void Parser::CreateExpression(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence)
+void Parser::CreateOperator(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence)
 {
-	predefinedExpressions[Name] = { Name, Notat, Assoc, Precedence };
+	operators[Name] = { Name, Notat, Assoc, Precedence };
 }
-void Parser::CreatePredefinedExpressions()
+void Parser::CreateOperators()
 {
-	CreateExpression("!", Notation::Prefix, Association::LeftToRight, 3);
-	CreateExpression("+", Notation::Infix, Association::RightToLeft, 5);
-	CreateExpression("*", Notation::Infix, Association::RightToLeft, 5);
-	CreateExpression("=", Notation::Infix, Association::RightToLeft, 10);
-	CreateExpression(":", Notation::Infix, Association::RightToLeft, 10);
+	CreateOperator("!", Notation::Prefix, Association::LeftToRight, 3);
+	CreateOperator("+", Notation::Infix, Association::RightToLeft, 5);
+	CreateOperator("*", Notation::Infix, Association::RightToLeft, 5);
+	CreateOperator("=", Notation::Infix, Association::RightToLeft, 10);
+	CreateOperator(":", Notation::Infix, Association::RightToLeft, 10);
 }
