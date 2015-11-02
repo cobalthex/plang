@@ -249,23 +249,25 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			if (expr->second.notation == Notation::Prefix)
 			{
 				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-				parent = &parent->children.back();
-				auto call = parent;
-				Token++;
-				if (Token != List.end())
-				{
-					ParseToken(Token, List);
-					//Read nested collections
-					while (Token != List.end() && parent != call)
-						ParseToken(++Token, List);
-					parent = parent->parent;
-				}
+				ParseNextToken(Token, List);
 			}
-			else if (expr->second.notation == Notation::Postfix)
+			else if (expr->second.notation == Notation::Postfix || expr->second.notation == Notation::Infix)
 			{
-				assert(parent->instruction.type == InstructionType::Statement);
+				assert(parent->instruction.type == InstructionType::Statement
+					|| parent->instruction.type == InstructionType::Tuple
+					|| parent->instruction.type == InstructionType::NamedTuple
+					|| parent->instruction.type == InstructionType::Array
+					|| parent->instruction.type == InstructionType::List);
+				assert(parent->children.size() > 0);
 
+				auto previous = parent->children.back();
+				parent->children.pop_back();
+				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
+				parent->children.back().children.push_back(previous);
+				Reparent(&parent->children.back(), parent);
 
+				if (expr->second.notation == Notation::Infix)
+					ParseNextToken(Token, List);
 			}
 			else
 				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
@@ -278,10 +280,25 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				if (TokenIsArgumentable(next->type))
 				{
 					//if previous argument is identifier, make call
+
 				}
 			}
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 		}
+	}
+}
+void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
+{
+	parent = &parent->children.back();
+	auto call = parent;
+	Token++;
+	if (Token != List.end())
+	{
+		ParseToken(Token, List);
+		//Read nested collections
+		while (Token != List.end() && parent != call)
+			ParseToken(++Token, List);
+		parent = parent->parent;
 	}
 }
 
@@ -311,7 +328,8 @@ void Parser::CreateOperator(const std::string& Name, Notation Notat, Association
 }
 void Parser::CreateOperators()
 {
-	CreateOperator("!", Notation::Prefix, Association::LeftToRight, 3);
+	CreateOperator("!", Notation::Prefix, Association::None, 3);
+	CreateOperator("?", Notation::Postfix, Association::None, 10);
 	CreateOperator("+", Notation::Infix, Association::RightToLeft, 5);
 	CreateOperator("*", Notation::Infix, Association::RightToLeft, 5);
 	CreateOperator("=", Notation::Infix, Association::RightToLeft, 10);

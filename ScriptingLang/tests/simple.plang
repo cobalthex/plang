@@ -5,6 +5,19 @@
 //with left-associativity and precidence of 15
 //prefix and postfix are both urnary operators
 //ternary operators can be emulated with tuples
+
+
+1 + 2;
+3 + 4 + 5;
+
+!(a, b, c);
+!d, e, f;
+!5 + 3;
+true? - q;
+(1, 2, 3)?;
+4, 5, 6?
+
+/*
 #operator =!= infix left 15
 
 ;;
@@ -58,7 +71,7 @@ if (x == 5)
 zoop = !5 + 3;
 
 (1), 2, 3;
-!5, 6, 7;
+!5, 6, 7; 	
 !(8 9 10);
 !(8, 9, 10);
 (a, {b:c}, (q) { d = e; }, f);
@@ -78,3 +91,4 @@ nest = ()
 back = out;
 
 rest = (a, b, (c)) { }
+*/

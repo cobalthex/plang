@@ -67,6 +67,9 @@ namespace Plang
 		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
 
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
+		void ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
+		void SwapPrevious();
+
 		void NextStatement();
 
 		std::stack<std::string> blocks; //block matching

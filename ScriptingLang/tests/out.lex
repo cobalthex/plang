@@ -4,312 +4,129 @@
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated with tuples
-PreprocessCmd operator
-PreprocessArg =!=
-PreprocessArg infix
-PreprocessArg left
-PreprocessArg 15
+       Number 1
+   Identifier +
+       Number 2
    Terminator ;
-   Terminator ;
-   Identifier vあr
-   Identifier =
        Number 3
    Identifier +
-       Number 5.0
-   Identifier *
        Number 4
-   Terminator ;
-   Identifier str
-   Identifier =
-       String "test 不確かな text"
-   Terminator ;
-   Identifier z
-   Identifier =
-       Number .5
-   Terminator ;
-   Identifier noq
-   Identifier =
-   Identifier zee
-     Accessor .
+   Identifier +
        Number 5
    Terminator ;
-   Identifier floq
-   Identifier =
+   Identifier !
    RegionOpen (
-       Number 1
-  RegionClose )
-     Accessor .
-       Number 3
-   Terminator ;
-   Identifier prop
-   Identifier =
-       Number 4000.5
-     Accessor .
-       Number 5
-   Terminator ;
-   Identifier proq
-   Identifier =
-       String 'string'
-   Terminator ;
-   Identifier a
-   Identifier ::
-   Identifier b
-   Terminator ;
-   Identifier foo_bar
-   Identifier =
-   Identifier baz
-     Accessor .
-   Identifier bonk
-   Terminator ;
-   Identifier z4d
-   Identifier =
-       Number 1'000'000
-   Terminator ;
-   Identifier quux
-   Identifier =
-   RegionOpen (
-       Number 1
-    Separator ,
-       String "2"
-    Separator ,
-       Number 3
-  RegionClose )
-   Terminator ;
-      Comment //tuple
-   Identifier floop
-   Identifier =
-       Number 4
-    Separator ,
-       String '3'
-    Separator ,
-       Number 6
-   Terminator ;
-      Comment //tuple ---- missing 6
-   Identifier nugget
-   Identifier =
-   RegionOpen [
-       Number 7
-    Separator ,
-       Number 8
-    Separator ,
-       Number 9
-  RegionClose ]
-   Terminator ;
-      Comment //list
-   Identifier donk
-   Identifier =
-   RegionOpen [|
    Identifier a
     Separator ,
    Identifier b
     Separator ,
    Identifier c
-  RegionClose |]
-   Terminator ;
-      Comment //array
-   Identifier gork
-   Identifier =
-   Identifier x
-    Separator ,
-   Identifier y
-    Separator ,
-   Identifier z
-   Terminator ;
-      Comment //tuple ---- missing z
-   Identifier a
-   Identifier =
-   RegionOpen (
-   Identifier x
-   Identifier :
-       Number 1
-    Separator ,
-   Identifier y
-   Identifier :
-       Number 2
-    Separator ,
-   Identifier z
-   Identifier :
-       Number 3
-  RegionClose )
-   Terminator ;
-      Comment //named tuple
-   Identifier b
-   Identifier =
-   Identifier u
-   Identifier :
-       Number 4
-    Separator ,
-   Identifier v
-   Identifier :
-       Number 5
-    Separator ,
-   Identifier w
-   Identifier :
-       Number 6
-   Terminator ;
-      Comment //named tuple
-   Identifier dotted
-   Identifier =
-   Identifier lal
-     Accessor .
-     Accessor .
-   Identifier lol
-   Terminator ;
-   Identifier more
-   Identifier =
-   Identifier zoo
-     Accessor .
-     Accessor .
-     Accessor .
-   Identifier mop
-   Identifier *
-       Number 5
-   Terminator ;
-   Identifier b13
-   Identifier =
-   RegionOpen (
-   Identifier jello
-  RegionClose )
-   RegionOpen {
-   Identifier x
-   Identifier =
-       Number 10.5
-   Terminator ;
-   Identifier x
-     Accessor .
-       Number 5
-   Identifier =!=
-       String 'fuck'
-   Terminator ;
-  RegionClose }
-   Identifier zzz
-   Identifier =
-   Identifier true
-   Terminator ;
-   Identifier eor
-   Identifier =
-   RegionOpen {
-   Identifier a3sdfm
-   Identifier :
-       Number 5
-   Terminator ;
-   Identifier z3fsdf
-   Identifier :
-       String "6"
-   Terminator ;
-  RegionClose }
-   Identifier lolo
-   Identifier =
-   Identifier null
-   Terminator ;
-   Identifier if
-   RegionOpen (
-   Identifier x
-   Identifier ==
-       Number 5
-  RegionClose )
-   RegionOpen {
-   Identifier v313
-   Terminator ;
-  RegionClose }
-   Identifier zoop
-   Identifier =
-   Identifier !
-       Number 5
-   Identifier +
-       Number 3
-   Terminator ;
-   RegionOpen (
-       Number 1
-  RegionClose )
-    Separator ,
-       Number 2
-    Separator ,
-       Number 3
-   Terminator ;
-   Identifier !
-       Number 5
-    Separator ,
-       Number 6
-    Separator ,
-       Number 7
-   Terminator ;
-   Identifier !
-   RegionOpen (
-       Number 8
-       Number 9
-       Number 10
   RegionClose )
    Terminator ;
    Identifier !
-   RegionOpen (
-       Number 8
-    Separator ,
-       Number 9
-    Separator ,
-       Number 10
-  RegionClose )
-   Terminator ;
-   RegionOpen (
-   Identifier a
-    Separator ,
-   RegionOpen {
-   Identifier b
-   Identifier :
-   Identifier c
-  RegionClose }
-    Separator ,
-   RegionOpen (
-   Identifier q
-  RegionClose )
-   RegionOpen {
    Identifier d
-   Identifier =
+    Separator ,
    Identifier e
-   Terminator ;
-  RegionClose }
     Separator ,
    Identifier f
-  RegionClose )
    Terminator ;
-   Identifier nest
-   Identifier =
-   RegionOpen (
-  RegionClose )
-   RegionOpen {
-   Identifier deeper
-   Identifier :
-   RegionOpen (
-  RegionClose )
-   RegionOpen {
-   Identifier deepest
-   Identifier :
+   Identifier !
        Number 5
+   Identifier +
+       Number 3
    Terminator ;
-  RegionClose }
-   Identifier otherd
-   Identifier :
-   RegionOpen {
-   Identifier otherst
-   Identifier :
-       String "blah"
+   Identifier true
+   Identifier ?
+   Identifier -
+   Identifier q
    Terminator ;
-  RegionClose }
-  RegionClose }
-   Identifier back
-   Identifier =
-   Identifier out
-   Terminator ;
-   Identifier rest
-   Identifier =
    RegionOpen (
-   Identifier a
+       Number 1
     Separator ,
-   Identifier b
+       Number 2
     Separator ,
-   RegionOpen (
-   Identifier c
+       Number 3
   RegionClose )
-  RegionClose )
-   RegionOpen {
-  RegionClose }
+   Identifier ?
+   Terminator ;
+       Number 4
+    Separator ,
+       Number 5
+    Separator ,
+       Number 6
+   Identifier ?
+      Comment /*
+#operator =!= infix left 15
+
+;;
+
+vあr = 3 + 5.0 * 4;
+str = "test 不確かな text";
+
+
+z = .5;
+
+noq = zee.5;
+floq = (1).3;
+
+prop = 4000.5.5;
+proq = 'string';
+
+a::b;
+
+foo_bar = baz.bonk;
+z4d = 1'000'000;
+quux = (1, "2", 3); //tuple
+floop = 4, '3', 6; //tuple ---- missing 6
+nugget = [7, 8, 9]; //list
+donk = [| a, b, c |]; //array
+gork = x, y, z; //tuple ---- missing z
+
+a = (x: 1, y: 2, z: 3); //named tuple
+b = u: 4, v: 5, w: 6; //named tuple
+
+dotted = lal..lol;
+more = zoo...mop * 5;
+
+b13 = (jello)
+{
+	x = 10.5;
+	x.5 =!= 'fuck';
+}
+zzz = true;
+eor =
+{
+	a3sdfm: 5;
+	z3fsdf: "6";
+}
+lolo = null;
+
+if (x == 5)
+{
+	v313;
+}
+
+zoop = !5 + 3;
+
+(1), 2, 3;
+!5, 6, 7; 	
+!(8 9 10);
+!(8, 9, 10);
+(a, {b:c}, (q) { d = e; }, f);
+
+nest = ()
+{
+	deeper: ()
+	{
+		deepest: 5;
+	}
+	otherd:
+	{
+		otherst: "blah";
+	}
+}
+
+back = out;
+
+rest = (a, b, (c)) { }
+*/

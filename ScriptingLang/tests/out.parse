@@ -1,277 +1,46 @@
 Program  
     Statement  
-    Statement  
-    Statement  
-        Identifier  vあr
-        Identifier  =
-        Integer     3
-        Identifier  +
-        Float       5
-        Identifier  *
-        Integer     4
-    Statement  
-        Identifier  str
-        Identifier  =
-        String      test 不確かな text
-    Statement  
-        Identifier  z
-        Identifier  =
-        Float       0.5
-    Statement  
-        Identifier  noq
-        Identifier  =
-        Accessor    
-            Identifier  zee
-            Integer     5
-    Statement  
-        Identifier  floq
-        Identifier  =
-        Accessor    
-            Tuple    
-                Integer  1
-            Integer  3
-    Statement  
-        Identifier  prop
-        Identifier  =
-        Accessor    
-            Float    4000.5
-            Integer  5
-    Statement  
-        Identifier  proq
-        Identifier  =
-        String      string
-    Statement  
-        Identifier  a
-        Identifier  ::
-        Identifier  b
-    Statement  
-        Identifier  foo_bar
-        Identifier  =
-        Accessor    
-            Identifier  baz
-            Identifier  bonk
-    Statement  
-        Identifier  z4d
-        Identifier  =
-        Integer     1000000
-    Statement  
-        Identifier  quux
-        Identifier  =
-        Tuple       
+        Call  +
             Integer  1
-            String   2
-            Integer  3
-    Statement  
-        Identifier  floop
-        Identifier  =
-        Tuple       
-            Integer  4
-            String   3
-            Integer  6
-    Statement  
-        Identifier  nugget
-        Identifier  =
-        List        
-            Integer  7
-            Integer  8
-            Integer  9
-    Statement  
-        Identifier  donk
-        Identifier  =
-        Array       
-            Identifier  a
-            Identifier  b
-            Identifier  c
-    Statement  
-        Identifier  gork
-        Identifier  =
-        Tuple       
-            Identifier  x
-            Identifier  y
-            Identifier  z
-    Statement  
-        Identifier  a
-        Identifier  =
-        Tuple       
-            Identifier  x
-            Identifier  :
-            Integer     1
-            Identifier  y
-            Identifier  :
-            Integer     2
-            Identifier  z
-            Identifier  :
-            Integer     3
-    Statement  
-        Identifier  b
-        Identifier  =
-        Identifier  u
-        Identifier  :
-        Tuple       
-            Integer     4
-            Identifier  v
-            Identifier  :
-            Integer     5
-            Identifier  w
-            Identifier  :
-            Integer     6
-    Statement  
-        Identifier  dotted
-        Identifier  =
-        Accessor    
-            Identifier  lal
-            Identifier  
-            Identifier  lol
-    Statement  
-        Identifier  more
-        Identifier  =
-        Accessor    
-            Identifier  zoo
-            Identifier  
-            Identifier  
-            Identifier  mop
-        Identifier  *
-        Integer     5
-    Statement  
-        Identifier  b13
-        Identifier  =
-        Expression  
-            Tuple  
-                Identifier  jello
-            Block  
-                Statement  
-                    Identifier  x
-                    Identifier  =
-                    Float       10.5
-                Statement  
-                    Accessor    
-                        Identifier  x
-                        Integer     5
-                    Identifier  =!=
-                    String      fuck
-                Statement  
-    Statement  
-        Identifier  zzz
-        Identifier  =
-        Identifier  true
-    Statement  
-        Identifier  eor
-        Identifier  =
-        Block       
-            Statement  
-                Identifier  a3sdfm
-                Identifier  :
-                Integer     5
-            Statement  
-                Identifier  z3fsdf
-                Identifier  :
-                String      6
-            Statement  
-    Statement  
-        Identifier  lolo
-        Identifier  =
-        Identifier  null
-    Statement  
-        Identifier  if
-        Expression  
-            Tuple  
-                Identifier  x
-                Identifier  ==
-                Integer     5
-            Block  
-                Statement  
-                    Identifier  v313
-                Statement  
-    Statement  
-        Identifier  zoop
-        Identifier  =
-        Call        !
-            Integer  5
-        Identifier  +
-        Integer     3
-    Statement  
-        Tuple  
-            Tuple    
-                Integer  1
             Integer  2
-            Integer  3
     Statement  
-        Tuple  
-            Call     !
-                Integer  5
-            Integer  6
-            Integer  7
-    Statement  
-        Call  !
-            Tuple  
-                Integer  8
-                Integer  9
-                Integer  10
+        Call  +
+            Call     +
+                Integer  3
+                Integer  4
+            Integer  5
     Statement  
         Call  !
-            Tuple  
-                Integer  8
-                Integer  9
-                Integer  10
-    Statement  
-        Tuple  
-            Identifier  a
-            Block       
-                Statement  
-                    Identifier  b
-                    Identifier  :
-                    Identifier  c
-            Expression  
-                Tuple  
-                    Identifier  q
-                Block  
-                    Statement  
-                        Identifier  d
-                        Identifier  =
-                        Identifier  e
-                    Statement  
-            Identifier  f
-    Statement  
-        Identifier  nest
-        Identifier  =
-        Expression  
-            Tuple  
-            Block  
-                Statement  
-                    Identifier  deeper
-                    Identifier  :
-                    Expression  
-                        Tuple  
-                        Block  
-                            Statement  
-                                Identifier  deepest
-                                Identifier  :
-                                Integer     5
-                            Statement  
-                Statement  
-                    Identifier  otherd
-                    Identifier  :
-                    Block       
-                        Statement  
-                            Identifier  otherst
-                            Identifier  :
-                            String      blah
-                        Statement  
-                Statement  
-    Statement  
-        Identifier  back
-        Identifier  =
-        Identifier  out
-    Statement  
-        Identifier  rest
-        Identifier  =
-        Expression  
             Tuple  
                 Identifier  a
                 Identifier  b
-                Tuple       
-                    Identifier  c
-            Block  
-                Statement  
+                Identifier  c
     Statement  
+        Tuple  
+            Call        !
+                Identifier  d
+            Identifier  e
+            Identifier  f
+    Statement  
+        Call  +
+            Call     !
+                Integer  5
+            Integer  3
+    Statement  
+        Call        ?
+            Identifier  true
+        Identifier  -
+        Identifier  q
+    Statement  
+        Call  ?
+            Tuple  
+                Integer  1
+                Integer  2
+                Integer  3
+    Statement  
+        Tuple  
+            Integer  4
+            Integer  5
+            Call     ?
+                Integer  6
 
