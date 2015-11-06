@@ -4,57 +4,49 @@
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated with tuples
-       Number 1
-   Identifier +
-       Number 2
-   Terminator ;
-       Number 3
-   Identifier +
-       Number 4
-   Identifier +
-       Number 5
-   Terminator ;
-   Identifier !
-   RegionOpen (
-   Identifier a
-    Separator ,
-   Identifier b
-    Separator ,
-   Identifier c
-  RegionClose )
-   Terminator ;
-   Identifier !
    Identifier d
     Separator ,
    Identifier e
     Separator ,
    Identifier f
+    Separator ,
+   Identifier g
+    Separator ,
+   Identifier h
+   Identifier i
    Terminator ;
-   Identifier !
-       Number 5
-   Identifier +
-       Number 3
+   Identifier j
    Terminator ;
-   Identifier true
-   Identifier ?
-   Identifier -
    Identifier q
-   Terminator ;
-   RegionOpen (
-       Number 1
-    Separator ,
-       Number 2
-    Separator ,
-       Number 3
-  RegionClose )
-   Identifier ?
-   Terminator ;
+   Identifier +
        Number 4
     Separator ,
-       Number 5
+   Identifier d
+   Identifier z
+   Identifier l
     Separator ,
-       Number 6
-   Identifier ?
+       Number 44
+   Terminator ;
+      Comment /*
+.;
+..;
+...;
+broken (tries to parse as number)*/
+   Identifier a
+     Accessor .
+   Identifier b
+   Terminator ;
+   Identifier a
+     Accessor .
+     Accessor .
+   Identifier b
+   Terminator ;
+   Identifier a
+     Accessor .
+     Accessor .
+     Accessor .
+   Identifier b
+   Terminator ;
       Comment /*
 #operator =!= infix left 15
 

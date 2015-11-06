@@ -68,7 +68,8 @@ namespace Plang
 
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 		void ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
-		void SwapPrevious();
+
+		void ParseOps(SyntaxTreeNode* Statement);
 
 		void NextStatement();
 

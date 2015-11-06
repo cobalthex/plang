@@ -68,7 +68,7 @@ Parser::Parser(const Lexer& Lex)
 		ParseToken(i, Lex.tokens);
 
 	Reparent(&syntaxTree.root, nullptr);
-	//second pass to evaluate callables (tuples are deconstructed where necessary), and further eliminate any single value tuples
+	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
 }
 
@@ -101,13 +101,27 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		parent = parent->parent;
 
+		//handle unbounded tuples
+		if (parent->instruction.type == InstructionType::Tuple)
+			parent = parent->parent->parent;
+
 		NextStatement();
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
-		if (parent->instruction.type != InstructionType::Tuple
-			&& parent->instruction.type != InstructionType::List
-			&& parent->instruction.type != InstructionType::Array)
+		//because tuples can contain statements, must test two levels
+		if ((parent->instruction.type == InstructionType::Tuple
+			|| parent->instruction.type == InstructionType::List
+			|| parent->instruction.type == InstructionType::Array)
+			|| (parent->parent != nullptr
+			&& (parent->parent->instruction.type == InstructionType::Tuple
+			|| parent->parent->instruction.type == InstructionType::List
+			|| parent->parent->instruction.type == InstructionType::Array)))
+		{
+			parent = parent->parent;
+			NextStatement();
+		}
+		else
 		{
 			//save previous
 			auto previous = parent->children.back();
@@ -115,10 +129,14 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 			parent->children.push_back({ { InstructionType::Tuple }, parent });
 			parent = &parent->children.back();
+			NextStatement();
 
 			//move previous item to tuple
 			parent->children.push_back(previous);
 			Reparent(&parent->children.back(), parent);
+			
+			parent = parent->parent;
+			NextStatement();
 		}
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
@@ -179,7 +197,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 			//test if expression
 			auto& children = parent->children;
-			if (children.size() > 0 && (children.back().instruction.type == InstructionType::Tuple || children.back().instruction.type == InstructionType::NamedTuple))
+			if (children.size() > 0 && children.back().instruction.type == InstructionType::Tuple)
 			{
 				//get the arguments
 				auto tuple = children.back();
@@ -202,19 +220,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 				return;
 			}
-
-			parent->children.emplace_back(it, parent);
-			parent = &parent->children.back();
-			NextStatement();
-			return;
 		}
 		parent->children.emplace_back(it, parent);
 		parent = &parent->children.back();
+		NextStatement();
 	}
 	else if (Token->type == LexerTokenType::RegionClose)
 	{
 		//can only close inner-most region
-		if (parent->instruction.type == InstructionType::Tuple || parent->instruction.type == InstructionType::NamedTuple)
+		if (parent->instruction.type == InstructionType::Tuple)
 			assert(Token->value == ")");
 		else if (parent->instruction.type == InstructionType::List)
 			assert(Token->value == "]");
@@ -238,11 +252,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			return;
 		}
 
+		if (parent->instruction.type == InstructionType::Statement)
+			parent = parent->parent;
+
 		blocks.pop();
 		parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::Identifier)
 	{
+		//parse prefix and postfix ops. infix will be parsed later
 		auto& expr = operators.find(Token->value);
 		if (expr != operators.end())
 		{
@@ -251,11 +269,10 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
 				ParseNextToken(Token, List);
 			}
-			else if (expr->second.notation == Notation::Postfix || expr->second.notation == Notation::Infix)
+			else if (expr->second.notation == Notation::Postfix)
 			{
 				assert(parent->instruction.type == InstructionType::Statement
 					|| parent->instruction.type == InstructionType::Tuple
-					|| parent->instruction.type == InstructionType::NamedTuple
 					|| parent->instruction.type == InstructionType::Array
 					|| parent->instruction.type == InstructionType::List);
 				assert(parent->children.size() > 0);
@@ -265,26 +282,12 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
 				parent->children.back().children.push_back(previous);
 				Reparent(&parent->children.back(), parent);
-
-				if (expr->second.notation == Notation::Infix)
-					ParseNextToken(Token, List);
 			}
 			else
 				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 		}
 		else
-		{
-			auto& next = Token + 1;
-			if (next != List.end())
-			{
-				if (TokenIsArgumentable(next->type))
-				{
-					//if previous argument is identifier, make call
-
-				}
-			}
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
-		}
 	}
 }
 void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -299,6 +302,19 @@ void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer
 		while (Token != List.end() && parent != call)
 			ParseToken(++Token, List);
 		parent = parent->parent;
+	}
+}
+
+void Parser::ParseOps(SyntaxTreeNode* Statement)
+{
+	for (auto& i : Statement->children)
+	{
+		if (i.children.size() > 0)
+			ParseOps(&i);
+		else if (i.instruction.type == InstructionType::Statement)
+		{
+
+		}
 	}
 }
 

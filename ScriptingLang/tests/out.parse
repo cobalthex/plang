@@ -1,46 +1,45 @@
 Program  
     Statement  
-        Call  +
-            Integer  1
-            Integer  2
-    Statement  
-        Call  +
-            Call     +
-                Integer  3
-                Integer  4
-            Integer  5
-    Statement  
-        Call  !
-            Tuple  
-                Identifier  a
-                Identifier  b
-                Identifier  c
-    Statement  
         Tuple  
-            Call        !
+            Statement  
                 Identifier  d
-            Identifier  e
-            Identifier  f
+            Statement  
+                Identifier  e
+            Statement  
+                Identifier  f
+            Statement  
+                Identifier  g
+            Statement  
+                Identifier  h
+                Identifier  i
     Statement  
-        Call  +
-            Call     !
-                Integer  5
-            Integer  3
+        Identifier  j
     Statement  
-        Call        ?
-            Identifier  true
-        Identifier  -
         Identifier  q
+        Identifier  +
+        Tuple       
+            Statement  
+                Integer  4
+            Statement  
+                Identifier  d
+                Identifier  z
+                Identifier  l
+            Statement  
+                Integer  44
     Statement  
-        Call  ?
-            Tuple  
-                Integer  1
-                Integer  2
-                Integer  3
+        Accessor  
+            Identifier  a
+            Identifier  b
     Statement  
-        Tuple  
-            Integer  4
-            Integer  5
-            Call     ?
-                Integer  6
+        Accessor  
+            Identifier  a
+            Identifier  
+            Identifier  b
+    Statement  
+        Accessor  
+            Identifier  a
+            Identifier  
+            Identifier  
+            Identifier  b
+    Statement  
 
