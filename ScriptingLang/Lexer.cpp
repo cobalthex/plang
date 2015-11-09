@@ -150,6 +150,8 @@ Lexer::Lexer(std::istream& Stream)
 			//read numbers like .5
 			if (tokens.size() < 1 || CharIsWhitespace(ch) || CharIsSpecial(ch) || ch == ';' || ch == '#')
 			{
+				//handle .. accessors
+
 				token.type = LexerTokenType::Number;
 				token.value += StreamOps::ReadWhile(Stream, CharIsLiteral);
 			}

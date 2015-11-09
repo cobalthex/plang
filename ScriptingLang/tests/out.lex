@@ -4,49 +4,22 @@
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated with tuples
-   Identifier d
-    Separator ,
-   Identifier e
-    Separator ,
-   Identifier f
-    Separator ,
-   Identifier g
-    Separator ,
-   Identifier h
-   Identifier i
-   Terminator ;
-   Identifier j
-   Terminator ;
-   Identifier q
-   Identifier +
-       Number 4
-    Separator ,
-   Identifier d
-   Identifier z
-   Identifier l
-    Separator ,
-       Number 44
-   Terminator ;
-      Comment /*
-.;
-..;
-...;
-broken (tries to parse as number)*/
    Identifier a
-     Accessor .
+   Identifier =
    Identifier b
+   Identifier =
+   Identifier c
    Terminator ;
-   Identifier a
-     Accessor .
-     Accessor .
-   Identifier b
-   Terminator ;
-   Identifier a
-     Accessor .
-     Accessor .
-     Accessor .
-   Identifier b
-   Terminator ;
+      Comment // x + 5 = 3 + 1, 2, 3;
+      Comment // d, e, f, g, h i;
+      Comment // j;
+      Comment // q + 4, d z l, 44;
+      Comment // .;
+      Comment // ..;
+      Comment // ...;
+      Comment // a.b;
+      Comment // a..b;
+      Comment // a...b;
       Comment /*
 #operator =!= infix left 15
 

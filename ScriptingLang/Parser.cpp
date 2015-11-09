@@ -103,7 +103,11 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		//handle unbounded tuples
 		if (parent->instruction.type == InstructionType::Tuple)
-			parent = parent->parent->parent;
+			parent = parent->parent;
+
+		//handle calls
+		if (parent->instruction.type == InstructionType::Call)
+			parent = parent->parent;
 
 		NextStatement();
 	}
@@ -123,20 +127,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		else
 		{
-			//save previous
+			parent = parent->parent;
 			auto previous = parent->children.back();
 			parent->children.pop_back();
 
 			parent->children.push_back({ { InstructionType::Tuple }, parent });
 			parent = &parent->children.back();
-			NextStatement();
-
-			//move previous item to tuple
 			parent->children.push_back(previous);
-			Reparent(&parent->children.back(), parent);
-			
-			parent = parent->parent;
-			NextStatement();
+			Reparent(parent, parent->parent);
+			NextStatement(); //todo: only handle if necessary
 		}
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
@@ -196,7 +195,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			it = InstructionType::Block;
 
 			//test if expression
-			auto& children = parent->children;
+			auto children = parent->children;
 			if (children.size() > 0 && children.back().instruction.type == InstructionType::Tuple)
 			{
 				//get the arguments
@@ -260,31 +259,17 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Identifier)
 	{
-		//parse prefix and postfix ops. infix will be parsed later
-		auto& expr = operators.find(Token->value);
-		if (expr != operators.end())
+		if (Token->value == "=" || Token->value == ":")
 		{
-			if (expr->second.notation == Notation::Prefix)
-			{
-				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-				ParseNextToken(Token, List);
-			}
-			else if (expr->second.notation == Notation::Postfix)
-			{
-				assert(parent->instruction.type == InstructionType::Statement
-					|| parent->instruction.type == InstructionType::Tuple
-					|| parent->instruction.type == InstructionType::Array
-					|| parent->instruction.type == InstructionType::List);
-				assert(parent->children.size() > 0);
+			parent = parent->parent;
+			auto previous = parent->children.back();
+			parent->children.pop_back();
 
-				auto previous = parent->children.back();
-				parent->children.pop_back();
-				parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-				parent->children.back().children.push_back(previous);
-				Reparent(&parent->children.back(), parent);
-			}
-			else
-				parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
+			parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
+			parent = &parent->children.back();
+			parent->children.push_back(previous);
+			Reparent(parent, parent->parent);
+			NextStatement();
 		}
 		else
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });

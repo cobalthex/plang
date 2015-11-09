@@ -6,19 +6,20 @@
 //prefix and postfix are both urnary operators
 //ternary operators can be emulated with tuples
 
-d, e, f, g, h i;
-j;
-q + 4, d z l, 44;
+a = b = c;
 
-/*
-.;
-..;
-...;
-broken (tries to parse as number)*/
+// x + 5 = 3 + 1, 2, 3;
+// d, e, f, g, h i;
+// j;
+// q + 4, d z l, 44;
 
-a.b;
-a..b;
-a...b;
+// .;
+// ..;
+// ...;
+
+// a.b;
+// a..b;
+// a...b;
 
 /*
 #operator =!= infix left 15

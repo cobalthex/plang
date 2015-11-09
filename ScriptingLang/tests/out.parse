@@ -1,45 +1,11 @@
 Program  
-    Statement  
-        Tuple  
-            Statement  
-                Identifier  d
-            Statement  
-                Identifier  e
-            Statement  
-                Identifier  f
-            Statement  
-                Identifier  g
-            Statement  
-                Identifier  h
-                Identifier  i
-    Statement  
-        Identifier  j
-    Statement  
-        Identifier  q
-        Identifier  +
-        Tuple       
-            Statement  
-                Integer  4
-            Statement  
-                Identifier  d
-                Identifier  z
-                Identifier  l
-            Statement  
-                Integer  44
-    Statement  
-        Accessor  
+    Call  =
+        Statement  
             Identifier  a
-            Identifier  b
-    Statement  
-        Accessor  
-            Identifier  a
-            Identifier  
-            Identifier  b
-    Statement  
-        Accessor  
-            Identifier  a
-            Identifier  
-            Identifier  
-            Identifier  b
-    Statement  
+        Call       =
+            Statement  
+                Identifier  b
+            Statement  
+                Identifier  c
+        Statement  
 
