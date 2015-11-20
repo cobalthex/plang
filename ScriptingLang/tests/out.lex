@@ -9,6 +9,10 @@
    Identifier b
    Identifier =
    Identifier c
+   Identifier +
+   Identifier d
+   Identifier =
+   Identifier e
    Terminator ;
       Comment // x + 5 = 3 + 1, 2, 3;
       Comment // d, e, f, g, h i;

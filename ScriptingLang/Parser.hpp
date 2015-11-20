@@ -59,7 +59,6 @@ namespace Plang
 		static String ParseString(std::string Input);
 		static std::string GetRegionSymbol(InstructionType Type); //returns an empty string on unknown
 		static std::string MatchingRegionSymbol(const std::string& Symbol); //returns an empty string on unknown
-		static bool TokenIsArgumentable(LexerTokenType TokenType); //returns true if the token can be used as an argument
 
 	protected:
 		void CreateOperators();

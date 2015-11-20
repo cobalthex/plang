@@ -5,7 +5,12 @@ Program
         Call       =
             Statement  
                 Identifier  b
+            Call       =
+                Statement  
+                    Identifier  c
+                    Identifier  +
+                    Identifier  d
+                Statement  
+                    Identifier  e
             Statement  
-                Identifier  c
-        Statement  
 

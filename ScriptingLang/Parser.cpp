@@ -35,21 +35,6 @@ std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
 	return "";
 }
 
-bool Plang::Parser::TokenIsArgumentable(LexerTokenType TokenType)
-{
-	switch (TokenType)
-	{
-	case LexerTokenType::Identifier:
-	case LexerTokenType::Number:
-	case LexerTokenType::String:
-	case LexerTokenType::RegionOpen:
-		return true;
-
-	default:
-		return false;
-	}
-}
-
 void Plang::Parser::NextStatement()
 {
 	parent->children.push_back({ { InstructionType::Statement }, parent });

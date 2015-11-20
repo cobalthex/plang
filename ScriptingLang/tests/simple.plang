@@ -6,7 +6,7 @@
 //prefix and postfix are both urnary operators
 //ternary operators can be emulated with tuples
 
-a = b = c;
+a = b = c + d = e;
 
 // x + 5 = 3 + 1, 2, 3;
 // d, e, f, g, h i;
