@@ -4,17 +4,19 @@
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated with tuples
-   Identifier a
-   Identifier =
-   Identifier b
-   Identifier =
-   Identifier c
+      Comment //a = b = c + d = e;
+   Identifier x
    Identifier +
-   Identifier d
+       Number 5
    Identifier =
-   Identifier e
+       Number 3
+   Identifier +
+       Number 1
+    Separator ,
+       Number 2
+    Separator ,
+       Number 3
    Terminator ;
-      Comment // x + 5 = 3 + 1, 2, 3;
       Comment // d, e, f, g, h i;
       Comment // j;
       Comment // q + 4, d z l, 44;

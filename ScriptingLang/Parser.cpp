@@ -55,6 +55,7 @@ Parser::Parser(const Lexer& Lex)
 	Reparent(&syntaxTree.root, nullptr);
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
+	ParseOps(&syntaxTree.root);
 }
 
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -244,7 +245,10 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Identifier)
 	{
-		if (Token->value == "=" || Token->value == ":")
+		//handle prefix/postfix
+		//-a - b <--- if - and op #2 is also op, use prefix
+
+		/*if (Token->value == "=" || Token->value == ":")
 		{
 			parent = parent->parent;
 			auto previous = parent->children.back();
@@ -256,7 +260,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			Reparent(parent, parent->parent);
 			NextStatement();
 		}
-		else
+		else*/
 			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
 	}
 }
@@ -277,15 +281,26 @@ void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer
 
 void Parser::ParseOps(SyntaxTreeNode* Statement)
 {
+	std::vector<SyntaxTreeNode> values, ops;
 	for (auto& i : Statement->children)
 	{
 		if (i.children.size() > 0)
 			ParseOps(&i);
-		else if (i.instruction.type == InstructionType::Statement)
+		
+		if (i.instruction.type == InstructionType::Identifier && operators.find(i.instruction.value.get<std::string>()) != operators.end())
 		{
+			//should be while new < top, move top to values
 
 		}
+		else
+			values.push_back(i);
 	}
+	for (auto& i : ops)
+		values.push_back(i);
+
+	for (auto& v : values)
+		std::cout << ">> " << v.instruction;
+	std::cout << std::endl;
 }
 
 Number Parser::ParseNumber(std::string Input)
