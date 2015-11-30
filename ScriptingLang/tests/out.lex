@@ -5,6 +5,7 @@
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated with tuples
       Comment //a = b = c + d = e;
+      Comment //z = y:4;
    Identifier x
    Identifier +
        Number 5
@@ -12,9 +13,9 @@
        Number 3
    Identifier +
        Number 1
-    Separator ,
+   Identifier ,
        Number 2
-    Separator ,
+   Identifier ,
        Number 3
    Terminator ;
       Comment // d, e, f, g, h i;

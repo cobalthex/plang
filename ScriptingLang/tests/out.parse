@@ -1,16 +1,16 @@
 Program  
-    Call  =
+    Tuple      
         Statement  
-            Identifier  a
-        Call       =
-            Statement  
-                Identifier  b
-            Call       =
-                Statement  
-                    Identifier  c
-                    Identifier  +
-                    Identifier  d
-                Statement  
-                    Identifier  e
-            Statement  
+            Identifier  x
+            Identifier  +
+            Integer     5
+            Identifier  =
+            Integer     3
+            Identifier  +
+            Integer     1
+        Statement  
+            Integer  2
+        Statement  
+            Integer  3
+    Statement  
 

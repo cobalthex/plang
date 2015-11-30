@@ -287,16 +287,31 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 		if (i.children.size() > 0)
 			ParseOps(&i);
 		
-		if (i.instruction.type == InstructionType::Identifier && operators.find(i.instruction.value.get<std::string>()) != operators.end())
+		if (!i.instruction.value.is<std::string>())
+		{
+			values.push_back(i);
+			continue;
+		}
+
+		auto& op = operators.find(i.instruction.value.get<std::string>());
+		if (i.instruction.type == InstructionType::Identifier && op != operators.end())
 		{
 			//should be while new < top, move top to values
-
+			while (ops.size() > 0 && op->second.precedence >= operators.find(ops.back().instruction.value.get<std::string>())->second.precedence)
+			{
+				values.push_back(ops.back());
+				ops.pop_back();
+			}
+			ops.push_back(i);
 		}
 		else
 			values.push_back(i);
 	}
-	for (auto& i : ops)
-		values.push_back(i);
+	while (ops.size() > 0)
+	{
+		values.push_back(ops.back());
+		ops.pop_back();
+	}
 
 	for (auto& v : values)
 		std::cout << ">> " << v.instruction;
@@ -330,9 +345,10 @@ void Parser::CreateOperator(const std::string& Name, Notation Notat, Association
 void Parser::CreateOperators()
 {
 	CreateOperator("!", Notation::Prefix, Association::None, 3);
-	CreateOperator("?", Notation::Postfix, Association::None, 10);
+	CreateOperator("?", Notation::Postfix, Association::None, 7);
+	CreateOperator(",", Notation::Infix, Association::LeftToRight, 8);
 	CreateOperator("+", Notation::Infix, Association::RightToLeft, 5);
-	CreateOperator("*", Notation::Infix, Association::RightToLeft, 5);
+	CreateOperator("*", Notation::Infix, Association::RightToLeft, 4);
 	CreateOperator("=", Notation::Infix, Association::RightToLeft, 10);
-	CreateOperator(":", Notation::Infix, Association::RightToLeft, 10);
+	CreateOperator(":", Notation::Infix, Association::RightToLeft, 9);
 }
