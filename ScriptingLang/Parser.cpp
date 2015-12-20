@@ -293,7 +293,7 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 			continue;
 		}
 
-		auto& op = operators.find(i.instruction.value.get<std::string>());
+		auto op = operators.find(i.instruction.value.get<std::string>());
 		if (i.instruction.type == InstructionType::Identifier && op != operators.end())
 		{
 			//should be while new < top, move top to values
