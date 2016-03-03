@@ -1,15 +1,20 @@
 //comment
 /* also a comment */
 
+//#operator ~ left 15
 //defines a custom binary operator
 //with left-associativity and precidence of 15
 //prefix and postfix are both urnary operators
-//ternary operators can be emulated with tuples
+//ternary operators can be emulated two part binary operators
+
+z + q = n + p;
 
 //a = b = c + d = e;
 
 //z = y:4;
-x + 5 = 3 + 1, 2, 3;
+//x + y z;
+//f a + b c + d;
+//x + 5 = 4 + 1, 2, 3;
 // d, e, f, g, h i;
 // j;
 // q + 4, d z l, 44;

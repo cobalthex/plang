@@ -50,6 +50,11 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 		PrintDepth(Stream, Depth + 1, i);
 }
 
+std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTreeNode& SyntaxTreeNode)
+{
+	PrintDepth(Stream, 0, SyntaxTreeNode);
+	return Stream;
+}
 std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& SyntaxTree)
 {
 	PrintDepth(Stream, 0, SyntaxTree.root);

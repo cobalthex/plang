@@ -68,6 +68,7 @@ namespace Plang
 };
 
 std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& SyntaxTree);
+std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTreeNode& SyntaxTreeNode);
 std::ostream& operator << (std::ostream& Stream, const Plang::Instruction& Instruction);
 
 //todo: proper string deconstruction (possibly store all strings in a set)

@@ -1,16 +1,3 @@
 Program  
-    Tuple      
-        Statement  
-            Identifier  x
-            Identifier  +
-            Integer     5
-            Identifier  =
-            Integer     3
-            Identifier  +
-            Integer     1
-        Statement  
-            Integer  2
-        Statement  
-            Integer  3
     Statement  
 

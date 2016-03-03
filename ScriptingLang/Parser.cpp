@@ -56,6 +56,7 @@ Parser::Parser(const Lexer& Lex)
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
 	ParseOps(&syntaxTree.root);
+	Reparent(&syntaxTree.root, nullptr);
 }
 
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -281,6 +282,7 @@ void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer
 
 void Parser::ParseOps(SyntaxTreeNode* Statement)
 {
+	size_t opc = 0;
 	std::vector<SyntaxTreeNode> values, ops;
 	for (auto& i : Statement->children)
 	{
@@ -290,6 +292,7 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 		if (!i.instruction.value.is<std::string>())
 		{
 			values.push_back(i);
+			opc++;
 			continue;
 		}
 
@@ -303,9 +306,16 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 				ops.pop_back();
 			}
 			ops.push_back(i);
+			opc = 0;
 		}
 		else
+		{
 			values.push_back(i);
+			opc++;
+		}
+
+		/*if (opc >= 2)
+			throw "invalid syntax, cannot be unescaped";*/
 	}
 	while (ops.size() > 0)
 	{
@@ -316,6 +326,33 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 	for (auto& v : values)
 		std::cout << ">> " << v.instruction;
 	std::cout << std::endl;
+
+	if (values.size() < 1)
+		return;
+
+	Statement->children.clear();
+	parent = Statement;
+
+	for (size_t i = values.size() - 1; i > 0; i--)
+	{
+		auto& value = values[i];
+
+		parent->children.insert(parent->children.begin(), value);
+
+		if (value.instruction.value.is<std::string>())
+		{
+			auto op = operators.find(value.instruction.value.get<std::string>());
+			if (op != operators.end())
+			{
+				parent = &parent->children.front();
+				continue;
+			}
+		}
+		if (parent->instruction.type != InstructionType::Statement && parent->children.size() > 1)
+			parent = parent->parent;
+	}
+	parent = Statement;
+	std::cout << *Statement;
 }
 
 Number Parser::ParseNumber(std::string Input)

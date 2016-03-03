@@ -1,23 +1,23 @@
       Comment //comment
       Comment /* also a comment */
+      Comment //#operator ~ left 15
       Comment //defines a custom binary operator
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
-      Comment //ternary operators can be emulated with tuples
+      Comment //ternary operators can be emulated two part binary operators
+   Identifier z
+   Identifier +
+   Identifier q
+   Identifier =
+   Identifier n
+   Identifier +
+   Identifier p
+   Terminator ;
       Comment //a = b = c + d = e;
       Comment //z = y:4;
-   Identifier x
-   Identifier +
-       Number 5
-   Identifier =
-       Number 3
-   Identifier +
-       Number 1
-   Identifier ,
-       Number 2
-   Identifier ,
-       Number 3
-   Terminator ;
+      Comment //x + y z;
+      Comment //f a + b c + d;
+      Comment //x + 5 = 4 + 1, 2, 3;
       Comment // d, e, f, g, h i;
       Comment // j;
       Comment // q + 4, d z l, 44;
