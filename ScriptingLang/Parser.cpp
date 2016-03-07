@@ -27,8 +27,11 @@ Parser::Parser(const Lexer& Lex)
 	parent->children.push_back({ { InstructionType::Statement }, parent, Location() });
 	parent = &parent->children.back();
 
-	for (auto i = Lex.tokens.cbegin(); i != Lex.tokens.end(); i++)
-		ParseToken(i, Lex.tokens);
+	for (size_t i = 0; i < Lex.tokens.size(); i++)
+	{
+		auto itr = Lex.tokens.cbegin() + i;
+		ParseToken(itr, Lex.tokens);
+	}
 
 	Reparent(&syntaxTree.root, nullptr);
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
@@ -228,7 +231,7 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 	{
 		if (i.children.size() > 0)
 			ParseOps(&i);
-		
+
 		if (!i.instruction.value.is<std::string>())
 		{
 			values.push_back(i);
