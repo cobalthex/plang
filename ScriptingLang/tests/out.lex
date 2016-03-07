@@ -5,14 +5,86 @@
       Comment //with left-associativity and precidence of 15
       Comment //prefix and postfix are both urnary operators
       Comment //ternary operators can be emulated two part binary operators
-   Identifier z
-   Identifier +
-   Identifier q
-   Identifier =
-   Identifier n
-   Identifier +
-   Identifier p
+   RegionOpen (
+       Number 1
+   Identifier ,
+       Number 2
+   Identifier ,
+       Number 3
+  RegionClose )
    Terminator ;
+   RegionOpen (
+   Identifier a
+  RegionClose )
+   Terminator ;
+   RegionOpen {
+  RegionClose }
+   Terminator ;
+   RegionOpen (
+  RegionClose )
+   RegionOpen {
+  RegionClose }
+   Terminator ;
+   RegionOpen (
+   Identifier a
+  RegionClose )
+   RegionOpen {
+   Identifier x
+   Identifier +
+       Number 1
+   Terminator ;
+  RegionClose }
+   Terminator ;
+   Terminator ;
+   Terminator ;
+   RegionOpen [
+       Number 1
+   Identifier ,
+       Number 2
+  RegionClose ]
+   Identifier +
+       Number 3
+   Terminator ;
+   RegionOpen [|
+       Number 1
+  RegionClose |]
+   Terminator ;
+   RegionOpen (
+   RegionOpen [
+   RegionOpen [|
+   RegionOpen {
+   Identifier a
+   Identifier :
+   Identifier b
+  RegionClose }
+   Identifier ,
+       Number 2
+  RegionClose |]
+  RegionClose ]
+   Identifier ,
+   Identifier $
+  RegionClose )
+   Terminator ;
+   Identifier many
+   Terminator ;
+   Identifier statements
+   Terminator ;
+   Identifier on
+   Terminator ;
+   Identifier one
+   Terminator ;
+   Identifier line
+   Terminator ;
+   Identifier c
+     Accessor .
+   Identifier d
+   Terminator ;
+   Identifier a
+     Accessor .
+     Accessor .
+   Identifier b
+   Terminator ;
+      Comment //z + q = n + p;
       Comment //a = b = c + d = e;
       Comment //z = y:4;
       Comment //x + y z;

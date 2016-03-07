@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "Location.hpp"
 
 namespace Plang
 {
@@ -23,6 +24,7 @@ namespace Plang
 	{
 		LexerTokenType type;
 		std::string value;
+		Location location;
 
 		LexerToken() = default;
 	};
@@ -33,7 +35,7 @@ namespace Plang
 		using TokenList = std::vector<LexerToken>;
 
 		Lexer() = default;
-		Lexer(std::istream& Input);
+		Lexer(const std::string& ModuleName, std::istream& Input);
 		~Lexer() = default;
 
 		static bool CharIsWhitespace(codepoint Char);
@@ -44,6 +46,20 @@ namespace Plang
 		static bool CharIsLiteral(codepoint Char); //char is not a splitter, encloser, or whitespace
 
 		TokenList tokens;
+
+	private:
+		size_t lastLine; //last lineNum
+		size_t lineNum;
+
+		//Skip whitespace characters (defined by WhitespaceCmp). Returns the number of whitespace characters counted
+		size_t SkipWhitespace(std::istream& Stream, const std::function<bool(codepoint Char)>& WhitespaceCmpFn);
+
+		std::string ReadUntil(std::istream& Stream, const std::string& Sequence);
+
+		std::string ReadUntilNewline(std::istream& Stream);
+
+		std::string ReadWhile(std::istream& Stream, std::function<bool(codepoint Char)> ConditionFn);
+
 	};
 };
 extern std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer);

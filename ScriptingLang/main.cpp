@@ -19,7 +19,7 @@ int main(int ac, const char* av[])
 		return 2;
 	}
 
-	Plang::Lexer lex(fin);
+	Plang::Lexer lex (av[1], fin);
 	fin.close();
 
 	std::ofstream fout;

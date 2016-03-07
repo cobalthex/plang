@@ -57,8 +57,7 @@ namespace Plang
 
 		static Number ParseNumber(std::string Input);
 		static String ParseString(std::string Input);
-		static std::string GetRegionSymbol(InstructionType Type); //returns an empty string on unknown
-		static std::string MatchingRegionSymbol(const std::string& Symbol); //returns an empty string on unknown
+		static bool IsRegion(const Instruction& Instruction);
 
 	protected:
 		void CreateOperators();
@@ -69,8 +68,6 @@ namespace Plang
 		void ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 
 		void ParseOps(SyntaxTreeNode* Statement);
-
-		void NextStatement();
 
 		std::stack<std::string> blocks; //block matching
 		SyntaxTreeNode* parent;

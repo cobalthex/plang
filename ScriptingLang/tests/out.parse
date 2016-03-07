@@ -1,3 +1,68 @@
-Program  
-    Statement  
+Program
+    Statement   
+        Tuple   
+            Integer      1
+            Identifier   ,
+            Integer      2
+            Identifier   ,
+            Integer      3
+    Statement   
+        Tuple   
+            Identifier   a
+    Statement   
+        Block   
+    Statement   
+        Expression   
+            Tuple   
+            Block   
+    Statement   
+        Expression   
+            Tuple   
+                Identifier   a
+            Block   
+                Identifier   x
+                Identifier   +
+                Integer      1
+    Statement   
+        List         
+            Integer      1
+            Identifier   ,
+            Integer      2
+        Identifier   +
+        Integer      3
+    Statement   
+        Array   
+            Integer   1
+    Statement   
+        Tuple   
+            List         
+                Array   
+                    Block        
+                        Identifier   a
+                        Identifier   :
+                        Identifier   b
+                    Identifier   ,
+                    Integer      2
+            Identifier   ,
+            Identifier   $
+    Statement   
+        Identifier   many
+    Statement   
+        Identifier   statements
+    Statement   
+        Identifier   on
+    Statement   
+        Identifier   one
+    Statement   
+        Identifier   line
+    Statement   
+        Accessor   
+            Identifier   c
+            Identifier   d
+    Statement   
+        Accessor   
+            Identifier   a
+            Identifier   
+            Identifier   b
+    Statement   
 

@@ -1,7 +1,6 @@
 #include "pch.hpp"
 #include "Lexer.hpp"
 #include "StringOps.hpp"
-#include "StreamOps.hpp"
 
 using namespace Plang;
 
@@ -97,20 +96,31 @@ bool Lexer::CharIsSpecial(codepoint Char)
 
 bool Lexer::CharIsLiteral(codepoint Char)
 {
-	return !(CharIsWhitespace(Char) || CharIsRegionOpener(Char) || CharIsRegionCloser(Char) || CharIsSpecial(Char) || Char == ';' || Char == ',' || Char == '#' || Char == '.');
+	return !(CharIsWhitespace(Char)
+		|| CharIsRegionOpener(Char)
+		|| CharIsRegionCloser(Char)
+		|| CharIsSpecial(Char)
+		|| Char == ';'
+		|| Char == ','
+		|| Char == '#'
+		|| Char == '.');
 }
 
-Lexer::Lexer(std::istream& Stream)
+Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
+	: tokens(), lastLine(0), lineNum(1)
 {
 	while (!Stream.eof())
 	{
-		StreamOps::SkipWhitespace(Stream, CharIsWhitespace);
+		SkipWhitespace(Stream, CharIsWhitespace);
 		if (Stream.eof())
 			return;
 
 		LexerToken token;
 		codepoint ch = 0, nc = 0;
 		token.value = ch = Stream.get();
+
+		auto n = (size_t)Stream.tellg().seekpos();
+		token.location = { ModuleName, lineNum, (size_t)Stream.tellg().seekpos() - lastLine };
 
 		if (ch == '#')
 		{
@@ -119,6 +129,8 @@ Lexer::Lexer(std::istream& Stream)
 			tokens.push_back(token);
 			std::string line;
 			std::getline(Stream, line);
+			lineNum++;
+			lastLine = (size_t)Stream.tellg().seekpos();
 
 			token.type = LexerTokenType::PreprocessArg;
 			size_t next = 0;
@@ -152,8 +164,15 @@ Lexer::Lexer(std::istream& Stream)
 			{
 				//handle .. accessors
 
-				token.type = LexerTokenType::Number;
-				token.value += StreamOps::ReadWhile(Stream, CharIsLiteral);
+				token.type = LexerTokenType::Number; token.value += ReadWhile(Stream, [&](codepoint Char)
+				{
+					if (Char == '\n')
+					{
+						lineNum++;
+						lastLine = (size_t)Stream.tellg().seekpos();
+					}
+					return CharIsLiteral(Char);
+				});
 			}
 			else
 				token.type = LexerTokenType::Accessor;
@@ -172,12 +191,12 @@ Lexer::Lexer(std::istream& Stream)
 			if (ch == '/' && nc == '/')
 			{
 				token.type = LexerTokenType::Comment;
-				token.value += StreamOps::ReadUntilNewline(Stream);
+				token.value += ReadUntilNewline(Stream);
 			}
 			else if (ch == '/' && nc == '*')
 			{
 				token.type = LexerTokenType::Comment;
-				token.value += StreamOps::ReadUntil(Stream, "*/");
+				token.value += ReadUntil(Stream, "*/");
 				token.value += "*/";
 				Stream.seekg(2, std::ios::cur);
 			}
@@ -189,21 +208,39 @@ Lexer::Lexer(std::istream& Stream)
 			else
 			{
 				token.type = LexerTokenType::Identifier;
-				token.value += StreamOps::ReadWhile(Stream, [](codepoint Char) { return CharIsSpecial(Char); });
+				token.value += ReadWhile(Stream, [&](codepoint Char)
+				{
+					if (Char == '\n')
+					{
+						lineNum++;
+						lastLine = (size_t)Stream.tellg().seekpos();
+					}
+					return CharIsSpecial(Char);
+				});
 			}
 		}
 		else if (ch == '\'' || ch == '"')
 		{
 			token.type = LexerTokenType::String;
 			codepoint prev = 0;
-			token.value += StreamOps::ReadWhile(Stream, [&](codepoint Char) { bool cont = (Char != ch || prev == '\\'); prev = Char; return cont; });
+			token.value += ReadWhile(Stream, [&](codepoint Char)
+			{
+				bool cont = (Char != ch || prev == '\\');
+				prev = Char;
+				if (Char == '\n')
+				{
+					lineNum++;
+					lastLine = (size_t)Stream.tellg().seekpos();
+				}
+				return cont;
+			});
 			token.value += Stream.get();
 		}
 		else if (CharIsNumber(ch) || ch == '.')
 		{
 			token.type = LexerTokenType::Number;
 			bool dotted = false;
-			token.value += StreamOps::ReadWhile(Stream, [&dotted](codepoint Char)
+			token.value += ReadWhile(Stream, [&](codepoint Char)
 			{
 				bool cont = CharIsLiteral(Char);
 				if (Char == '.')
@@ -211,15 +248,112 @@ Lexer::Lexer(std::istream& Stream)
 					cont = !dotted;
 					dotted = true;
 				}
+				if (Char == '\n')
+				{
+					lineNum++;
+					lastLine = (size_t)Stream.tellg().seekpos();
+				}
 				return cont;
 			});
 		}
 		else
 		{
 			token.type = LexerTokenType::Identifier;
-			token.value += StreamOps::ReadWhile(Stream, [](codepoint Char) { return CharIsLiteral(Char); });
+			token.value += ReadWhile(Stream, [&](codepoint Char)
+			{
+				if (Char == '\n')
+				{
+					lineNum++;
+					lastLine = (size_t)Stream.tellg().seekpos();
+				}
+				return CharIsLiteral(Char);
+			});
 		}
 
 		tokens.push_back(token);
 	}
+}
+
+size_t Lexer::SkipWhitespace(std::istream& Stream, const std::function<bool(codepoint Char)>& WhitespaceCmpFn)
+{
+	size_t sz = 0;
+	while (!Stream.eof() && WhitespaceCmpFn(Stream.peek()))
+	{
+		sz++;
+		if (Stream.get() == '\n')
+		{
+			lineNum++;
+			lastLine = (size_t)Stream.tellg().seekpos();
+		}
+	}
+	return sz;
+}
+
+std::string Lexer::ReadUntil(std::istream& Stream, const std::string& Sequence)
+{
+	std::string s;
+	while (!Stream.eof())
+	{
+		size_t i;
+		for (i = 0; !Stream.eof() && i < Sequence.length(); i++)
+		{
+			auto ch = Stream.get();
+			if (ch == '\n')
+			{
+				lineNum++;
+				lastLine = (size_t)Stream.tellg().seekpos();
+			}
+			s += ch;
+			if (s.back() != Sequence[i])
+				break;
+		}
+		if (i == Sequence.length())
+		{
+			s.resize(s.length() - i);
+			Stream.seekg(-(ptrdiff_t)i, std::ios::cur);
+			return s;
+		}
+	}
+	return s;
+}
+
+std::string Lexer::ReadUntilNewline(std::istream& Stream)
+{
+	std::string s;
+	unsigned ch = 0;
+	while (!Stream.eof() && (ch = Stream.peek()) != '\n')
+	{
+		if (ch == '\r')
+		{
+			ch = Stream.get();
+			if (!Stream.eof() && Stream.peek() == '\n')
+			{
+				lineNum++;
+				lastLine = (size_t)Stream.tellg().seekpos();
+				return s;
+			}
+			s += ch;
+		}
+		else
+			s += Stream.get();
+	}
+
+	return s;
+}
+
+std::string Lexer::ReadWhile(std::istream& Stream, std::function<bool(codepoint Char)> ConditionFn)
+{
+	std::string s;
+	while (!Stream.eof() && ConditionFn(Stream.peek()))
+	{
+		auto ch = Stream.get();
+		if (ch == '\n')
+		{
+			lineNum++;
+			lastLine = (size_t)Stream.tellg().seekpos();
+			auto x = 0;
+		}
+		s += ch;
+	}
+	return s;
 }

@@ -11,34 +11,12 @@ void Parser::Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent)
 		Reparent(&i, Node);
 }
 
-std::string Parser::GetRegionSymbol(InstructionType Type)
+bool Parser::IsRegion(const Instruction& Instruction)
 {
-	if (Type == InstructionType::Tuple) return "(";
-	if (Type == InstructionType::List) return "[";
-	if (Type == InstructionType::Array) return "[|";
-
-	return "";
-}
-
-std::string Parser::MatchingRegionSymbol(const std::string& Symbol)
-{
-	if (Symbol == "{") return "}";
-	if (Symbol == "(") return ")";
-	if (Symbol == "[") return "]";
-	if (Symbol == "[|") return "|]";
-
-	if (Symbol == "}") return "{";
-	if (Symbol == ")") return "(";
-	if (Symbol == "]") return "[";
-	if (Symbol == "|]") return "[|";
-
-	return "";
-}
-
-void Plang::Parser::NextStatement()
-{
-	parent->children.push_back({ { InstructionType::Statement }, parent });
-	parent = &parent->children.back();
+	return (Instruction.type == InstructionType::Tuple
+		|| Instruction.type == InstructionType::List
+		|| Instruction.type == InstructionType::Array
+		|| Instruction.type == InstructionType::Block);
 }
 
 Parser::Parser(const Lexer& Lex)
@@ -46,7 +24,7 @@ Parser::Parser(const Lexer& Lex)
 	CreateOperators();
 
 	parent = &syntaxTree.root;
-	parent->children.push_back({ { InstructionType::Statement }, parent });
+	parent->children.push_back({ { InstructionType::Statement }, parent, Location() });
 	parent = &parent->children.back();
 
 	for (auto i = Lex.tokens.cbegin(); i != Lex.tokens.end(); i++)
@@ -55,8 +33,7 @@ Parser::Parser(const Lexer& Lex)
 	Reparent(&syntaxTree.root, nullptr);
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
-	ParseOps(&syntaxTree.root);
-	Reparent(&syntaxTree.root, nullptr);
+	//ParseOps(&syntaxTree.root);
 }
 
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -71,59 +48,33 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		auto number = ParseNumber(Token->value);
 		if (number.type == InstructionType::Integer)
-			parent->children.push_back({ { number.type, number.value.i }, parent });
+			parent->children.push_back({ { number.type, number.value.i }, parent, Token->location });
 		else if (number.type == InstructionType::Float)
-			parent->children.push_back({ { number.type, number.value.f }, parent });
+			parent->children.push_back({ { number.type, number.value.f }, parent, Token->location });
 	}
 	else if (Token->type == LexerTokenType::String)
-		parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent });
+		parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent, Token->location });
 	else if (Token->type == LexerTokenType::Terminator)
 	{
-		std::string symbol = GetRegionSymbol(parent->instruction.type);
-		if (symbol != "")
-		{
-			//todo: nested collections
-			if (blocks.size() < 1 || blocks.top() != MatchingRegionSymbol(symbol)) //handle unbounded types
-				parent = parent->parent;
-		}
+		//todo possibly handle (1;2;3)
+
+		while (parent->instruction.type != InstructionType::Statement)
+			parent = parent->parent;
+
+		//collapse empty statements
+		if (parent->children.size() < 1)
+			return;
+
 		parent = parent->parent;
 
-		//handle unbounded tuples
-		if (parent->instruction.type == InstructionType::Tuple)
-			parent = parent->parent;
+		if (parent->instruction.type != InstructionType::Program && parent->instruction.type != InstructionType::Block)
+			throw "Invalid terminator";
 
-		//handle calls
-		if (parent->instruction.type == InstructionType::Call)
-			parent = parent->parent;
-
-		NextStatement();
+		parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
+		parent = &parent->children.back();
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
-		//because tuples can contain statements, must test two levels
-		if ((parent->instruction.type == InstructionType::Tuple
-			|| parent->instruction.type == InstructionType::List
-			|| parent->instruction.type == InstructionType::Array)
-			|| (parent->parent != nullptr
-			&& (parent->parent->instruction.type == InstructionType::Tuple
-			|| parent->parent->instruction.type == InstructionType::List
-			|| parent->parent->instruction.type == InstructionType::Array)))
-		{
-			parent = parent->parent;
-			NextStatement();
-		}
-		else
-		{
-			parent = parent->parent;
-			auto previous = parent->children.back();
-			parent->children.pop_back();
-
-			parent->children.push_back({ { InstructionType::Tuple }, parent });
-			parent = &parent->children.back();
-			parent->children.push_back(previous);
-			Reparent(parent, parent->parent);
-			NextStatement(); //todo: only handle if necessary
-		}
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
@@ -135,7 +86,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				auto previous = parent->children.back();
 				parent->children.pop_back();
 
-				parent->children.push_back({ { InstructionType::Accessor }, parent });
+				parent->children.push_back({ { InstructionType::Accessor }, parent, Token->location });
 				parent = &parent->children.back();
 
 				parent->children.push_back(previous);
@@ -143,7 +94,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			}
 			else
 			{
-				parent->children.push_back({ { InstructionType::Accessor }, parent });
+				parent->children.push_back({ { InstructionType::Accessor }, parent, Token->location });
 				parent = &parent->children.back();
 			}
 		}
@@ -153,7 +104,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		{
 			if (Token->type == LexerTokenType::Accessor)
 			{
-				parent->children.push_back({ { InstructionType::Identifier, "" }, parent }); //multidot properties, .., ...
+				parent->children.push_back({ { InstructionType::Identifier, "" }, parent, Token->location }); //multidot properties, .., ...
 				Token++;
 			}
 			else
@@ -168,80 +119,60 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::RegionOpen)
 	{
-		blocks.push(Token->value);
-
-		InstructionType it;
-		if (Token->value == "(")
-			it = InstructionType::Tuple;
-		else if (Token->value == "[")
-			it = InstructionType::List;
-		else if (Token->value == "[|")
-			it = InstructionType::Array;
-		else if (Token->value == "{")
+		if (Token->value == "{")
 		{
-			it = InstructionType::Block;
-
-			//test if expression
-			auto children = parent->children;
-			if (children.size() > 0 && children.back().instruction.type == InstructionType::Tuple)
+			//if previous particle is tuple, convert to expression
+			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
 			{
-				//get the arguments
-				auto tuple = children.back();
-				children.pop_back();
+				auto tuple = parent->children.back();
+				parent->children.pop_back();
 
-				//create expression
-				children.push_back({ { InstructionType::Expression }, parent });
-				parent = &children.back();
+				parent->children.push_back({ { InstructionType::Expression }, parent, tuple.location });
+				auto& node = parent->children.back();
 
-				//add arguments and block
-				parent->children.push_back(tuple);
-				parent->children.push_back({ it, parent });
+				node.children.push_back(tuple);
+				tuple.parent = &node;
 
-				//make sure tree is up to date and set block to parent
-				Reparent(parent, parent->parent);
+				node.children.push_back({ { InstructionType::Block }, &node, Token->location });
+				parent = &node.children.back();
+			}
+			else
+			{
+				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
 				parent = &parent->children.back();
-
-				//add statement tuple to block
-				NextStatement();
-
-				return;
 			}
 		}
-		parent->children.emplace_back(it, parent);
-		parent = &parent->children.back();
-		NextStatement();
+		else
+		{
+			parent->children.push_back({ { InstructionType::Unknown }, parent, Token->location });
+			parent = &parent->children.back();
+
+			if (Token->value == "(")
+				parent->instruction.type = InstructionType::Tuple;
+			else if (Token->value == "[")
+				parent->instruction.type = InstructionType::List;
+			else if (Token->value == "[|")
+				parent->instruction.type = InstructionType::Array;
+		}
 	}
 	else if (Token->type == LexerTokenType::RegionClose)
 	{
-		//can only close inner-most region
-		if (parent->instruction.type == InstructionType::Tuple)
-			assert(Token->value == ")");
-		else if (parent->instruction.type == InstructionType::List)
-			assert(Token->value == "]");
-		else if (parent->instruction.type == InstructionType::Array)
-			assert(Token->value == "|]");
-		else if (parent->parent->instruction.type == InstructionType::Block)
+		while (!IsRegion(parent->instruction))
 		{
-			assert(Token->value == "}");
-			parent = parent->parent->parent;
-			if (parent->instruction.type == InstructionType::Expression)
-				parent = parent->parent; //statement>block>expression
-			
-			//blocks don't need semicolons to move to the next statement, but should only move if they are in a statement (handling for nesting, such as (a, b, {c:d}, e))
-			if (parent->instruction.type == InstructionType::Statement)
-			{
-				parent = parent->parent; //statement>block>>statement
-				NextStatement();
-			}
-
-			blocks.pop();
-			return;
+			if (parent->parent == nullptr || parent->parent->instruction.type == InstructionType::Program)
+				throw ("Unmatched region close @ " + (std::string)Token->location);
+			parent = parent->parent;
 		}
 
-		if (parent->instruction.type == InstructionType::Statement)
-			parent = parent->parent;
+		//single statement tuples become parens (todo: handle expressions, (a) { } converts to a { })
+		/*if (parent->instruction.type == InstructionType::Tuple && parent->children.size() == 1)
+		{
+			auto node = parent->children.front();
+			node.parent = parent->parent;
+			parent->parent->children.pop_back();
+			parent->parent->children.push_back(node);
+		}*/
 
-		blocks.pop();
 		parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::Identifier)
@@ -262,7 +193,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			NextStatement();
 		}
 		else*/
-			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent });
+			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent, Token->location });
 	}
 }
 void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -323,10 +254,6 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 		ops.pop_back();
 	}
 
-	for (auto& v : values)
-		std::cout << ">> " << v.instruction;
-	std::cout << std::endl;
-
 	if (values.size() < 1)
 		return;
 
@@ -352,7 +279,6 @@ void Parser::ParseOps(SyntaxTreeNode* Statement)
 			parent = parent->parent;
 	}
 	parent = Statement;
-	std::cout << *Statement;
 }
 
 Number Parser::ParseNumber(std::string Input)

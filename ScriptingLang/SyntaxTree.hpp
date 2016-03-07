@@ -2,6 +2,7 @@
 
 #include "pch.hpp"
 #include "variant.hpp"
+#include "Location.hpp"
 
 namespace Plang
 {
@@ -28,8 +29,6 @@ namespace Plang
 		String,
 
 		Tuple,
-		NamedTuple,
-
 		List,
 		Array
 	};
@@ -49,13 +48,15 @@ namespace Plang
 	struct SyntaxTreeNode
 	{
 		SyntaxTreeNode() = default;
-		SyntaxTreeNode(const Instruction& Instruction, SyntaxTreeNode* Parent = nullptr)
-			: instruction(Instruction), parent(Parent), children() { }
+		SyntaxTreeNode(const Instruction& Instruction, SyntaxTreeNode* Parent, const Location& Location)
+			: instruction(Instruction), parent(Parent), children(), location(Location) { }
 
 		Instruction instruction;
 
 		SyntaxTreeNode* parent; //nullptr if top level
 		std::vector<SyntaxTreeNode> children;
+
+		Location location;
 	};
 
 	class SyntaxTree
@@ -69,6 +70,5 @@ namespace Plang
 
 std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& SyntaxTree);
 std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTreeNode& SyntaxTreeNode);
-std::ostream& operator << (std::ostream& Stream, const Plang::Instruction& Instruction);
 
 //todo: proper string deconstruction (possibly store all strings in a set)
