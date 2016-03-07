@@ -135,6 +135,9 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 				node.children.push_back({ { InstructionType::Block }, &node, Token->location });
 				parent = &node.children.back();
+
+				parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
+				parent = &parent->children.back();
 			}
 			else
 			{
@@ -157,6 +160,12 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::RegionClose)
 	{
+		if (parent->instruction.type == InstructionType::Statement && parent->children.size() < 1)
+		{
+			parent = parent->parent;
+			parent->children.pop_back();
+		}
+
 		while (!IsRegion(parent->instruction))
 		{
 			if (parent->parent == nullptr || parent->parent->instruction.type == InstructionType::Program)

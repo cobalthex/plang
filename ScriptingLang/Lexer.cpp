@@ -20,7 +20,7 @@ std::ostream& operator << (std::ostream& Stream, const Plang::LexerToken& Token)
 		"Number",
 		"String",
 	};
-	Stream << std::right << std::setw(13) << types[(size_t)Token.type] << " " << Token.value;
+	Stream << std::right << std::setw(13) << types[(size_t)Token.type] << " " << Token.value << " @ " << Token.location;
 	return Stream;
 }
 std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer)

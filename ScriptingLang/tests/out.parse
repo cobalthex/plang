@@ -19,10 +19,26 @@ Program
         Expression   
             Tuple   
                 Identifier   a
+                Identifier   ,
+                Identifier   b
             Block   
-                Identifier   x
-                Identifier   +
-                Integer      1
+                Statement   
+                    Identifier   a
+                    Identifier   -
+                    Identifier   b
+    Statement   
+        Expression   
+            Tuple   
+                Identifier   a
+            Block   
+                Statement   
+                    Identifier   x
+                    Identifier   +
+                    Integer      1
+                Statement   
+                    Identifier   y
+                    Identifier   +
+                    Integer      2
     Statement   
         List         
             Integer      1
