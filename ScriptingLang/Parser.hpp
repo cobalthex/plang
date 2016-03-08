@@ -67,7 +67,7 @@ namespace Plang
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 		void ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 
-		void ParseOps(SyntaxTreeNode* Statement);
+		void ParseStatement(SyntaxTreeNode* Statement); //parse a statement for operators. Converts Statement to the root op
 
 		std::stack<std::string> blocks; //block matching
 		SyntaxTreeNode* parent;

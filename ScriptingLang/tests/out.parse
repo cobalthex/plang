@@ -1,14 +1,16 @@
 Program
     Statement   
         Tuple   
-            Integer      1
-            Identifier   ,
-            Integer      2
-            Identifier   ,
-            Integer      3
+            Statement   
+                Integer      1
+                Identifier   ,
+                Integer      2
+                Identifier   ,
+                Integer      3
     Statement   
         Tuple   
-            Identifier   a
+            Statement   
+                Identifier   a
     Statement   
         Block   
     Statement   
@@ -18,9 +20,10 @@ Program
     Statement   
         Expression   
             Tuple   
-                Identifier   a
-                Identifier   ,
-                Identifier   b
+                Statement   
+                    Identifier   a
+                    Identifier   ,
+                    Identifier   b
             Block   
                 Statement   
                     Identifier   a
@@ -29,7 +32,8 @@ Program
     Statement   
         Expression   
             Tuple   
-                Identifier   a
+                Statement   
+                    Identifier   a
             Block   
                 Statement   
                     Identifier   x
@@ -41,26 +45,32 @@ Program
                     Integer      2
     Statement   
         List         
-            Integer      1
-            Identifier   ,
-            Integer      2
+            Statement   
+                Integer      1
+                Identifier   ,
+                Integer      2
         Identifier   +
         Integer      3
     Statement   
         Array   
-            Integer   1
+            Statement   
+                Integer   1
     Statement   
         Tuple   
-            List         
-                Array   
-                    Block        
-                        Identifier   a
-                        Identifier   :
-                        Identifier   b
-                    Identifier   ,
-                    Integer      2
-            Identifier   ,
-            Identifier   $
+            Statement   
+                List         
+                    Statement   
+                        Array   
+                            Statement   
+                                Block        
+                                    Statement   
+                                        Identifier   a
+                                        Identifier   :
+                                        Identifier   b
+                                Identifier   ,
+                                Integer      2
+                Identifier   ,
+                Identifier   $
     Statement   
         Identifier   many
     Statement   
@@ -72,13 +82,17 @@ Program
     Statement   
         Identifier   line
     Statement   
-        Accessor   
+        Accessor     
             Identifier   c
             Identifier   d
+        Identifier   d
     Statement   
-        Accessor   
-            Identifier   a
-            Identifier   
+        Accessor     
+            Accessor     
+                Identifier   a
+                Identifier   
+                Identifier   b
             Identifier   b
+        Identifier   b
     Statement   
 

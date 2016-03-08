@@ -78,6 +78,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
+
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
@@ -138,9 +139,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 				node.children.push_back({ { InstructionType::Block }, &node, Token->location });
 				parent = &node.children.back();
-
-				parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
-				parent = &parent->children.back();
 			}
 			else
 			{
@@ -150,7 +148,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		else
 		{
-			parent->children.push_back({ { InstructionType::Unknown }, parent, Token->location });
+			parent->children.push_back({ { InstructionType::Unknown }, parent, Token->location });  
 			parent = &parent->children.back();
 
 			if (Token->value == "(")
@@ -160,6 +158,9 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			else if (Token->value == "[|")
 				parent->instruction.type = InstructionType::Array;
 		}
+
+		parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
+		parent = &parent->children.back();
 	}
 	else if (Token->type == LexerTokenType::RegionClose)
 	{
