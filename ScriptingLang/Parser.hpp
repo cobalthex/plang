@@ -48,7 +48,8 @@ namespace Plang
 	class Parser
 	{
 	public:
-		Parser(const Lexer& Lex);
+		Parser() = default;
+		Parser(const Lexer::TokenList& Tokens);
 		~Parser() = default;
 
 		std::map<std::string, Operator> operators; //predefined operators

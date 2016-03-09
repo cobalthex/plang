@@ -19,7 +19,7 @@ bool Parser::IsRegion(const Instruction& Instruction)
 		|| Instruction.type == InstructionType::Block);
 }
 
-Parser::Parser(const Lexer& Lex)
+Parser::Parser(const Lexer::TokenList& Tokens)
 {
 	CreateOperators();
 
@@ -27,10 +27,10 @@ Parser::Parser(const Lexer& Lex)
 	parent->children.push_back({ { InstructionType::Statement }, parent, Location() });
 	parent = &parent->children.back();
 
-	for (size_t i = 0; i < Lex.tokens.size(); i++)
+	for (size_t i = 0; i < Tokens.size(); i++)
 	{
-		auto itr = Lex.tokens.cbegin() + i;
-		ParseToken(itr, Lex.tokens);
+		auto itr = Tokens.cbegin() + i;
+		ParseToken(itr, Tokens);
 	}
 
 	Reparent(&syntaxTree.root, nullptr);
@@ -83,43 +83,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
 	{
-		if (parent->instruction.type != InstructionType::Accessor)
-		{
-			if (parent->children.size() > 0)
-			{
-				auto previous = parent->children.back();
-				parent->children.pop_back();
 
-				parent->children.push_back({ { InstructionType::Accessor }, parent, Token->location });
-				parent = &parent->children.back();
-
-				parent->children.push_back(previous);
-				Reparent(&parent->children.back(), parent);
-			}
-			else
-			{
-				parent->children.push_back({ { InstructionType::Accessor }, parent, Token->location });
-				parent = &parent->children.back();
-			}
-		}
-		Token++;
-		//read all following accessors
-		while (Token != List.end())
-		{
-			if (Token->type == LexerTokenType::Accessor)
-			{
-				parent->children.push_back({ { InstructionType::Identifier, "" }, parent, Token->location }); //multidot properties, .., ...
-				Token++;
-			}
-			else
-			{
-				ParseToken(Token, List);
-				if (Token->type != LexerTokenType::Accessor)
-					break;
-				Token++;
-			}
-		}
-		parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::RegionOpen)
 	{
@@ -148,7 +112,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		else
 		{
-			parent->children.push_back({ { InstructionType::Unknown }, parent, Token->location });  
+			parent->children.push_back({ { InstructionType::Unknown }, parent, Token->location });
 			parent = &parent->children.back();
 
 			if (Token->value == "(")
@@ -224,88 +188,31 @@ void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer
 	}
 }
 
-void Parser::ParseOps(SyntaxTreeNode* Statement)
+void Parser::ParseStatement(SyntaxTreeNode* Statement)
 {
-	size_t opc = 0;
-	std::vector<SyntaxTreeNode> values, ops;
-	for (auto& i : Statement->children)
-	{
-		if (i.children.size() > 0)
-			ParseOps(&i);
-
-		if (!i.instruction.value.is<std::string>())
-		{
-			values.push_back(i);
-			opc++;
-			continue;
-		}
-
-		auto op = operators.find(i.instruction.value.get<std::string>());
-		if (i.instruction.type == InstructionType::Identifier && op != operators.end())
-		{
-			//should be while new < top, move top to values
-			while (ops.size() > 0 && op->second.precedence >= operators.find(ops.back().instruction.value.get<std::string>())->second.precedence)
-			{
-				values.push_back(ops.back());
-				ops.pop_back();
-			}
-			ops.push_back(i);
-			opc = 0;
-		}
-		else
-		{
-			values.push_back(i);
-			opc++;
-		}
-
-		/*if (opc >= 2)
-			throw "invalid syntax, cannot be unescaped";*/
-	}
-	while (ops.size() > 0)
-	{
-		values.push_back(ops.back());
-		ops.pop_back();
-	}
-
-	if (values.size() < 1)
-		return;
-
-	Statement->children.clear();
-	parent = Statement;
-
-	for (size_t i = values.size() - 1; i > 0; i--)
-	{
-		auto& value = values[i];
-
-		parent->children.insert(parent->children.begin(), value);
-
-		if (value.instruction.value.is<std::string>())
-		{
-			auto op = operators.find(value.instruction.value.get<std::string>());
-			if (op != operators.end())
-			{
-				parent = &parent->children.front();
-				continue;
-			}
-		}
-		if (parent->instruction.type != InstructionType::Statement && parent->children.size() > 1)
-			parent = parent->parent;
-	}
-	parent = Statement;
 }
 
 Number Parser::ParseNumber(std::string Input)
 {
 	StringOps::Replace(Input, "'", "");
+
+	int base = 10;
+	auto baseOffset = Input.find_last_of('_');
+	if (baseOffset != std::string::npos)
+	{
+		auto baseStr = Input.substr(baseOffset + 1);
+		Input.resize(baseOffset);
+		base = std::stoll(baseStr);
+	}
+	else if (StringOps::StartsWith(Input, "0x"))
+		base = 16;
+
+	//todo: handle invalid numbers: 0xff_8; 99_8;
+
 	if (Input.find('.') != Input.npos)
-	{
 		return { InstructionType::Float, std::stod(Input) };
-	}
 	else
-	{
-		int base = 10;
 		return { InstructionType::Integer, std::stoll(Input, nullptr, base) };
-	}
 }
 std::string Parser::ParseString(std::string Input)
 {

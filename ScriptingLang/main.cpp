@@ -5,10 +5,37 @@
 
 int main(int ac, const char* av[])
 {
+	Plang::Lexer lex;
+	Plang::Parser parser;
+
 	if (ac < 2)
 	{
-		std::cout << av[0] << " <script>";
-		return 1;
+		std::cout << "Interactive mode\n";
+
+		std::string line;
+		std::istringstream iss;
+		while (std::cin.good())
+		{
+			std::cout << "<< ";
+			std::getline(std::cin, line);
+
+			if (line == "exit")
+			{
+				std::cout << "Bye!\n";
+				return 0;
+			}
+
+			iss.str(line);
+			iss.clear();
+
+			lex = Plang::Lexer("#!", iss);
+			parser = Plang::Parser(lex.tokens);
+
+			std::cout << ">> " << parser.syntaxTree << std::endl;
+		}
+
+		// std::cout << av[0] << " <script>";
+		// return 1;
 	}
 
 	std::ifstream fin;
@@ -19,7 +46,7 @@ int main(int ac, const char* av[])
 		return 2;
 	}
 
-	Plang::Lexer lex (av[1], fin);
+	lex = Plang::Lexer(av[1], fin);
 	fin.close();
 
 	std::ofstream fout;
@@ -28,7 +55,7 @@ int main(int ac, const char* av[])
 	fout.close();
 
 
-	Plang::Parser parser(lex);
+	parser = Plang::Parser(lex.tokens);
 	fout.open("tests/out.parse", std::ios::out);
 	fout << parser.syntaxTree << std::endl;
 	fout.close();

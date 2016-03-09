@@ -47,7 +47,7 @@ namespace Plang
 
 		TokenList tokens;
 
-	private:
+	protected:
 		size_t lastLine; //last lineNum
 		size_t lineNum;
 

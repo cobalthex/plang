@@ -8,6 +8,7 @@
 #include <locale>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <iterator>
 #include <cassert>
