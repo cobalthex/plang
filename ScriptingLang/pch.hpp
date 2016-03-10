@@ -21,4 +21,4 @@
 #include <stdexcept> // runtime_error
 #include <new> // operator new
 
-using codepoint = uint32_t;
+using codepoint = int32_t;

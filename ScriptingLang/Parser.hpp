@@ -50,11 +50,17 @@ namespace Plang
 	public:
 		Parser() = default;
 		Parser(const Lexer::TokenList& Tokens);
+		Parser(const Parser& Parser)
+			: syntaxTree(Parser.syntaxTree), operators(Parser.operators)
+		{
+			Reparent(&syntaxTree.root, nullptr);
+		}
 		~Parser() = default;
 
-		std::map<std::string, Operator> operators; //predefined operators
+		Parser& operator = (const Parser& Other);
 
 		SyntaxTree syntaxTree;
+		std::map<std::string, Operator> operators; //predefined operators
 
 		static Number ParseNumber(std::string Input);
 		static String ParseString(std::string Input);
@@ -66,7 +72,6 @@ namespace Plang
 		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
 
 		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
-		void ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
 
 		void ParseStatement(SyntaxTreeNode* Statement); //parse a statement for operators. Converts Statement to the root op
 

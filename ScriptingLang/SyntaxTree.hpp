@@ -62,7 +62,7 @@ namespace Plang
 	class SyntaxTree
 	{
 	public:
-		SyntaxTree() { root.instruction.type = InstructionType::Program; }
+		SyntaxTree() : root(InstructionType::Program, nullptr, Location()) { }
 
 		SyntaxTreeNode root;
 	};

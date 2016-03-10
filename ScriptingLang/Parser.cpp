@@ -33,10 +33,22 @@ Parser::Parser(const Lexer::TokenList& Tokens)
 		ParseToken(itr, Tokens);
 	}
 
-	Reparent(&syntaxTree.root, nullptr);
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
 	//ParseOps(&syntaxTree.root);
+}
+
+Parser& Parser::operator = (const Parser& Other)
+{
+	if (this != &Other)
+	{
+		syntaxTree = Other.syntaxTree;
+		operators = Other.operators;
+
+		Reparent(&syntaxTree.root, nullptr);
+	}
+
+	return *this;
 }
 
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
@@ -50,10 +62,18 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	else if (Token->type == LexerTokenType::Number)
 	{
 		auto number = ParseNumber(Token->value);
+
+		SyntaxTreeNode node;
+
 		if (number.type == InstructionType::Integer)
-			parent->children.push_back({ { number.type, number.value.i }, parent, Token->location });
+			node = { { number.type, number.value.i }, parent, Token->location };
 		else if (number.type == InstructionType::Float)
-			parent->children.push_back({ { number.type, number.value.f }, parent, Token->location });
+			node = { { number.type, number.value.f }, parent, Token->location };
+
+		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+			parent->children.back().children.push_back(node);
+		else
+			parent->children.push_back(node);
 	}
 	else if (Token->type == LexerTokenType::String)
 		parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent, Token->location });
@@ -83,7 +103,19 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
 	{
+		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+			parent->children.back().children.push_back({ { InstructionType::Identifier, "" }, parent, Token->location });
+		else
+		{
+			auto particle = parent->children.back();
+			parent->children.pop_back();
 
+			parent->children.push_back({ { InstructionType::Accessor }, parent, Token->location });
+			auto& node = parent->children.back();
+
+			node.children.push_back(particle);
+			particle.parent = &node;
+		}
 	}
 	else if (Token->type == LexerTokenType::RegionOpen)
 	{
@@ -170,21 +202,13 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			NextStatement();
 		}
 		else*/
-			parent->children.push_back({ { InstructionType::Identifier, Token->value }, parent, Token->location });
-	}
-}
-void Parser::ParseNextToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
-{
-	parent = &parent->children.back();
-	auto call = parent;
-	Token++;
-	if (Token != List.end())
-	{
-		ParseToken(Token, List);
-		//Read nested collections
-		while (Token != List.end() && parent != call)
-			ParseToken(++Token, List);
-		parent = parent->parent;
+
+		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
+
+		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+			parent->children.back().children.push_back(node);
+		else
+			parent->children.push_back(node);
 	}
 }
 
@@ -202,7 +226,7 @@ Number Parser::ParseNumber(std::string Input)
 	{
 		auto baseStr = Input.substr(baseOffset + 1);
 		Input.resize(baseOffset);
-		base = std::stoll(baseStr);
+		base = std::stoi(baseStr);
 	}
 	else if (StringOps::StartsWith(Input, "0x"))
 		base = 16;

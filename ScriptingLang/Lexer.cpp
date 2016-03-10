@@ -110,17 +110,21 @@ bool Lexer::CharIsLiteral(codepoint Char)
 Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 	: tokens(), lastLine(0), lineNum(1)
 {
-	while (Stream.good())
+	if (!Stream.good())
+		return;
+
+	while (true)
 	{
 		SkipWhitespace(Stream, CharIsWhitespace);
-		if (Stream.eof())
-			return;
 
 		codepoint ch = 0, nc = 0;
 
 		LexerToken token;
 		token.value = ch = Stream.get();
 		token.location = { ModuleName, lineNum, (size_t)Stream.tellg() - lastLine };
+
+		if (ch < 0)
+			return;
 
 		if (ch == '#')
 		{
@@ -239,7 +243,8 @@ Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 size_t Lexer::SkipWhitespace(std::istream& Stream, const std::function<bool(codepoint Char)>& WhitespaceCmpFn)
 {
 	size_t sz = 0;
-	while (Stream.good() && WhitespaceCmpFn(Stream.peek()))
+	codepoint ch = 0;
+	while ((ch = Stream.peek()) >= 0 && WhitespaceCmpFn(ch))
 	{
 		sz++;
 		if (Stream.get() == '\n')
@@ -254,12 +259,15 @@ size_t Lexer::SkipWhitespace(std::istream& Stream, const std::function<bool(code
 std::string Lexer::ReadUntil(std::istream& Stream, const std::string& Sequence)
 {
 	std::string s;
-	while (Stream.good())
+	while (true)
 	{
 		size_t i;
-		for (i = 0; Stream.good() && i < Sequence.length(); i++)
+		for (i = 0; i < Sequence.length(); i++)
 		{
-			auto ch = Stream.get();
+			codepoint ch = Stream.get();
+			if (ch < 0)
+				return s;
+
 			if (ch == '\n')
 			{
 				lineNum++;
@@ -282,12 +290,15 @@ std::string Lexer::ReadUntil(std::istream& Stream, const std::string& Sequence)
 std::string Lexer::ReadUntilNewline(std::istream& Stream)
 {
 	std::string s;
-	unsigned ch = 0;
-	while (Stream.good() && (ch = Stream.peek()) != '\n')
+	codepoint ch = 0;
+	while ((ch = Stream.peek()) >= 0 && ch != '\n')
 	{
 		if (ch == '\r')
 		{
 			ch = Stream.get();
+			if (ch < 0)
+				return s;
+
 			if (Stream.good() && Stream.peek() == '\n')
 			{
 				lineNum++;
@@ -306,9 +317,10 @@ std::string Lexer::ReadUntilNewline(std::istream& Stream)
 std::string Lexer::ReadWhile(std::istream& Stream, std::function<bool(codepoint Char)> ConditionFn)
 {
 	std::string s;
-	while (Stream.good() && ConditionFn(Stream.peek()))
+	codepoint ch = 0;
+	while ((ch = Stream.peek()) >= 0 && ConditionFn(ch))
 	{
-		auto ch = Stream.get();
+		ch = Stream.get();
 		if (ch == '\n')
 		{
 			lineNum++;
