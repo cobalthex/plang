@@ -15,6 +15,9 @@
     <ClCompile Include="StringOps.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="Scope.cpp">
+      <Filter>VM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.hpp" />
@@ -34,6 +37,9 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Location.hpp" />
+    <ClInclude Include="Scope.hpp">
+      <Filter>VM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lexer">
