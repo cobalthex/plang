@@ -33,6 +33,8 @@ Parser::Parser(const Lexer::TokenList& Tokens)
 		ParseToken(itr, Tokens);
 	}
 
+	ParseStatement(&syntaxTree.root.children.back());
+
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
 	//ParseOps(&syntaxTree.root);
@@ -88,6 +90,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		if (parent->children.size() < 1)
 			return;
 
+		ParseStatement(parent);
 		parent = parent->parent;
 
 		if (parent->instruction.type != InstructionType::Program && parent->instruction.type != InstructionType::Block)
@@ -98,7 +101,14 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Separator)
 	{
+		while (parent->instruction.type != InstructionType::Statement)
+			parent = parent->parent;
 
+		ParseStatement(parent);
+		parent = parent->parent;
+
+		parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
+		parent = &parent->children.back();
 	}
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
@@ -165,6 +175,8 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			parent = parent->parent;
 			parent->children.pop_back();
 		}
+		else
+			ParseStatement(parent);
 
 		while (!IsRegion(parent->instruction))
 		{
@@ -251,7 +263,7 @@ void Parser::CreateOperator(const std::string& Name, Notation Notat, Association
 }
 void Parser::CreateOperators()
 {
-	CreateOperator("!", Notation::Prefix, Association::None, 3);
+	CreateOperator("!", Notation::Prefix , Association::None, 3);
 	CreateOperator("?", Notation::Postfix, Association::None, 7);
 	CreateOperator(",", Notation::Infix, Association::LeftToRight, 8);
 	CreateOperator("+", Notation::Infix, Association::RightToLeft, 5);

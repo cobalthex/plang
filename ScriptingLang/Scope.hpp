@@ -11,13 +11,9 @@ public:
 	Scope() : parent(nullptr) { }
 	Scope(Scope* Parent) : parent(Parent) { }
 
-	inline Value& Set(const Id& Name, const Value& Value)
-	{
-		values[Name] = Value;
-		return values[Name];
-	}
-
+	Value& Set(const Id& Name, const Value& Value, bool SearchParents = false);
 	Value& Get(const Id& Name, bool SearchParents = true);
+    Scope* Where(const Id& Name); //where is a value defined
 	bool Has(const Id& Name, bool SearchParents = true);
 
 	bool Remove(const Id& Name);

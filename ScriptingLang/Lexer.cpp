@@ -157,7 +157,7 @@ Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 		else if (ch == ';')
 			token.type = LexerTokenType::Terminator;
 		else if (ch == ',')
-			token.type = LexerTokenType::Identifier;
+			token.type = LexerTokenType::Separator;
 		else if (ch == '.')
 		{
 			LexerTokenType type;
