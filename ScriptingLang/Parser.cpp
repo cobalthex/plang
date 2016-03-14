@@ -35,6 +35,9 @@ Parser::Parser(const Lexer::TokenList& Tokens)
 
 	ParseStatement(&syntaxTree.root.children.back());
 
+	if (syntaxTree.root.children.back().instruction.type == InstructionType::Statement && syntaxTree.root.children.back().children.size() < 1)
+		syntaxTree.root.children.pop_back();
+
 	//second pass to evaluate callables and create named tuples, and further eliminate any single value tuples or empty
 	//control structures
 	//ParseOps(&syntaxTree.root);
@@ -226,6 +229,83 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 void Parser::ParseStatement(SyntaxTreeNode* Statement)
 {
+	auto _parent = Statement->parent;
+
+	if (Statement->children.size() < 1)
+		return;
+
+	if (Statement->children.size() == 1)
+	{
+		new (Statement) SyntaxTreeNode(Statement->children.back());
+		Reparent(Statement, _parent);
+		return;
+	}
+
+	std::vector<SyntaxTreeNode> output, ops;
+	for (auto& i : Statement->children)
+	{
+		//only identifiers can be operators
+		if (i.instruction.type != InstructionType::Identifier)
+		{
+			output.push_back(i);
+			continue;
+		}
+
+		auto op = operators.find(i.instruction.value.get<std::string>());
+		if (op != operators.end())
+		{
+			//should be while new < top, move top to values
+			while (ops.size() > 0)
+			{
+				auto precedence = operators.find(ops.back().instruction.value.get<std::string>())->second.precedence;
+
+				if ((op->second.association == Association::LeftToRight && op->second.precedence <= precedence) ||
+					(op->second.association == Association::RightToLeft && op->second.precedence < precedence))
+					break;
+
+				output.push_back(ops.back());
+				ops.pop_back();
+			}
+			ops.push_back(i);
+		}
+		else
+		{
+			output.push_back(i);
+		}
+	}
+
+	while (ops.size() > 1)
+	{
+		output.push_back(ops.back());
+		ops.pop_back();
+	}
+
+	new (Statement) SyntaxTreeNode(ops.back());
+	Reparent(Statement, _parent);
+	Statement->instruction.type = InstructionType::Call;
+	
+	_parent = Statement;
+	while (output.size() > 0)
+	{
+		if (output.back().instruction.type == InstructionType::Identifier && operators.find(output.back().instruction.value.get<std::string>()) != operators.end())
+		{
+			_parent->children.insert(_parent->children.begin(), output.back());
+			Reparent(&_parent->children.front(), _parent);
+			_parent->children.front().instruction.type = InstructionType::Call;
+
+			_parent = &_parent->children.front();
+		}
+		else
+		{
+			_parent->children.insert(_parent->children.begin(), output.back());
+			Reparent(&_parent->children.front(), _parent);
+
+			if (_parent->children.size() > 1)
+				_parent = _parent->parent;
+		}
+
+		output.pop_back();
+	}
 }
 
 Number Parser::ParseNumber(std::string Input)
