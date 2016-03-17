@@ -1,38 +1,38 @@
 #include "pch.hpp"
 #include "Scope.hpp"
 
-Value& Scope::Set(const Id& Name, const Value& Value, bool SearchParents)
+Plang::Reference& Plang::Scope::Set(const Plang::String& Name, const Plang::Reference& Ref, bool SearchParents)
 {
 	auto scope = this;
 	if (SearchParents)
 		scope = Where(Name);
 
-	return (scope->values[Name] = Value);
+	return (scope->variables[Name] = Ref);
 }
 
-Value& Scope::Get(const Id& Name, bool SearchParents)
+Plang::Reference& Plang::Scope::Get(const Plang::String& Name, bool SearchParents)
 {
 	auto scope = this;
 
 	do
 	{
-		auto value = scope->values.find(Name);
-		if (value != scope->values.end())
+		auto value = scope->variables.find(Name);
+		if (value != scope->variables.end())
 			return value->second;
 
 		scope = scope->parent;
 	} while (scope != nullptr && SearchParents);
 
-	return Undefined;
+	return Plang::Reference::Undefined;
 }
 
-Scope* Scope::Where(const Id& Name)
+Plang::Scope* Plang::Scope::Where(const Plang::String& Name)
 {
 	auto scope = this;
 
 	do
 	{
-		if (scope->values.find(Name) != scope->values.end())
+		if (scope->variables.find(Name) != scope->variables.end())
 			break;
 
 		scope = scope->parent;
@@ -41,13 +41,13 @@ Scope* Scope::Where(const Id& Name)
 	return scope;
 }
 
-bool Scope::Has(const Id& Name, bool SearchParents)
+bool Plang::Scope::Has(const Plang::String& Name, bool SearchParents)
 {
 	auto scope = this;
 
 	do
 	{
-		if (scope->values.find(Name) != scope->values.end())
+		if (scope->variables.find(Name) != scope->variables.end())
 			return true;
 
 		scope = scope->parent;
@@ -56,12 +56,12 @@ bool Scope::Has(const Id& Name, bool SearchParents)
 	return false;
 }
 
-bool Scope::Remove(const Id& Name)
+bool Plang::Scope::Remove(const Plang::String& Name)
 {
-	auto value = values.find(Name);
-	if (value != values.end())
+	auto value = variables.find(Name);
+	if (value != variables.end())
 	{
-		values.erase(value);
+		variables.erase(value);
 		return true;
 	}
 	return false;

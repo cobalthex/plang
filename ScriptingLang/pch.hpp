@@ -23,4 +23,3 @@
 
 using codepoint = int32_t;
 
-#define log std::clog << "!!! " <<

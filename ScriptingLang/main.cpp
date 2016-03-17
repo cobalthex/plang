@@ -1,12 +1,19 @@
 #include "pch.hpp"
+#include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "StringOps.hpp"
+#include "Value.hpp"
 
 int main(int ac, const char* av[])
 {
 	Plang::Lexer lex;
 	Plang::Parser parser;
+
+	Plang::Value u;
+	u.type = Plang::ValueType::Dictionary;
+	u.data = Plang::Dictionary();
+	u.data["test"] = v;
+	std::cout << v.data.get<Plang::Dictionary>()["test"].get<Plang::Int>() << std::endl;
 
 	if (ac < 2)
 	{

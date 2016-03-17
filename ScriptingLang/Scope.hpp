@@ -1,24 +1,23 @@
 #include "pch.hpp"
+#include "Value.hpp"
 
-using Id = std::string;
-using Value = int;
-
-Value Undefined = 0;
-
-class Scope
+namespace Plang
 {
-public:
-	Scope() : parent(nullptr) { }
-	Scope(Scope* Parent) : parent(Parent) { }
+    class Scope
+    {
+    public:
+    	Scope() : parent(nullptr) { }
+    	Scope(Scope* Parent) : parent(Parent) { }
 
-	Value& Set(const Id& Name, const Value& Value, bool SearchParents = false);
-	Value& Get(const Id& Name, bool SearchParents = true);
-    Scope* Where(const Id& Name); //where is a value defined
-	bool Has(const Id& Name, bool SearchParents = true);
+    	Reference& Set(const String& Name, const Reference& Ref, bool SearchParents = false);
+    	Reference& Get(const String& Name, bool SearchParents = true);
+        Scope* Where(const String& Name); //where is a value defined
+    	bool Has(const String& Name, bool SearchParents = true);
 
-	bool Remove(const Id& Name);
+    	bool Remove(const String& Name);
 
-protected:
-	std::map<Id, Value> values;
-	Scope* parent;
+    protected:
+        Dictionary variables;
+    	Scope* parent;
+    };
 };

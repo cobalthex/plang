@@ -3,13 +3,10 @@
 #include "pch.hpp"
 #include "variant.hpp"
 #include "Location.hpp"
+#include "types.hpp"
 
 namespace Plang
 {
-	using Int = int64_t;
-	using Float = double;
-	using String = std::string;
-
 	enum class InstructionType : size_t
 	{
 		Unknown,

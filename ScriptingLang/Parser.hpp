@@ -4,6 +4,7 @@
 #include "Lexer.hpp"
 #include "variant.hpp"
 #include "SyntaxTree.hpp"
+#include "types.hpp"
 
 namespace Plang
 {
