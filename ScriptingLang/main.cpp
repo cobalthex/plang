@@ -2,18 +2,25 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "Value.hpp"
+#include "Reference.hpp"
 
 int main(int ac, const char* av[])
 {
 	Plang::Lexer lex;
 	Plang::Parser parser;
 
+	Plang::Value v;
+	v.type = Plang::ValueType::Int;
+	v.data = 5;
+
 	Plang::Value u;
 	u.type = Plang::ValueType::Dictionary;
 	u.data = Plang::Dictionary();
-	u.data["test"] = v;
-	std::cout << v.data.get<Plang::Dictionary>()["test"].get<Plang::Int>() << std::endl;
+
+	Plang::Reference r (&v);
+	u.data.get<Plang::Dictionary>()["test"] = r;
+	auto uv = u.Get<Plang::Dictionary>()["test"];
+	std::cout << uv->Get<Plang::Int>() << std::endl;
 
 	if (ac < 2)
 	{

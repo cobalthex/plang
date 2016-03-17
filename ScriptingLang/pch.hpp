@@ -18,8 +18,8 @@
 #include <utility>
 #include <typeinfo>
 #include <type_traits>
-#include <stdexcept> // runtime_error
-#include <new> // operator new
+#include <stdexcept>
+#include <new>
 
 using codepoint = int32_t;
 

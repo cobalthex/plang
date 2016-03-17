@@ -1,3 +1,4 @@
 #include "pch.hpp"
+#include "Value.hpp"
 
-Plang::Reference Plang::Undefined ();
+Plang::Value* const Plang::Value::Undefined = nullptr;
