@@ -1,47 +1,35 @@
 #pragma once
 
 #include "pch.hpp"
-#include "Value.hpp"
 
 namespace Plang
 {
+	class Value;
+
     class Reference
     {
     public:
         Reference() : value(nullptr) { }
-        Reference(Value* Value) : value(Value) { value->AddRef(); }
-        Reference(const Reference& Reference) : value(Reference.value) { value->AddRef(); }
-        Reference(Reference&& Reference) : value(std::move(Reference.value)) { }
+		Reference(Value* Value);
+		Reference(const Reference& Reference);
+		Reference(Reference&& Reference);
 
-        ~Reference() { value->FreeRef(); }
+		~Reference();
 
-        Reference& operator = (const Reference& Reference)
-        {
-            if (this != &Reference)
-            {
-                value = Reference.value;
-                value->AddRef();
-            }
-            return *this;
-        }
-        Reference& operator = (Reference&& Reference)
-        {
-            if (this != &Reference)
-                value = std::move(Reference.value);
-            return *this;
-        }
+		Reference& operator = (const Reference& Reference);
+		Reference& operator = (Reference&& Reference);
 
-        operator Value*() const
+        inline operator Value*() const
         {
             return value;
         }
 
-        operator Value&() const
+        inline operator Value&() const
         {
             return *value;
         }
 
-        Value* operator -> ()
+        inline Value* operator -> ()
         {
             return value;
         }

@@ -18,6 +18,12 @@
     <ClCompile Include="Scope.cpp">
       <Filter>VM</Filter>
     </ClCompile>
+    <ClCompile Include="Value.cpp">
+      <Filter>VM</Filter>
+    </ClCompile>
+    <ClCompile Include="Reference.cpp">
+      <Filter>VM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.hpp" />
@@ -38,6 +44,13 @@
     </ClInclude>
     <ClInclude Include="Location.hpp" />
     <ClInclude Include="Scope.hpp">
+      <Filter>VM</Filter>
+    </ClInclude>
+    <ClInclude Include="types.hpp" />
+    <ClInclude Include="Value.hpp">
+      <Filter>VM</Filter>
+    </ClInclude>
+    <ClInclude Include="Reference.hpp">
       <Filter>VM</Filter>
     </ClInclude>
   </ItemGroup>

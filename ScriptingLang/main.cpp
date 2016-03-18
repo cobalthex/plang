@@ -2,7 +2,7 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "Reference.hpp"
+#include "Value.hpp"
 
 int main(int ac, const char* av[])
 {
@@ -18,8 +18,9 @@ int main(int ac, const char* av[])
 	u.data = Plang::Dictionary();
 
 	Plang::Reference r (&v);
-	u.data.get<Plang::Dictionary>()["test"] = r;
-	auto uv = u.Get<Plang::Dictionary>()["test"];
+	auto uvd = u.Get<Plang::Dictionary>();
+	uvd["test"] = r;
+	auto uv = uvd["test"];
 	std::cout << uv->Get<Plang::Int>() << std::endl;
 
 	if (ac < 2)

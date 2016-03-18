@@ -3,11 +3,10 @@
 #include "pch.hpp"
 #include "variant.hpp"
 #include "types.hpp"
+#include "Reference.hpp"
 
 namespace Plang
 {
-    class Reference;
-
     using List = std::vector<Reference>;
     using Dictionary = std::map<String, Reference>;
 
@@ -26,7 +25,7 @@ namespace Plang
     class Value
     {
     public:
-        Value() : type(ValueType::Invalid), refCount(0) { }
+        Value() : type(ValueType::Invalid), data(nullptr), refCount(0) { }
         Value(ValueType Type, const ValueData& Data) : type(Type), data(Data), refCount(0) { }
 
         inline void AddRef() { refCount++; }

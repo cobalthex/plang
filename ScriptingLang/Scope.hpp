@@ -1,4 +1,5 @@
 #include "pch.hpp"
+#include "Value.hpp"
 #include "Reference.hpp"
 
 namespace Plang
