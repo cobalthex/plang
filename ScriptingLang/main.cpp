@@ -18,10 +18,10 @@ int main(int ac, const char* av[])
 	u.data = Plang::Dictionary();
 
 	Plang::Reference r (&v);
-	auto uvd = u.Get<Plang::Dictionary>();
+	/*auto uvd = u.Get<Plang::Dictionary>();
 	uvd["test"] = r;
 	auto uv = uvd["test"];
-	std::cout << uv->Get<Plang::Int>() << std::endl;
+	std::cout << uv->Get<Plang::Int>() << std::endl;*/
 
 	if (ac < 2)
 	{

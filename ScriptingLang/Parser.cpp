@@ -116,9 +116,10 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
 	{
+		std::cout << Token->value << " " << (Token - 1)->value << "\n! " << *parent << std::endl;
 		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
 			parent->children.back().children.push_back({ { InstructionType::Identifier, "" }, parent, Token->location });
-		else
+		else if (parent->instruction.type != InstructionType::Accessor)
 		{
 			auto particle = parent->children.back();
 			parent->children.pop_back();
@@ -129,6 +130,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			node.children.push_back(particle);
 			particle.parent = &node;
 		}
+		std::cout << Token->value << " " << (Token - 1)->value << "\n! " << *parent << std::endl;
 	}
 	else if (Token->type == LexerTokenType::RegionOpen)
 	{
@@ -283,7 +285,7 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 	new (Statement) SyntaxTreeNode(ops.back());
 	Reparent(Statement, _parent);
 	Statement->instruction.type = InstructionType::Call;
-	
+
 	_parent = Statement;
 	while (output.size() > 0)
 	{
