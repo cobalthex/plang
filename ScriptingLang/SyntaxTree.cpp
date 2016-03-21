@@ -36,13 +36,7 @@ size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
 {
 	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(GetChildrenMaxNameLength(Node.parent) + 3) << types[(size_t)Node.instruction.type];
-
-	if (Node.instruction.type == Plang::InstructionType::Integer)
-		Stream << Node.instruction.value.get<Plang::Int>();
-	else if (Node.instruction.type == Plang::InstructionType::Float)
-		Stream << Node.instruction.value.get<Plang::Float>();
-	else if (Node.instruction.value.is<Plang::String>())
-		Stream << Node.instruction.value.get<Plang::String>();
+	Stream << (std::string)Node.instruction;
 
 	if (Node.location.module.length() > 10000)
 		Stream << " @ " << Node.location;
@@ -61,4 +55,16 @@ std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& Syntax
 {
 	PrintDepth(Stream, 0, SyntaxTree.root);
 	return Stream;
+}
+
+Plang::Instruction::operator std::string() const
+{
+	if (type == Plang::InstructionType::Integer)
+		return std::to_string(value.get<Plang::Int>());
+	else if (type == Plang::InstructionType::Float)
+		return std::to_string(value.get<Plang::Float>());
+	else if (value.is<Plang::String>())
+		return value.get<Plang::String>();
+	
+	return "";
 }

@@ -46,6 +46,16 @@ namespace Plang
 		} value;
 	};
 
+	class ParserException : public std::exception
+	{
+	public:
+		ParserException(const std::string& Message, const std::string& Token, const Location& Location)
+			: std::exception(Message.c_str()), token(Token), location(Location) { }
+
+		std::string token;
+		Location location;
+	};
+
 	class Parser
 	{
 	public:
@@ -80,3 +90,9 @@ namespace Plang
 		SyntaxTreeNode* parent;
 	};
 };
+
+inline std::ostream& operator << (std::ostream& Stream, const Plang::ParserException& Exception)
+{
+	Stream << "[ " << Exception.token << " ] @ " << Exception.location;
+	return Stream;
+}

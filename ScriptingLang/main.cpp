@@ -9,20 +9,6 @@ int main(int ac, const char* av[])
 	Plang::Lexer lex;
 	Plang::Parser parser;
 
-	Plang::Value v;
-	v.type = Plang::ValueType::Int;
-	v.data = 5;
-
-	Plang::Value u;
-	u.type = Plang::ValueType::Dictionary;
-	u.data = Plang::Dictionary();
-
-	Plang::Reference r (&v);
-	/*auto uvd = u.Get<Plang::Dictionary>();
-	uvd["test"] = r;
-	auto uv = uvd["test"];
-	std::cout << uv->Get<Plang::Int>() << std::endl;*/
-
 	if (ac < 2)
 	{
 		std::cout << "Interactive mode\n";
@@ -43,8 +29,16 @@ int main(int ac, const char* av[])
 			iss.str(line);
 			iss.clear();
 
-			lex = Plang::Lexer("#!", iss);
-			parser = Plang::Parser(lex.tokens);
+			try
+			{
+				lex = Plang::Lexer("#!", iss);
+				parser = Plang::Parser(lex.tokens);
+			}
+			catch (const Plang::ParserException& Expt)
+			{
+				std::cout << "! Parser Error: " << Expt << std::endl;
+				continue;
+			}
 
 			std::cout << ">> " << parser.syntaxTree << std::endl;
 		}

@@ -75,7 +75,8 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		else if (number.type == InstructionType::Float)
 			node = { { number.type, number.value.f }, parent, Token->location };
 
-		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+		if ((Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor) ||
+			(parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor))
 			parent->children.back().children.push_back(node);
 		else
 			parent->children.push_back(node);
@@ -97,7 +98,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		parent = parent->parent;
 
 		if (parent->instruction.type != InstructionType::Program && parent->instruction.type != InstructionType::Block)
-			throw "Invalid terminator";
+			throw ParserException("Invalid terminator", Token->value, Token->location);
 
 		parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
 		parent = &parent->children.back();
@@ -116,8 +117,9 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
 	{
-		std::cout << Token->value << " " << (Token - 1)->value << "\n! " << *parent << std::endl;
-		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+		if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor)
+			return;
+		else if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
 			parent->children.back().children.push_back({ { InstructionType::Identifier, "" }, parent, Token->location });
 		else if (parent->instruction.type != InstructionType::Accessor)
 		{
@@ -130,7 +132,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			node.children.push_back(particle);
 			particle.parent = &node;
 		}
-		std::cout << Token->value << " " << (Token - 1)->value << "\n! " << *parent << std::endl;
 	}
 	else if (Token->type == LexerTokenType::RegionOpen)
 	{
@@ -186,7 +187,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		while (!IsRegion(parent->instruction))
 		{
 			if (parent->parent == nullptr || parent->parent->instruction.type == InstructionType::Program)
-				throw ("Unmatched region close @ " + (std::string)Token->location);
+				throw ParserException("Unknown region close", Token->value, Token->location);
 			parent = parent->parent;
 		}
 
@@ -222,7 +223,8 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
 
-		if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
+		if ((Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor) ||
+			(parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor))
 			parent->children.back().children.push_back(node);
 		else
 			parent->children.push_back(node);
@@ -275,6 +277,9 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			output.push_back(i);
 		}
 	}
+
+	if (ops.size() < 1)
+		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support should go
 
 	while (ops.size() > 1)
 	{

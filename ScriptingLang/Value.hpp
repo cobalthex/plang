@@ -4,23 +4,38 @@
 #include "variant.hpp"
 #include "types.hpp"
 #include "Reference.hpp"
+#include "Construct.hpp"
+
+using namespace mapbox::util;
 
 namespace Plang
 {
     using List = std::vector<Reference>;
-    using Dictionary = std::map<String, Reference>;
+    using Dictionary = std::map<Reference, Reference>;
+	using Pair = std::pair<Reference, Reference>;
 
     enum class ValueType
     {
         Invalid,
+		Null,
         Int,
         Float,
         String,
         List,
+		Tuple,
         Dictionary,
     };
 
-    using ValueData = mapbox::util::variant<decltype(nullptr), Int, Float, String, List, Dictionary>; //use string ptrs (StringPool ?)
+	using ValueData = variant<
+		std::nullptr_t,
+		Int,
+		Float,
+		String,
+		recursive_wrapper<Pair>,
+		recursive_wrapper<List>,
+		recursive_wrapper<Dictionary>,
+		recursive_wrapper<Construct>
+	>;
 
     class Value
     {
@@ -33,16 +48,14 @@ namespace Plang
         inline size_t RefCount() const { return refCount; }
 
         template <class T>
-        T& Get() { return data.get<T>(); }
+        T& Data() { return data.get<T>(); }
         template <class T>
-        T Get() const { return data.get<T>(); }
+        T Data() const { return data.get<T>(); }
 
-        ValueData data;
         ValueType type;
-
-        static Value* const Undefined;
 
     protected:
         size_t refCount;
+		ValueData data;
     };
 };

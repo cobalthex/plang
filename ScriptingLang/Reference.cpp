@@ -4,7 +4,7 @@
 
 using namespace Plang;
 
-Reference Reference::Undefined (Value::Undefined);
+Reference Reference::Undefined (nullptr);
 
 Reference::Reference(Value* Value)
 	: value(Value)

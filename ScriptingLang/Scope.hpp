@@ -1,5 +1,4 @@
 #include "pch.hpp"
-#include "Value.hpp"
 #include "Reference.hpp"
 
 namespace Plang
@@ -10,15 +9,15 @@ namespace Plang
     	Scope() : parent(nullptr) { }
     	Scope(Scope* Parent) : parent(Parent) { }
 
-    	Reference& Set(const String& Name, const Reference& Ref, bool SearchParents = false);
-    	Reference& Get(const String& Name, bool SearchParents = true);
-        Scope* Where(const String& Name); //where is a value defined
-    	bool Has(const String& Name, bool SearchParents = true);
+    	Reference& Set(const Reference& Name, const Reference& Ref, bool SearchParents = false);
+    	Reference& Get(const Reference& Name, bool SearchParents = true);
+        Scope* Where(const Reference& Name); //which scope a value is defined in
+    	bool Has(const Reference& Name, bool SearchParents = true);
 
-    	bool Remove(const String& Name);
+    	bool Remove(const Reference& Name);
 
     protected:
-        Dictionary variables;
+        std::map<Reference, Reference> properties;
     	Scope* parent;
     };
 };

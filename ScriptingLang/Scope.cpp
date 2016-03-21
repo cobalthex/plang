@@ -1,23 +1,23 @@
 #include "pch.hpp"
 #include "Scope.hpp"
 
-Plang::Reference& Plang::Scope::Set(const Plang::String& Name, const Plang::Reference& Ref, bool SearchParents)
+Plang::Reference& Plang::Scope::Set(const Plang::Reference& Name, const Plang::Reference& Ref, bool SearchParents)
 {
 	auto scope = this;
 	if (SearchParents)
 		scope = Where(Name);
 
-	return (scope->variables[Name] = Ref);
+	return (scope->properties[Name] = Ref);
 }
 
-Plang::Reference& Plang::Scope::Get(const Plang::String& Name, bool SearchParents)
+Plang::Reference& Plang::Scope::Get(const Plang::Reference& Name, bool SearchParents)
 {
 	auto scope = this;
 
 	do
 	{
-		auto value = scope->variables.find(Name);
-		if (value != scope->variables.end())
+		auto value = scope->properties.find(Name);
+		if (value != scope->properties.end())
 			return value->second;
 
 		scope = scope->parent;
@@ -26,13 +26,13 @@ Plang::Reference& Plang::Scope::Get(const Plang::String& Name, bool SearchParent
 	return Plang::Reference::Undefined;
 }
 
-Plang::Scope* Plang::Scope::Where(const Plang::String& Name)
+Plang::Scope* Plang::Scope::Where(const Plang::Reference& Name)
 {
 	auto scope = this;
 
 	do
 	{
-		if (scope->variables.find(Name) != scope->variables.end())
+		if (scope->properties.find(Name) != scope->properties.end())
 			break;
 
 		scope = scope->parent;
@@ -41,13 +41,13 @@ Plang::Scope* Plang::Scope::Where(const Plang::String& Name)
 	return scope;
 }
 
-bool Plang::Scope::Has(const Plang::String& Name, bool SearchParents)
+bool Plang::Scope::Has(const Plang::Reference& Name, bool SearchParents)
 {
 	auto scope = this;
 
 	do
 	{
-		if (scope->variables.find(Name) != scope->variables.end())
+		if (scope->properties.find(Name) != scope->properties.end())
 			return true;
 
 		scope = scope->parent;
@@ -56,12 +56,12 @@ bool Plang::Scope::Has(const Plang::String& Name, bool SearchParents)
 	return false;
 }
 
-bool Plang::Scope::Remove(const Plang::String& Name)
+bool Plang::Scope::Remove(const Plang::Reference& Name)
 {
-	auto value = variables.find(Name);
-	if (value != variables.end())
+	auto value = properties.find(Name);
+	if (value != properties.end())
 	{
-		variables.erase(value);
+		properties.erase(value);
 		return true;
 	}
 	return false;

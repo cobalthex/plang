@@ -3,6 +3,7 @@
 #include <vector>
 #include <stack>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <string>
 #include <locale>
@@ -20,6 +21,9 @@
 #include <type_traits>
 #include <stdexcept>
 #include <new>
+
+#include "variant.hpp"
+#include "StringOps.hpp"
 
 using codepoint = int32_t;
 

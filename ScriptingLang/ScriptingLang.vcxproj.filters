@@ -16,13 +16,10 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Scope.cpp">
-      <Filter>VM</Filter>
-    </ClCompile>
-    <ClCompile Include="Value.cpp">
-      <Filter>VM</Filter>
+      <Filter>Runtime</Filter>
     </ClCompile>
     <ClCompile Include="Reference.cpp">
-      <Filter>VM</Filter>
+      <Filter>Runtime</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,14 +41,20 @@
     </ClInclude>
     <ClInclude Include="Location.hpp" />
     <ClInclude Include="Scope.hpp">
-      <Filter>VM</Filter>
+      <Filter>Runtime</Filter>
     </ClInclude>
     <ClInclude Include="types.hpp" />
     <ClInclude Include="Value.hpp">
-      <Filter>VM</Filter>
+      <Filter>Runtime</Filter>
     </ClInclude>
     <ClInclude Include="Reference.hpp">
-      <Filter>VM</Filter>
+      <Filter>Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Construct.hpp">
+      <Filter>Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.hpp">
+      <Filter>Runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -67,7 +70,7 @@
       <UniqueIdentifier>{4b59aafa-113f-4b80-9d0b-46ef9a429018}</UniqueIdentifier>
       <Extensions>Util\</Extensions>
     </Filter>
-    <Filter Include="VM">
+    <Filter Include="Runtime">
       <UniqueIdentifier>{cc3b3ef6-10f2-49da-85ed-18bd83e164c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

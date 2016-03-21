@@ -40,6 +40,8 @@ namespace Plang
 
 		InstructionType type;
 		mapbox::util::variant<Int, Float, String> value;
+
+		operator std::string() const;
 	};
 
 	struct SyntaxTreeNode

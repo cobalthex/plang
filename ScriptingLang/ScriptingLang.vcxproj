@@ -139,9 +139,10 @@
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="StringOps.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
-    <ClCompile Include="Value.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Construct.hpp" />
+    <ClInclude Include="Exception.hpp" />
     <ClInclude Include="Lexer.hpp" />
     <ClInclude Include="Location.hpp" />
     <ClInclude Include="pch.hpp" />
