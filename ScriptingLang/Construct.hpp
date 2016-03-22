@@ -18,4 +18,4 @@ namespace Plang
 		Scope* lexicalScope;
 		Scope* dotScope;
 	};
-}
+};

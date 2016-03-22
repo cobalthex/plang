@@ -4,7 +4,7 @@
 
 namespace Plang
 {
-	class Value;
+	class Construct;
 
     class Reference
     {
@@ -37,6 +37,6 @@ namespace Plang
         static Reference Undefined;
 
     protected:
-        Value* value;
+        Construct* construct;
     };
 };
