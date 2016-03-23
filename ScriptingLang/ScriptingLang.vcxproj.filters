@@ -18,7 +18,7 @@
     <ClCompile Include="Scope.cpp">
       <Filter>Runtime</Filter>
     </ClCompile>
-    <ClCompile Include="Reference.cpp">
+    <ClCompile Include="Construct.cpp">
       <Filter>Runtime</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,9 +45,6 @@
     </ClInclude>
     <ClInclude Include="types.hpp" />
     <ClInclude Include="Value.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="Reference.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
     <ClInclude Include="Construct.hpp">

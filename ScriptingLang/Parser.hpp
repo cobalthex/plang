@@ -93,6 +93,6 @@ namespace Plang
 
 inline std::ostream& operator << (std::ostream& Stream, const Plang::ParserException& Exception)
 {
-	Stream << "[ " << Exception.token << " ] @ " << Exception.location;
+	Stream << Exception.what() << " [ " << Exception.token << " ] @ " << Exception.location;
 	return Stream;
 }

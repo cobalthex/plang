@@ -13,8 +13,9 @@ namespace Plang
 		Program,
 
 		Statement,
-		Expression, //functions, control statements
+		Expression, //functions
 		Call, //call to an expression
+		ControlStructure, //a control structure, such as an if statement or loop
 
 		Block,
 		Identifier,

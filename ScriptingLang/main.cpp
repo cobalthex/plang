@@ -2,7 +2,6 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "Value.hpp"
 
 int main(int ac, const char* av[])
 {

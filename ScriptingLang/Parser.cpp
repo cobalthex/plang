@@ -16,7 +16,8 @@ bool Parser::IsRegion(const Instruction& Instruction)
 	return (Instruction.type == InstructionType::Tuple
 		|| Instruction.type == InstructionType::List
 		|| Instruction.type == InstructionType::Array
-		|| Instruction.type == InstructionType::Block);
+		|| Instruction.type == InstructionType::Block
+		|| Instruction.type == InstructionType::Call);
 }
 
 Parser::Parser(const Lexer::TokenList& Tokens)
@@ -152,11 +153,24 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				node.children.push_back({ { InstructionType::Block }, &node, Token->location });
 				parent = &node.children.back();
 			}
+			else if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Call)
+			{
+				parent = &parent->children.back();
+				parent->instruction.type = InstructionType::ControlStructure;
+				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
+				parent = &parent->children.back();
+			}
 			else
 			{
 				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
 				parent = &parent->children.back();
 			}
+		}
+		else if (Token->value == "(" && parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Identifier)
+		{
+			auto& ident = parent->children.back();
+			ident.instruction.type = InstructionType::Call;
+			parent = &parent->children.back();
 		}
 		else
 		{
@@ -181,6 +195,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			parent = parent->parent;
 			parent->children.pop_back();
 		}
+		//else if (parent->instruction.type == InstructionType::Call);
 		else
 			ParseStatement(parent);
 

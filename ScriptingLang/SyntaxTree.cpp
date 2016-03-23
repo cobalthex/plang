@@ -8,6 +8,7 @@ static const std::string types[] =
 	"Statement",
 	"Expression",
 	"Call",
+	"Control Structure",
 	"Block",
 	"Identifier",
 	"Accessor",
