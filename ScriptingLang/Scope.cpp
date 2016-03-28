@@ -78,7 +78,7 @@ bool Plang::Scope::Remove(const std::string& Name)
 
 std::ostream & Plang::operator<<(std::ostream & Stream, const Scope & Scope)
 {
-	std::cout << "Parent: 0x" << std::hex << Scope.parent << std::endl;
+	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << std::endl;
 	//print properties (if any)
 	//print indices (if any)
 	return Stream;

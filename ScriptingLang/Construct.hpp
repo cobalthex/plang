@@ -35,9 +35,6 @@ namespace Plang
 		template <typename T>
 		inline T& Get() { return value.get<T>(); }
 
-		template <>
-		inline Array& Get() const { return *(Array*)value.get<void*>(); }
-
 		template <typename T>
 		inline void Set(const T& Value) { value.set<T>(Value); }
 
@@ -54,3 +51,6 @@ namespace Plang
 	static Reference Undefined;
 };
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);
+
+template <>
+inline Plang::Array& Plang::Construct::Get() const { return *(Plang::Array*)value.get<void*>(); }

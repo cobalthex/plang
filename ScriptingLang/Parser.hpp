@@ -50,10 +50,15 @@ namespace Plang
 	{
 	public:
 		ParserException(const std::string& Message, const std::string& Token, const Location& Location)
-			: std::exception(Message.c_str()), token(Token), location(Location) { }
+			: message(Message), token(Token), location(Location) { }
 
 		std::string token;
 		Location location;
+
+		inline virtual const char* what() const noexcept override { return message.c_str(); }
+
+	protected:
+		std::string message;
 	};
 
 	class Parser
