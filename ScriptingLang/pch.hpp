@@ -21,6 +21,7 @@
 #include <type_traits>
 #include <stdexcept>
 #include <new>
+#include <memory>
 
 #include "variant.hpp"
 #include "StringOps.hpp"

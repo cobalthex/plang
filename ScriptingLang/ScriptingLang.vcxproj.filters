@@ -44,9 +44,6 @@
       <Filter>Runtime</Filter>
     </ClInclude>
     <ClInclude Include="types.hpp" />
-    <ClInclude Include="Value.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
     <ClInclude Include="Construct.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>

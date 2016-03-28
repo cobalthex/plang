@@ -151,7 +151,6 @@
     <ClInclude Include="SyntaxTree.hpp" />
     <ClInclude Include="StringOps.hpp" />
     <ClInclude Include="types.hpp" />
-    <ClInclude Include="Value.hpp" />
     <ClInclude Include="variant.hpp" />
   </ItemGroup>
   <ItemGroup>

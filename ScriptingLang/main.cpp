@@ -2,11 +2,20 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
+#include "Scope.hpp"
 
 int main(int ac, const char* av[])
 {
 	Plang::Lexer lex;
 	Plang::Parser parser;
+
+	Plang::Construct c;
+	c.Set<Plang::Int>(5);
+
+	Plang::Scope test;
+	test.Set("x", c);
+
+	std::cout << test;
 
 	if (ac < 2)
 	{
