@@ -163,7 +163,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				tuple.children = std::move(parent->children);
 				parent->children.clear();
 				parent->children.push_back(tuple);
-				
+
 				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
 				parent = &parent->children.back();
 			}
@@ -381,4 +381,5 @@ void Parser::CreateOperators()
 	CreateOperator("*", Notation::Infix, Association::RightToLeft, 4);
 	CreateOperator("=", Notation::Infix, Association::RightToLeft, 10);
 	CreateOperator(":", Notation::Infix, Association::RightToLeft, 9);
+	CreateOperator("in", Notation::Infix, Association::RightToLeft, 10);
 }

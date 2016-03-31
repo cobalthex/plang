@@ -16,6 +16,6 @@ struct Location
 
 inline std::ostream& operator << (std::ostream& Stream, const Location& Location)
 {
-	Stream << Location.module << " (" << Location.line << ", " << Location.column << ")";
+	Stream << Location.module << std::dec << std::noshowbase << " (" << Location.line << ", " << Location.column << ")";
 	return Stream;
 }
