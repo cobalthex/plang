@@ -3,19 +3,20 @@
 #include "Lexer.hpp"
 #include "Parser.hpp"
 #include "Scope.hpp"
+#include "Construct.hpp"
 
 int main(int ac, const char* av[])
 {
 	Plang::Lexer lex;
 	Plang::Parser parser;
 
-	Plang::Construct c;
-	c.Set<Plang::Int>(5);
+	Plang::Int i (5);
+	Plang::Reference r (std::make_shared<Plang::Int>(i));
 
 	Plang::Scope test;
-	test.Set("x", c);
+	test.Set("x", r);
 
-	std::cout << test;
+	std::cout << i << std::endl << std::endl << r;
 
 	if (ac < 2)
 	{

@@ -6,22 +6,21 @@
 namespace Plang
 {
 	class Scope;
-	class Construct;
-	using Reference = std::shared_ptr<Construct>;
-
-	using Primative = mapbox::util::variant<void*, std::nullptr_t, bool, Int, Float, std::string>; //holds directly any primatives, or a pointer to complex data (arrays, etc)
-	using Array = std::vector<Reference>;
 
 	enum class ValueType
 	{
-		Unknown,
-		Null,
+		None,
 		Bool,
 		Int,
 		Float,
 		String,
+		Function, //native function
+		Script,
+		//Collections
 		Array,
 	};
+
+	std::string TypeToString(const Plang::ValueType& Type);
 
 	//The basic object. Everything is a construct from literals to lexical blocks to functions
 	class Construct
@@ -30,27 +29,33 @@ namespace Plang
 		Construct() { }
 		~Construct() { }
 
-		template <typename T>
-		inline T& Get() const { return value.get<T>(); }
-		template <typename T>
-		inline T& Get() { return value.get<T>(); }
-
-		template <typename T>
-		inline void Set(const T& Value) { value.set<T>(Value); }
-
-		bool IsCallable() const;
-		//Plang::Reference Call(const Plang::Reference& Arguments, Scope* DotScope = nullptr, Scope* LexScope = nullptr); //Passing Specific scopes predefines the scopes. No automatic inheritance is applied with custom scopes
+		virtual inline ValueType Type() const { return ValueType::None; }
 
 	protected:
-		Scope* lexScope; //the local (lexical) scope. Inherits from the lexical scope of the enclosing block. Created on call (or instantiation)
-		Scope* dotScope; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
-
-		Primative value;
+		Scope* scope; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
 	};
 
-	static Reference Undefined;
-};
-std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);
+	class Bool : public Construct
+	{
+	public:
+		Bool(bool Value) : value(Value) { }
 
-template <>
-inline Plang::Array& Plang::Construct::Get() const { return *(Plang::Array*)value.get<void*>(); }
+		inline ValueType Type() const { return ValueType::Bool; }
+
+	protected:
+		bool value;
+	};
+
+	class Int : public Construct
+	{
+	public:
+		Int(IntT Value) : value(Value) { }
+
+		inline ValueType Type() const { return ValueType::Int; }
+
+	protected:
+		IntT value;
+	};
+};
+
+std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);

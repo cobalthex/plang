@@ -4,7 +4,7 @@
 
 namespace Plang
 {
-    using Int = int64_t;
-    using Float = double;
-    using String = std::string;
+    using IntT = int64_t;
+    using FloatT = double;
+    using StringT = std::string;
 };

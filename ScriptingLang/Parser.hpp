@@ -30,22 +30,6 @@ namespace Plang
 		unsigned precedence; //lower numbers = higher precedence
 	};
 
-	struct Number
-	{
-		Number(InstructionType Type, Int I) : type(Type), value(I) { }
-		Number(InstructionType Type, Float F) : type(Type), value(F) { }
-
-		InstructionType type;
-		union NumberValue
-		{
-			NumberValue(Int I) : i(I) { }
-			NumberValue(Float F) : f(F) { }
-
-			Int i;
-			Float f;
-		} value;
-	};
-
 	class ParserException : public std::exception
 	{
 	public:
@@ -78,8 +62,8 @@ namespace Plang
 		SyntaxTree syntaxTree;
 		std::map<std::string, Operator> operators; //predefined operators
 
-		static Number ParseNumber(std::string Input);
-		static String ParseString(std::string Input);
+		static Instruction ParseNumber(std::string Input);
+		static StringT ParseString(std::string Input);
 		static bool IsRegion(const Instruction& Instruction);
 
 	protected:

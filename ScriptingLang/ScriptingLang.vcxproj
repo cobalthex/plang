@@ -136,6 +136,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Reference.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="StringOps.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
@@ -147,13 +148,16 @@
     <ClInclude Include="Location.hpp" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="recursive_wrapper.hpp" />
+    <ClInclude Include="Reference.hpp" />
     <ClInclude Include="Scope.hpp" />
+    <ClInclude Include="Script.hpp" />
     <ClInclude Include="SyntaxTree.hpp" />
     <ClInclude Include="StringOps.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="variant.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Signature.hpp" />
     <None Include="Parser.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

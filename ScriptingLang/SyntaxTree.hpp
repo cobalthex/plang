@@ -35,12 +35,12 @@ namespace Plang
 	public:
 		Instruction() : type(InstructionType::Unknown) { }
 		Instruction(InstructionType Type) : type(Type) { }
-		Instruction(InstructionType Type, Int Value) : type(Type), value(Value) { }
-		Instruction(InstructionType Type, Float Value) : type(Type), value(Value) { }
-		Instruction(InstructionType Type, String Value) : type(Type), value(Value) { }
+		Instruction(InstructionType Type, IntT Value) : type(Type), value(Value) { }
+		Instruction(InstructionType Type, FloatT Value) : type(Type), value(Value) { }
+		Instruction(InstructionType Type, StringT Value) : type(Type), value(Value) { }
 
 		InstructionType type;
-		mapbox::util::variant<Int, Float, String> value;
+		mapbox::util::variant<IntT, FloatT, StringT> value;
 
 		operator std::string() const;
 	};

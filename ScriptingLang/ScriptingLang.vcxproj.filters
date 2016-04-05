@@ -21,6 +21,9 @@
     <ClCompile Include="Construct.cpp">
       <Filter>Runtime</Filter>
     </ClCompile>
+    <ClCompile Include="Reference.cpp">
+      <Filter>Runtime</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.hpp" />
@@ -50,6 +53,12 @@
     <ClInclude Include="Exception.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
+    <ClInclude Include="Script.hpp">
+      <Filter>Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="Reference.hpp">
+      <Filter>Runtime</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Lexer">
@@ -71,6 +80,9 @@
   <ItemGroup>
     <None Include="Parser.hpp">
       <Filter>Parser</Filter>
+    </None>
+    <None Include="Signature.hpp">
+      <Filter>Runtime</Filter>
     </None>
   </ItemGroup>
 </Project>

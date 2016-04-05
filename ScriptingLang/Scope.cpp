@@ -1,16 +1,7 @@
 #include "pch.hpp"
 #include "Scope.hpp"
 
-Plang::Reference& Plang::Scope::Set(const std::string& Name, const Plang::Construct& Cxt, bool SearchParents)
-{
-	auto scope = this;
-	if (SearchParents)
-		scope = Where(Name);
-
-	return (scope->properties[Name] = std::make_shared<Plang::Construct>(Cxt));
-}
-
-Plang::Reference& Plang::Scope::Set(const std::string& Name, const Plang::Reference& Ref, bool SearchParents)
+Plang::Reference& Plang::Scope::Set(const Plang::StringT& Name, const Plang::Reference& Ref, bool SearchParents)
 {
 	auto scope = this;
 	if (SearchParents)
@@ -19,7 +10,7 @@ Plang::Reference& Plang::Scope::Set(const std::string& Name, const Plang::Refere
 	return (scope->properties[Name] = Ref);
 }
 
-Plang::Reference& Plang::Scope::Get(const std::string& Name, bool SearchParents)
+Plang::Reference& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents)
 {
 	auto scope = this;
 
@@ -32,10 +23,10 @@ Plang::Reference& Plang::Scope::Get(const std::string& Name, bool SearchParents)
 		scope = scope->parent;
 	} while (scope != nullptr && SearchParents);
 
-	return Plang::Undefined;
+	return Plang::Reference::Undefined;
 }
-//
-Plang::Scope* Plang::Scope::Where(const std::string& Name)
+
+Plang::Scope* Plang::Scope::Where(const Plang::StringT& Name)
 {
 	auto scope = this;
 
@@ -50,7 +41,7 @@ Plang::Scope* Plang::Scope::Where(const std::string& Name)
 	return scope;
 }
 
-bool Plang::Scope::Has(const std::string& Name, bool SearchParents)
+bool Plang::Scope::Has(const Plang::StringT& Name, bool SearchParents)
 {
 	auto scope = this;
 
@@ -65,7 +56,7 @@ bool Plang::Scope::Has(const std::string& Name, bool SearchParents)
 	return false;
 }
 
-bool Plang::Scope::Remove(const std::string& Name)
+bool Plang::Scope::Remove(const Plang::StringT& Name)
 {
 	auto value = properties.find(Name);
 	if (value != properties.end())

@@ -61,11 +61,11 @@ std::ostream& operator << (std::ostream& Stream, const Plang::SyntaxTree& Syntax
 Plang::Instruction::operator std::string() const
 {
 	if (type == Plang::InstructionType::Integer)
-		return std::to_string(value.get<Plang::Int>());
+		return std::to_string(value.get<Plang::IntT>());
 	else if (type == Plang::InstructionType::Float)
-		return std::to_string(value.get<Plang::Float>());
-	else if (value.is<Plang::String>())
-		return value.get<Plang::String>();
+		return std::to_string(value.get<Plang::FloatT>());
+	else if (value.is<Plang::StringT>())
+		return value.get<Plang::StringT>();
 	
 	return "";
 }

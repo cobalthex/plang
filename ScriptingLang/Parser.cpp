@@ -70,12 +70,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		auto number = ParseNumber(Token->value);
 
-		SyntaxTreeNode node;
-
-		if (number.type == InstructionType::Integer)
-			node = { { number.type, number.value.i }, parent, Token->location };
-		else if (number.type == InstructionType::Float)
-			node = { { number.type, number.value.f }, parent, Token->location };
+		SyntaxTreeNode node (number, parent, Token->location);
 
 		if ((Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor) ||
 			(parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor))
@@ -339,7 +334,7 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 	}
 }
 
-Number Parser::ParseNumber(std::string Input)
+Instruction Parser::ParseNumber(std::string Input)
 {
 	StringOps::Replace(Input, "'", "");
 

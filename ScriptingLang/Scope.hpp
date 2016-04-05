@@ -1,5 +1,6 @@
 #include "pch.hpp"
 #include "Construct.hpp"
+#include "Reference.hpp"
 
 namespace Plang
 {
@@ -9,16 +10,15 @@ namespace Plang
     	Scope() : parent(nullptr) { }
     	Scope(Scope* Parent) : parent(Parent) { }
 
-		Reference& Set(const std::string& Name, const Construct& Cxt, bool SearchParents = false);
-		Reference& Set(const std::string& Name, const Reference& Ref, bool SearchParents = false);
-    	Reference& Get(const std::string& Name, bool SearchParents = true);
-        Scope* Where(const std::string& Name); //which scope a property is defined in
-    	bool Has(const std::string& Name, bool SearchParents = true);
+		Reference& Set(const StringT& Name, const Reference& Ref, bool SearchParents = false);
+    	Reference& Get(const StringT& Name, bool SearchParents = true);
+        Scope* Where(const StringT& Name); //which scope a property is defined in
+    	bool Has(const StringT& Name, bool SearchParents = true);
 
-    	bool Remove(const std::string& Name);
+    	bool Remove(const StringT& Name);
 
     protected:
-        std::map<std::string, Reference> properties;
+        std::map<StringT, Reference> properties;
 		std::vector<Reference> indices;
     	Scope* parent;
 
