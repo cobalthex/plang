@@ -28,3 +28,8 @@ std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Constru
 
 	return Stream;
 }
+
+Plang::Construct::operator std::string() const
+{
+	return "[Object]";
+}
