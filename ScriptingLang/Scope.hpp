@@ -1,5 +1,7 @@
+#pragma once
+
 #include "pch.hpp"
-#include "Construct.hpp"
+#include "types.hpp"
 #include "Reference.hpp"
 
 namespace Plang
@@ -18,8 +20,7 @@ namespace Plang
     	bool Remove(const StringT& Name);
 
     protected:
-        std::map<StringT, Reference> properties;
-		std::vector<Reference> indices;
+        std::map<StringT, Reference> variables;
     	Scope* parent;
 
 		friend std::ostream& operator << (std::ostream& Stream, const Scope& Scope);

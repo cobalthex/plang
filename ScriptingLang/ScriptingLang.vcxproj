@@ -142,6 +142,7 @@
     <ClCompile Include="SyntaxTree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Array.hpp" />
     <ClInclude Include="Construct.hpp" />
     <ClInclude Include="Exception.hpp" />
     <ClInclude Include="Lexer.hpp" />

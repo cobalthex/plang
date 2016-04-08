@@ -10,13 +10,20 @@ int main(int ac, const char* av[])
 	Plang::Lexer lex;
 	Plang::Parser parser;
 
-	Plang::Int i (5);
-	Plang::Reference r (std::make_shared<Plang::Int>(i));
+	auto i = Plang::Reference::Create(Plang::Int(5));
+	auto s = Plang::Reference::Create(Plang::String("test string"));
+	auto c = Plang::Reference::Create(Plang::Construct());
+	c->properties.Set("a", i);
 
 	Plang::Scope test;
-	test.Set("x", r);
+	test.Set("x", i);
+	test.Set("y", s);
 
-	std::cout << i << std::endl << std::endl << r;
+	std::cout << test << std::endl;
+
+	c->properties.Get("a")->As<Plang::Int>().value++;
+
+	std::cout << test << std::endl;
 
 	if (ac < 2)
 	{

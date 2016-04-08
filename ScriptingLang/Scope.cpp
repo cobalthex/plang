@@ -1,5 +1,6 @@
 #include "pch.hpp"
 #include "Scope.hpp"
+#include "Construct.hpp"
 
 Plang::Reference& Plang::Scope::Set(const Plang::StringT& Name, const Plang::Reference& Ref, bool SearchParents)
 {
@@ -7,7 +8,7 @@ Plang::Reference& Plang::Scope::Set(const Plang::StringT& Name, const Plang::Ref
 	if (SearchParents)
 		scope = Where(Name);
 
-	return (scope->properties[Name] = Ref);
+	return (scope->variables[Name] = Ref);
 }
 
 Plang::Reference& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents)
@@ -16,8 +17,8 @@ Plang::Reference& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParen
 
 	do
 	{
-		auto value = scope->properties.find(Name);
-		if (value != scope->properties.end())
+		auto value = scope->variables.find(Name);
+		if (value != scope->variables.end())
 			return value->second;
 
 		scope = scope->parent;
@@ -32,7 +33,7 @@ Plang::Scope* Plang::Scope::Where(const Plang::StringT& Name)
 
 	do
 	{
-		if (scope->properties.find(Name) != scope->properties.end())
+		if (scope->variables.find(Name) != scope->variables.end())
 			break;
 
 		scope = scope->parent;
@@ -47,7 +48,7 @@ bool Plang::Scope::Has(const Plang::StringT& Name, bool SearchParents)
 
 	do
 	{
-		if (scope->properties.find(Name) != scope->properties.end())
+		if (scope->variables.find(Name) != scope->variables.end())
 			return true;
 
 		scope = scope->parent;
@@ -58,19 +59,23 @@ bool Plang::Scope::Has(const Plang::StringT& Name, bool SearchParents)
 
 bool Plang::Scope::Remove(const Plang::StringT& Name)
 {
-	auto value = properties.find(Name);
-	if (value != properties.end())
+	auto value = variables.find(Name);
+	if (value != variables.end())
 	{
-		properties.erase(value);
+		variables.erase(value);
 		return true;
 	}
 	return false;
 }
 
-std::ostream & Plang::operator<<(std::ostream & Stream, const Scope & Scope)
+std::ostream & Plang::operator<<(std::ostream & Stream, const Scope& Scope)
 {
 	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << std::endl;
-	//print properties (if any)
-	//print indices (if any)
+	std::cout << "Variables: " << std::endl;
+	for (auto& prop : Scope.variables)
+	{
+		std::cout << "  " << prop.first << ": " << (std::string)(*prop.second) << std::endl;
+	}
+	std::cout << std::endl;
 	return Stream;
 }
