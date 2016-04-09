@@ -8,15 +8,15 @@ class Array
 public:
 	Array() : indices(nullptr), length(0) { }
 
-	Array(size_t Size) : indices(new T[Size]), length(Size) { }
-	Array(size_t Size, const T& Value) : indices(new T[](Value)), length(Size) { }
-	
-	Array(T* Array, size_t Size) : indices(new T[Size]), length(Size) { std::copy(Array, Array + Size, indices); }
-	Array(T Array[]) : Array(Array, sizeof(Array) / sizeof(T)) { }
-	
-	Array(const Array& Array) : indices(new T[Array.length]), length(Array.length) { std::copy(Array.indices, Array.indices + Size, indices); }
+	Array(size_t Length) : indices(new T[Length]), length(Length) { }
+	Array(size_t Length, const T& Value) : indices(new T[Length]()), length(Length) { std::fill(indices, indices + length, Value); }
+
+	Array(T* Array, size_t Length) : indices(new T[Length]), length(Length) { std::copy(Array, Array + Length, indices); }
+	// Array(T Array[]) : Array(Array, sizeof(Array) / sizeof(T)) { }
+
+	Array(const Array& Array) : indices(new T[Array.length]), length(Array.length) { std::copy(Array.indices, Array.indices + Array.length, indices); }
 	Array(Array&& Array) : indices(Array.indices), length(Array.length) { Array.indices = nullptr; Array.length = 0; }
-	
+
 	~Array() { if (indices != nullptr) delete[] indices; length = 0; }
 
 	inline Array& operator = (const Array& Array)
@@ -26,8 +26,8 @@ public:
 			if (indices != nullptr)
 				delete[] indices;
 
-			std::copy(Array.indices, Array.indices + Array.size, indices);
-			size = Array.size;
+			std::copy(Array.indices, Array.indices + Array.length, indices);
+			length = Array.length;
 		}
 		return *this;
 	}
@@ -39,7 +39,7 @@ public:
 				delete[] indices;
 
 			indices = Array.indices;
-			size = Array.size;
+			length = Array.length;
 
 			Array.indices = nullptr;
 			Array.length = 0;

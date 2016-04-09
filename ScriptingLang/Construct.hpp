@@ -33,21 +33,26 @@ namespace Plang
 		virtual inline ValueType Type() const { return ValueType::None; }
 		virtual operator std::string() const; //basic debug output
 
+		//Reinterpret cast. Throws an error if types don't match
 		template <class T>
 		inline T& As()
 		{
 			static_assert(std::is_convertible<Construct, T>::value, "T must be a subclass of Construct");
-			//check types, if not same, cast
+			if (Type() != Typeof(T))
+				throw
 			return *(T*)this;
 		}
+		//returns a cast or a converted copy
 		template <class T>
-		inline const T& As() 
+		inline const T& As() const
 		{
 			static_assert(std::is_convertible<Construct, T>::value, "T must be a subclass of Construct");
 			return *(T*)this;
 		}
 
 		Scope properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
+
+		template <typename T> static constexpr inline ValueType Typeof() noexcept { return ValueType::None; }
 	};
 
 	class Bool : public Construct
@@ -72,6 +77,17 @@ namespace Plang
 		IntT value;
 	};
 
+	class Float : public Construct
+	{
+	public:
+		Float(FloatT Value) : value(Value) { }
+
+		inline ValueType Type() const { return ValueType::Float; }
+		virtual inline operator std::string() const { return std::to_string(value); }
+
+		FloatT value;
+	};
+
 	class String : public Construct
 	{
 	public:
@@ -94,6 +110,12 @@ namespace Plang
 
 		::Array<Reference> indices;
 	};
+
+	template <> constexpr inline ValueType Construct::Typeof<Bool>() noexcept   { return ValueType::Bool; }
+	template <> constexpr inline ValueType Construct::Typeof<Int>() noexcept    { return ValueType::Int; }
+	template <> constexpr inline ValueType Construct::Typeof<Float>() noexcept  { return ValueType::Float; }
+	template <> constexpr inline ValueType Construct::Typeof<String>() noexcept { return ValueType::String; }
+	template <> constexpr inline ValueType Construct::Typeof<Array>() noexcept  { return ValueType::Array; }
 };
 
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);
