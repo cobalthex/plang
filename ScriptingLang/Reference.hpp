@@ -11,6 +11,7 @@ namespace Plang
 	{
 	public:
 		inline Reference() : count(nullptr), ptr(nullptr) { }
+		inline Reference(const nullptr_t& Null) : count(nullptr), ptr(nullptr) { }
 		inline Reference(const T& Value) : count(new size_t(1)), ptr(new T(Value)) { }
 		inline Reference(const Reference& Ref) : count(Ref.count), ptr(Ref.ptr) { AddRef(); }
 		inline Reference(Reference&& Ref) : count(Ref.count), ptr(Ref.ptr) { Ref.ptr = nullptr; Ref.count = nullptr; }
