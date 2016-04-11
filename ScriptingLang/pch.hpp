@@ -1,5 +1,7 @@
 #pragma once
 
+#define _SCL_SECURE_NO_WARNINGS
+
 #include <vector>
 #include <stack>
 #include <map>

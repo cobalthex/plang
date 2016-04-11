@@ -2,7 +2,7 @@
 #include "Scope.hpp"
 #include "Construct.hpp"
 
-Plang::Reference& Plang::Scope::Set(const Plang::StringT& Name, const Plang::Reference& Ref, bool SearchParents)
+Plang::AnyRef& Plang::Scope::Set(const Plang::StringT& Name, const Plang::AnyRef& Ref, bool SearchParents)
 {
 	auto scope = this;
 	if (SearchParents)
@@ -11,7 +11,7 @@ Plang::Reference& Plang::Scope::Set(const Plang::StringT& Name, const Plang::Ref
 	return (scope->variables[Name] = Ref);
 }
 
-Plang::Reference& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents)
+Plang::AnyRef& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents)
 {
 	auto scope = this;
 
@@ -24,8 +24,9 @@ Plang::Reference& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParen
 		scope = scope->parent;
 	} while (scope != nullptr && SearchParents);
 
-	return Plang::Reference::Undefined;
+	return Plang::Undefined;
 }
+
 
 Plang::Scope* Plang::Scope::Where(const Plang::StringT& Name)
 {
@@ -42,7 +43,7 @@ Plang::Scope* Plang::Scope::Where(const Plang::StringT& Name)
 	return scope;
 }
 
-bool Plang::Scope::Has(const Plang::StringT& Name, bool SearchParents)
+bool Plang::Scope::Has(const Plang::StringT& Name, bool SearchParents) const
 {
 	auto scope = this;
 
@@ -71,10 +72,10 @@ bool Plang::Scope::Remove(const Plang::StringT& Name)
 std::ostream & Plang::operator<<(std::ostream & Stream, const Scope& Scope)
 {
 	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << std::endl;
-	std::cout << "Variables: " << std::endl;
+	std::cout << "Variables:" << std::endl;
 	for (auto& prop : Scope.variables)
 	{
-		std::cout << "  " << prop.first << ": " << (std::string)(*prop.second) << std::endl;
+		std::cout << "  " << prop.first << ": " << prop.second->ToString() << std::endl;
 	}
 	std::cout << std::endl;
 	return Stream;

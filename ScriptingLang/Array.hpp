@@ -6,16 +6,17 @@ template <class T>
 class Array
 {
 public:
-	Array() : indices(nullptr), length(0) { }
+	Array() : length(0), indices(nullptr) { }
 
-	Array(size_t Length) : indices(new T[Length]), length(Length) { }
-	Array(size_t Length, const T& Value) : indices(new T[Length]()), length(Length) { std::fill(indices, indices + length, Value); }
+	Array(size_t Length) : length(Length), indices(new T[Length]) { }
+	Array(size_t Length, const T& Value) : length(Length), indices(new T[Length]) { std::fill(indices, indices + length, Value); }
+	Array(std::initializer_list<T> Indices) : length(Indices.size()), indices(new T[Indices.size()]) { std::copy(Indices.begin(), Indices.end(), indices); }
 
-	Array(T* Array, size_t Length) : indices(new T[Length]), length(Length) { std::copy(Array, Array + Length, indices); }
-	// Array(T Array[]) : Array(Array, sizeof(Array) / sizeof(T)) { }
+	Array(T* Array, size_t Length) : length(Length), indices(new T[Length]) { std::copy(Array, Array + Length, indices); }
+	Array(T Array[]) : Array(Array, sizeof(Array) / sizeof(T)) { }
 
-	Array(const Array& Array) : indices(new T[Array.length]), length(Array.length) { std::copy(Array.indices, Array.indices + Array.length, indices); }
-	Array(Array&& Array) : indices(Array.indices), length(Array.length) { Array.indices = nullptr; Array.length = 0; }
+	Array(const Array& Array) : length(Array.length), indices(new T[Array.length]) { std::copy(Array.indices, Array.indices + Array.length, indices); }
+	Array(Array&& Array) : length(Array.length), indices(Array.indices) { Array.indices = nullptr; Array.length = 0; }
 
 	~Array() { if (indices != nullptr) delete[] indices; length = 0; }
 
@@ -48,18 +49,20 @@ public:
 	}
 
 	inline operator T*() noexcept { return indices; }
-	inline operator const T*() const noexcept { return indices; }
+	constexpr operator const T*() const noexcept { return indices; }
 	inline T* Data() noexcept { return indices; }
-	inline const T* Data() const noexcept { return indices; }
+	constexpr const T* Data() const noexcept { return indices; }
 
-	inline size_t Length() const noexcept { return length; }
+	constexpr size_t Length() const noexcept { return length; }
 
 	inline T& operator [](size_t Index) { return indices[Index]; }
-	inline const T& operator [](size_t Index) const { return indices[Index]; }
+	constexpr const T& operator [](size_t Index) const { return indices[Index]; }
 	inline T& At(size_t Index) { return indices[Index]; }
-	inline const T& At(size_t Index) const { return indices[Index]; }
+	constexpr const T& At(size_t Index) const { return indices[Index]; }
+
+
 
 protected:
-	T* indices;
 	size_t length;
+	T* indices;
 };

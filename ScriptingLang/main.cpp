@@ -3,14 +3,26 @@
 #include "Lexer.hpp"
 #include "Parser.hpp"
 #include "Scope.hpp"
+#include "Reference.hpp"
 #include "Construct.hpp"
 
 int main(int ac, const char* av[])
 {
-	Plang::Lexer lex;
-	Plang::Parser parser;
+	Plang::Reference<Plang::Int> i(5);
+	Plang::Reference<Plang::String> s("test");
 
-	auto i = Plang::Reference::Create(Plang::Int(5));
+	std::cout << *i << std::endl;
+	Plang::AnyRef c(i);
+	std::cout << *c << std::endl;
+
+	::Array<int> x = { 1, 2, 3 };
+
+	Plang::Scope k;
+	k.Set("x", i);
+
+	std::cout << k << std::endl;
+
+	/*auto i = Plang::Reference::Create(Plang::Int(5));
 	auto s = Plang::Reference::Create(Plang::String("test string"));
 	auto c = Plang::Reference::Create(Plang::Construct());
 	c->properties.Set("a", i);
@@ -21,10 +33,12 @@ int main(int ac, const char* av[])
 
 	std::cout << test << std::endl;
 
-	c->properties.Get("a")->As<Plang::Int>().value++;
+	c->properties.Get("a").get<Plang::Int>().value++;
 
-	std::cout << test << std::endl;
+	std::cout << test << std::endl;*/
 
+	Plang::Lexer lex;
+	Plang::Parser parser;
 	if (ac < 2)
 	{
 		std::cout << "Interactive mode\n";

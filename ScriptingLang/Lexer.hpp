@@ -36,7 +36,6 @@ namespace Plang
 
 		Lexer() = default;
 		Lexer(const std::string& ModuleName, std::istream& Input);
-		~Lexer() = default;
 
 		static bool CharIsWhitespace(codepoint Char);
 		static bool CharIsRegionOpener(codepoint Char);

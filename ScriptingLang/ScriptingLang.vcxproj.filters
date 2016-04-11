@@ -21,9 +21,6 @@
     <ClCompile Include="Construct.cpp">
       <Filter>Runtime</Filter>
     </ClCompile>
-    <ClCompile Include="Reference.cpp">
-      <Filter>Runtime</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.hpp" />
@@ -50,9 +47,6 @@
     <ClInclude Include="Construct.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
-    <ClInclude Include="Exception.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
     <ClInclude Include="Script.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
@@ -61,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="Array.hpp">
       <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Context.hpp">
+      <Filter>Runtime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

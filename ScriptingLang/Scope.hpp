@@ -12,16 +12,17 @@ namespace Plang
     	Scope() : parent(nullptr) { }
     	Scope(Scope* Parent) : parent(Parent) { }
 
-		Reference& Set(const StringT& Name, const Reference& Ref, bool SearchParents = false);
-    	Reference& Get(const StringT& Name, bool SearchParents = true);
+		AnyRef& Set(const StringT& Name, const AnyRef& Ref, bool SearchParents = false);
+    	AnyRef& Get(const StringT& Name, bool SearchParents = true);
+		inline const AnyRef& Get(const StringT& Name, bool SearchParents = true) const { return Get(Name, SearchParents); }
         Scope* Where(const StringT& Name); //which scope a property is defined in
-    	bool Has(const StringT& Name, bool SearchParents = true);
+    	bool Has(const StringT& Name, bool SearchParents = true) const;
 
     	bool Remove(const StringT& Name);
 
     protected:
-        std::map<StringT, Reference> variables;
-    	Scope* parent;
+		Scope* parent;
+        std::map<StringT, AnyRef> variables;
 
 		friend std::ostream& operator << (std::ostream& Stream, const Scope& Scope);
     };

@@ -5,63 +5,48 @@
 #include "Array.hpp"
 #include "Reference.hpp"
 #include "Scope.hpp"
+#include "SyntaxTree.hpp"
 
 namespace Plang
 {
-	enum class ValueType
+	enum class ConstructType
 	{
-		None,
+		Invalid,
+		Construct,
 		Bool,
 		Int,
 		Float,
 		String,
+		Array,
 		Function, //native function
 		Script,
-		//Collections
-		Array,
 	};
 
-	std::string TypeToString(const Plang::ValueType& Type);
+	std::string TypeToString(const Plang::ConstructType& Type);
 
-	//The basic object. Everything is a construct from literals to lexical blocks to functions
+	//The basic object type. Everything is a construct from literals to lexical blocks to functions
 	class Construct
 	{
 	public:
-		Construct() { }
-		~Construct() { }
+		Construct() = default;
+		virtual ~Construct() = default;
 
-		virtual inline ValueType Type() const { return ValueType::None; }
-		virtual operator std::string() const; //basic debug output
-
-		//Reinterpret cast. Throws an error if types don't match
-		template <class T>
-		inline T& As()
-		{
-			static_assert(std::is_convertible<Construct, T>::value, "T must be a subclass of Construct");
-			if (Type() != Typeof(T))
-				throw
-			return *(T*)this;
-		}
-		//returns a cast or a converted copy
-		template <class T>
-		inline const T& As() const
-		{
-			static_assert(std::is_convertible<Construct, T>::value, "T must be a subclass of Construct");
-			return *(T*)this;
-		}
+		virtual inline ConstructType Type() const { return ConstructType::Construct; }
+		virtual inline std::string ToString() const { return "[Object]"; } //basic string output (inherited classes may have multiple versions)
 
 		Scope properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
-
-		template <typename T> static constexpr inline ValueType Typeof() noexcept { return ValueType::None; }
 	};
+	
+	//Null and Undefined are special references
 
 	class Bool : public Construct
 	{
 	public:
-		Bool(bool Value) : value(Value) { }
+		Bool() : value(false) { }
+		Bool(const bool& Value) : value(Value) { }
 
-		inline ValueType Type() const { return ValueType::Bool; }
-		virtual inline operator std::string() const { return std::to_string(value); }
+		inline ConstructType Type() const override { return ConstructType::Bool; }
+		inline std::string ToString() const override { return std::to_string(value); }
 
 		bool value;
 	};
@@ -69,10 +54,12 @@ namespace Plang
 	class Int : public Construct
 	{
 	public:
-		Int(IntT Value) : value(Value) { }
+		Int() : value(0) { }
+		Int(const IntT& Value) : value(Value) { }
 
-		inline ValueType Type() const { return ValueType::Int; }
-		virtual inline operator std::string() const { return std::to_string(value); }
+		inline ConstructType Type() const override { return ConstructType::Int; }
+		inline std::string ToString() const override { return std::to_string(value); }
+		inline std::string ToString(int Radix) const { return std::to_string(value); }
 
 		IntT value;
 	};
@@ -80,10 +67,11 @@ namespace Plang
 	class Float : public Construct
 	{
 	public:
-		Float(FloatT Value) : value(Value) { }
+		Float() : value(0.0f) { }
+		Float(const FloatT& Value) : value(Value) { }
 
-		inline ValueType Type() const { return ValueType::Float; }
-		virtual inline operator std::string() const { return std::to_string(value); }
+		inline ConstructType Type() const override { return ConstructType::Float; }
+		inline std::string ToString() const override { return std::to_string(value); }
 
 		FloatT value;
 	};
@@ -91,31 +79,62 @@ namespace Plang
 	class String : public Construct
 	{
 	public:
+		String() : value("") { }
 		String(const StringT& Value) : value(Value) { }
+		String(const char* Value) : value(Value) { }
 
-		inline ValueType Type() const { return ValueType::String; }
-		virtual inline operator std::string() const { return "\"" + value + "\""; }
+		inline ConstructType Type() const override { return ConstructType::String; }
+		inline std::string ToString() const override { return "\"" + value + "\""; }
 
-		const StringT value;
+		StringT value;
 	};
 
 	class Array : public Construct
 	{
 	public:
-		Array(size_t Length) : indices(Length) { }
-		~Array();
+		Array() = default;
+		Array(const ::Array<AnyRef>& Value) : value(Value) { }
 
-		inline ValueType Type() const { return ValueType::String; }
-		virtual inline operator std::string() const { return "[ Array (" + std::to_string(indices.Length()) + ") ]"; }
+		inline ConstructType Type() const override { return ConstructType::String; }
+		inline std::string ToString() const override { return "[ Array (" + std::to_string(value.Length()) + ") ]"; }
 
-		::Array<Reference> indices;
+		::Array<AnyRef> value;
+	};
+	
+	enum class ArgumentType
+	{
+		Single,
+		Tuple,
+	}; 
+	struct Argument
+	{
+		StringT name;
+		ArgumentType type;
 	};
 
-	template <> constexpr inline ValueType Construct::Typeof<Bool>() noexcept   { return ValueType::Bool; }
-	template <> constexpr inline ValueType Construct::Typeof<Int>() noexcept    { return ValueType::Int; }
-	template <> constexpr inline ValueType Construct::Typeof<Float>() noexcept  { return ValueType::Float; }
-	template <> constexpr inline ValueType Construct::Typeof<String>() noexcept { return ValueType::String; }
-	template <> constexpr inline ValueType Construct::Typeof<Array>() noexcept  { return ValueType::Array; }
+	class Function : public Construct
+	{
+	public:
+		Function() = default;
+
+		inline ConstructType Type() const override { return ConstructType::Function; }
+		inline std::string ToString() const override { return "[[ native function ]]"; }
+
+		::Array<Argument> signature;
+	};
+
+	class Script : public Construct
+	{
+	public:
+		Script() : Construct() { }
+
+		inline ConstructType Type() const override { return ConstructType::Script; }
+		inline std::string ToString() const override { return "[[ Script ]]"; }
+
+		SyntaxTreeNode* node;
+
+		inline AnyRef Run() { return AnyRef(); }
+	};
 };
 
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);

@@ -1,19 +1,19 @@
 #include "pch.hpp"
 #include "Construct.hpp"
 
-std::string Plang::TypeToString(const Plang::ValueType& Type)
+std::string Plang::TypeToString(const Plang::ConstructType& Type)
 {
 	switch (Type)
 	{
-	case Plang::ValueType::Bool:
+	case Plang::ConstructType::Bool:
 		return "Bool";
-	case Plang::ValueType::Int:
+	case Plang::ConstructType::Int:
 		return "Int";
-	case Plang::ValueType::Float:
+	case Plang::ConstructType::Float:
 		return "Float";
-	case Plang::ValueType::String:
+	case Plang::ConstructType::String:
 		return "String";
-	case Plang::ValueType::Array:
+	case Plang::ConstructType::Array:
 		return "Array";
 	default:
 		return "Unknown";
@@ -22,14 +22,9 @@ std::string Plang::TypeToString(const Plang::ValueType& Type)
 
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct)
 {
-	Stream << "Type: " << TypeToString(Construct.Type());
+	Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
 	//properties
 	//indices
 
 	return Stream;
-}
-
-Plang::Construct::operator std::string() const
-{
-	return "[Object]";
 }
