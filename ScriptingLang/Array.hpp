@@ -13,7 +13,7 @@ public:
 	Array(std::initializer_list<T> Indices) : length(Indices.size()), indices(new T[Indices.size()]) { std::copy(Indices.begin(), Indices.end(), indices); }
 
 	Array(T* Array, size_t Length) : length(Length), indices(new T[Length]) { std::copy(Array, Array + Length, indices); }
-	Array(T Array[]) : Array(Array, sizeof(Array) / sizeof(T)) { }
+	Array(T Array[]) : length(sizeof(Array) / sizeof(T)), indices(Array) { }
 
 	Array(const Array& Array) : length(Array.length), indices(new T[Array.length]) { std::copy(Array.indices, Array.indices + Array.length, indices); }
 	Array(Array&& Array) : length(Array.length), indices(Array.indices) { Array.indices = nullptr; Array.length = 0; }

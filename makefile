@@ -1,5 +1,5 @@
 source_dir=ScriptingLang/
-cpp_opts=--std=c++14
+cpp_opts=--std=c++1y -m64
 
 pch = clang++ $(cpp_opts) $(source_dir)pch.hpp -emit-pch -o $(1)/pch.pch
 
