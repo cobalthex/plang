@@ -5,6 +5,8 @@ std::string Plang::TypeToString(const Plang::ConstructType& Type)
 {
 	switch (Type)
 	{
+	case Plang::ConstructType::Construct:
+		return "Construct";
 	case Plang::ConstructType::Bool:
 		return "Bool";
 	case Plang::ConstructType::Int:
@@ -15,6 +17,12 @@ std::string Plang::TypeToString(const Plang::ConstructType& Type)
 		return "String";
 	case Plang::ConstructType::Array:
 		return "Array";
+	case Plang::ConstructType::Script:
+		return "Script";
+	case Plang::ConstructType::Function:
+		return "Function";
+	case Plang::ConstructType::ScriptFunction:
+		return "ScriptFunction";
 	default:
 		return "Unknown";
 	}
@@ -27,4 +35,16 @@ std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Constru
 	//indices
 
 	return Stream;
+}
+
+Plang::Scope Plang::Signature::Parse()
+{
+	Scope s;
+
+	return s;
+}
+
+Plang::AnyRef Plang::Script::Evaluate(Plang::Scope* LexScope)
+{
+	return AnyRef();
 }

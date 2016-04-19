@@ -18,8 +18,9 @@ namespace Plang
 		Float,
 		String,
 		Array,
-		Function, //native function
 		Script,
+		Function, //native function
+		ScriptFunction,
 	};
 
 	std::string TypeToString(const Plang::ConstructType& Type);
@@ -100,6 +101,20 @@ namespace Plang
 
 		::Array<AnyRef> value;
 	};
+
+	//A script
+	class Script : public Construct
+	{
+	public:
+		Script() : Construct() { }
+
+		inline ConstructType Type() const override { return ConstructType::Script; }
+		inline std::string ToString() const override { return "[[ Script ]]"; }
+
+		SyntaxTreeNode* node;
+
+		AnyRef Evaluate(Scope* LexScope);
+	};
 	
 	enum class ArgumentType
 	{
@@ -112,28 +127,33 @@ namespace Plang
 		ArgumentType type;
 	};
 
+	struct Signature
+	{
+		Scope Parse();
+
+		::Array<Argument> args;
+	};
+
 	class Function : public Construct
 	{
 	public:
-		Function() = default;
+		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
-		inline ConstructType Type() const override { return ConstructType::Function; }
-		inline std::string ToString() const override { return "[[ native function ]]"; }
+		Plang::AnyRef Call();
 
-		::Array<Argument> signature;
+		Signature signature;
 	};
 
-	class Script : public Construct
+	class ScriptFunction : public Construct
 	{
 	public:
-		Script() : Construct() { }
+		ScriptFunction() = default;
 
-		inline ConstructType Type() const override { return ConstructType::Script; }
-		inline std::string ToString() const override { return "[[ Script ]]"; }
+		inline ConstructType Type() const override { return ConstructType::ScriptFunction; }
+		inline std::string ToString() const override { return "[[ Script function ]]"; }
 
-		SyntaxTreeNode* node;
-
-		inline AnyRef Run() { return AnyRef(); }
+		Script script;
+		Signature signature;
 	};
 };
 

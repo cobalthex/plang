@@ -11,16 +11,16 @@ int main(int ac, const char* av[])
 	Plang::Reference<Plang::Int> i(5);
 	Plang::Reference<Plang::String> s("test");
 
-	std::cout << *i << std::endl;
+	std::cout << *i << "\n";
 	Plang::AnyRef c(i);
-	std::cout << *c << std::endl;
+	std::cout << *c << "\n";
 
 	::Array<int> x = { 1, 2, 3 };
 
 	Plang::Scope k;
 	k.Set("x", i);
 
-	std::cout << k << std::endl;
+	std::cout << k << "\n";
 
 	/*auto i = Plang::Reference::Create(Plang::Int(5));
 	auto s = Plang::Reference::Create(Plang::String("test string"));
@@ -31,11 +31,11 @@ int main(int ac, const char* av[])
 	test.Set("x", i);
 	test.Set("y", s);
 
-	std::cout << test << std::endl;
+	std::cout << test << "\n";
 
 	c->properties.Get("a").get<Plang::Int>().value++;
 
-	std::cout << test << std::endl;*/
+	std::cout << test << "\n";*/
 
 	Plang::Lexer lex;
 	Plang::Parser parser;
@@ -66,11 +66,11 @@ int main(int ac, const char* av[])
 			}
 			catch (const Plang::ParserException& Expt)
 			{
-				std::cout << "! Parser Error: " << Expt << std::endl;
+				std::cout << "! Parser Error: " << Expt << "\n";
 				continue;
 			}
 
-			std::cout << ">> " << parser.syntaxTree << std::endl;
+			std::cout << ">> " << parser.syntaxTree << "\n";
 		}
 
 		// std::cout << av[0] << " <script>";
@@ -96,7 +96,7 @@ int main(int ac, const char* av[])
 
 	parser = Plang::Parser(lex.tokens);
 	fout.open("tests/out.parse", std::ios::out);
-	fout << parser.syntaxTree << std::endl;
+	fout << parser.syntaxTree << "\n";
 	fout.close();
 
 	return 0;

@@ -26,7 +26,7 @@ std::ostream& operator << (std::ostream& Stream, const Plang::LexerToken& Token)
 std::ostream& operator << (std::ostream& Stream, const Plang::Lexer& Lexer)
 {
 	for (auto& i : Lexer.tokens)
-		Stream << i << std::endl;
+		Stream << i << "\n";
 	return Stream;
 }
 

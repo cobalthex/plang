@@ -5,8 +5,14 @@
 Plang::AnyRef& Plang::Scope::Set(const Plang::StringT& Name, const Plang::AnyRef& Ref, bool SearchParents)
 {
 	auto scope = this;
+
 	if (SearchParents)
+	{
 		scope = Where(Name);
+
+		if (scope == nullptr)
+			scope = this;
+	}
 
 	return (scope->variables[Name] = Ref);
 }
@@ -69,14 +75,28 @@ bool Plang::Scope::Remove(const Plang::StringT& Name)
 	return false;
 }
 
+Plang::Scope& Plang::Scope::Merge(const Plang::Scope& Other, bool Overwrite)
+{
+	if (&Other != this)
+	{
+		for (auto& var : Other.variables)
+		{
+			if (Overwrite || variables.find(var.first) != variables.end())
+				variables.insert(var);
+		}
+	}
+
+	return *this;
+}
+
 std::ostream & Plang::operator<<(std::ostream & Stream, const Scope& Scope)
 {
-	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << std::endl;
-	std::cout << "Variables:" << std::endl;
+	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << "\n";
+	std::cout << "Variables:\n";
 	for (auto& prop : Scope.variables)
 	{
-		std::cout << "  " << prop.first << ": " << prop.second->ToString() << std::endl;
+		std::cout << "  " << prop.first << ": " << prop.second->ToString() << "\n";
 	}
-	std::cout << std::endl;
+	std::cout << "\n";
 	return Stream;
 }

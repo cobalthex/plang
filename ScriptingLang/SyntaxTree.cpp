@@ -41,7 +41,7 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 
 	if (Node.location.module.length() > 10000)
 		Stream << " @ " << Node.location;
-	Stream << std::endl;
+	Stream << "\n";
 
 	for (auto& i : Node.children)
 		PrintDepth(Stream, Depth + 1, i);
