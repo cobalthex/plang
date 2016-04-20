@@ -81,8 +81,5 @@
     <None Include="Parser.hpp">
       <Filter>Parser</Filter>
     </None>
-    <None Include="Signature.hpp">
-      <Filter>Runtime</Filter>
-    </None>
   </ItemGroup>
 </Project>

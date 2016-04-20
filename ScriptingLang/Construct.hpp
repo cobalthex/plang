@@ -129,9 +129,8 @@ namespace Plang
 
 	struct Signature
 	{
-		Scope Parse();
-
-		::Array<Argument> args;
+		::Array<Argument> arguments;
+		Scope Parse(const Tuple& Arguments);
 	};
 
 	class Function : public Construct

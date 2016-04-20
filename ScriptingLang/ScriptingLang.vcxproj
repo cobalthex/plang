@@ -157,7 +157,6 @@
     <ClInclude Include="variant.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Signature.hpp" />
     <None Include="Parser.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
