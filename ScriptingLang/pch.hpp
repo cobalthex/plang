@@ -19,6 +19,7 @@
 #include <functional>
 
 #include <utility>
+#include <iterator>
 #include <typeinfo>
 #include <type_traits>
 #include <stdexcept>

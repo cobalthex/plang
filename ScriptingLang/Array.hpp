@@ -20,6 +20,11 @@ public:
 
 	~Array() { if (indices != nullptr) delete[] indices; length = 0; }
 
+	/*Iterator begin() { return Iterator(indices); }
+	ConstIterator begin() const { return Iterator(indices); }
+	Iterator end() { return Iterator(indices + length); }
+	const ConstIterator cend() const { return Iterator(indices + length); }*/
+
 	inline Array& operator = (const Array& Array)
 	{
 		if (Array.indices != indices)
@@ -60,7 +65,12 @@ public:
 	inline T& At(size_t Index) { return indices[Index]; }
 	constexpr const T& At(size_t Index) const { return indices[Index]; }
 
-
+	//Create a copy of all or part of this array. Zero slices to end
+	inline ::Array<T> Slice(size_t Start, size_t Length = 0) const
+	{
+		size_t len = Length > 0 ? std::min(length - Start, Length) : (Length - Start);
+		return ::Array<T>(indices + Start, len);
+	}
 
 protected:
 	size_t length;

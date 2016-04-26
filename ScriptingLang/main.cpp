@@ -8,19 +8,18 @@
 
 int main(int ac, const char* av[])
 {
-	Plang::Reference<Plang::Int> i(5);
-	Plang::Reference<Plang::String> s("test");
+	Plang::Reference<Plang::Int> i (5);
+	Plang::Reference<Plang::String> s ("test");
+	Plang::Reference<Plang::Float> f (4.0);
 
 	std::cout << *i << "\n";
 	Plang::AnyRef c(i);
 	std::cout << *c << "\n";
 
-	::Array<int> x = { 1, 2, 3 };
-
-	Plang::Scope k;
-	k.Set("x", i);
-
-	std::cout << k << "\n";
+	Plang::Signature z;
+	z.signature = ::Array<Plang::Argument> { { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Tuple } };
+	auto x = z.Parse(Plang::Tuple({ i, s, f }));
+	std::cout << x << std::endl;
 
 	/*auto i = Plang::Reference::Create(Plang::Int(5));
 	auto s = Plang::Reference::Create(Plang::String("test string"));

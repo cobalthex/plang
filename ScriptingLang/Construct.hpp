@@ -18,6 +18,7 @@ namespace Plang
 		Float,
 		String,
 		Array,
+		Tuple,
 		Script,
 		Function, //native function
 		ScriptFunction,
@@ -30,10 +31,19 @@ namespace Plang
 	{
 	public:
 		Construct() = default;
+		Construct(const Scope& DefaultProps) : properties(DefaultProps) { }
+		Construct(Scope&& DefaultProps) : properties(DefaultProps) { }
 		virtual ~Construct() = default;
 
 		virtual inline ConstructType Type() const { return ConstructType::Construct; }
-		virtual inline std::string ToString() const { return "[Object]"; } //basic string output (inherited classes may have multiple versions)
+		virtual inline std::string ToString() const { return "[[ Construct (" + std::to_string(Count()) + ") ]]"; } //basic string output (inherited classes may have multiple versions)
+
+		//alises to property functions
+
+		inline AnyRef& Set(const StringT& Name, const AnyRef& Ref) { properties.Set(Name, Ref, false); }
+		inline AnyRef& Get(const StringT& Name) { properties.Get(Name, true); }
+		inline const AnyRef& Get(const StringT& Name) const { properties.Get(Name, true); }
+		inline const size_t Count() const { return properties.Count(); }
 
 		Scope properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
 	};
@@ -95,25 +105,39 @@ namespace Plang
 	public:
 		Array() = default;
 		Array(const ::Array<AnyRef>& Value) : value(Value) { }
+		Array(::Array<AnyRef>&& Value) : value(Value) { }
 
-		inline ConstructType Type() const override { return ConstructType::String; }
-		inline std::string ToString() const override { return "[ Array (" + std::to_string(value.Length()) + ") ]"; }
+		inline ConstructType Type() const override { return ConstructType::Array; }
+		inline std::string ToString() const override { return "[ Array (" + std::to_string(Length()) + ") ]"; }
+
+		inline AnyRef& Set(size_t Index, const AnyRef& Ref) { value[Index] = Ref; }
+		inline AnyRef& Get(size_t Index) { return value[Index]; }
+		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
+		inline const size_t Length() const { return value.Length(); }
 
 		::Array<AnyRef> value;
 	};
 
-	//A script
-	class Script : public Construct
+	//A fixed size, immutable data type
+	//These are typically meant for storing 
+	//Supports both named properties (stored in construct props) and indices
+	class Tuple : public Construct
 	{
 	public:
-		Script() : Construct() { }
+		using KvPair = std::pair<StringT, AnyRef>;
 
-		inline ConstructType Type() const override { return ConstructType::Script; }
-		inline std::string ToString() const override { return "[[ Script ]]"; }
+		Tuple() = default;
+		Tuple(const ::Array<AnyRef>& Indices) : value(Indices) { }
+		Tuple(const ::Array<AnyRef>& Indices, const ::Array<KvPair>& Keys) : value(Indices), Construct(Keys) { }
+		Tuple(std::initializer_list<AnyRef> Init) : value(Init) { }
 
-		SyntaxTreeNode* node;
+		inline ConstructType Type() const override { return ConstructType::Tuple; }
+		inline std::string ToString() const override { return "[[ Tuple (" + std::to_string(Length()) + "," + std::to_string(Count()) + ") ]]"; }
 
-		AnyRef Evaluate(Scope* LexScope);
+		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
+		inline const size_t Length() const { return value.Length(); }
+
+		::Array<AnyRef> value;
 	};
 	
 	enum class ArgumentType
@@ -129,30 +153,36 @@ namespace Plang
 
 	struct Signature
 	{
-		::Array<Argument> arguments;
-		Scope Parse(const Tuple& Arguments);
+		::Array<Argument> signature;
+		Scope Parse(const Tuple& Arguments); //Parse an arguments tuple using the signature. Named arguments overwrite positional arguments
 	};
 
+	//A native function
 	class Function : public Construct
 	{
 	public:
 		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
-		Plang::AnyRef Call();
+		Plang::AnyRef Call(Scope* LexScope, const Tuple& Arguments);
 
 		Signature signature;
+
+		std::function<AnyRef(const Scope& Scope)> function;
 	};
 
-	class ScriptFunction : public Construct
+	//A script. All scripts behave like functions, having arguments and a return value
+	class Script : public Construct
 	{
 	public:
-		ScriptFunction() = default;
+		Script() : Construct() { }
 
-		inline ConstructType Type() const override { return ConstructType::ScriptFunction; }
-		inline std::string ToString() const override { return "[[ Script function ]]"; }
+		inline ConstructType Type() const override { return ConstructType::Script; }
+		inline std::string ToString() const override { return "[[ Script ]]"; }
 
-		Script script;
+		AnyRef Evaluate(Scope* LexScope, const Tuple& Arguments);
+
 		Signature signature;
+		SyntaxTreeNode* node;
 	};
 };
 
