@@ -34,7 +34,7 @@ std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Constru
 	return Stream;
 }
 
-Plang::Scope Plang::Signature::Parse(const Tuple& Arguments)
+Plang::Scope Plang::Signature::Parse(const Plang::Tuple& Arguments)
 {
 	Scope s;
 
@@ -70,7 +70,7 @@ Plang::Scope Plang::Signature::Parse(const Tuple& Arguments)
 	return s;
 }
 
-Plang::AnyRef Plang::Function::Call(Scope* LexScope, const Tuple& Arguments)
+Plang::AnyRef Plang::Function::Call(Plang::Scope* LexScope, const Plang::Tuple& Arguments)
 {
 	AnyRef rval;
 
@@ -82,7 +82,7 @@ Plang::AnyRef Plang::Function::Call(Scope* LexScope, const Tuple& Arguments)
 	return rval;
 }
 
-Plang::AnyRef Plang::Script::Evaluate(Plang::Scope* LexScope, const Tuple& Arguments)
+Plang::AnyRef Plang::Script::Evaluate(Plang::Scope* LexScope, const Plang::Tuple& Arguments)
 {
 	AnyRef rval;
 

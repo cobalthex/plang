@@ -40,14 +40,14 @@ namespace Plang
 
 		//alises to property functions
 
-		inline AnyRef& Set(const StringT& Name, const AnyRef& Ref) { properties.Set(Name, Ref, false); }
-		inline AnyRef& Get(const StringT& Name) { properties.Get(Name, true); }
-		inline const AnyRef& Get(const StringT& Name) const { properties.Get(Name, true); }
+		inline AnyRef& Set(const StringT& Name, const AnyRef& Ref) { return properties.Set(Name, Ref, false); }
+		inline AnyRef& Get(const StringT& Name) { return properties.Get(Name, true); }
+		inline const AnyRef& Get(const StringT& Name) const { return properties.Get(Name, true); }
 		inline const size_t Count() const { return properties.Count(); }
 
 		Scope properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
 	};
-	
+
 	//Null and Undefined are special references
 
 	class Bool : public Construct
@@ -110,7 +110,7 @@ namespace Plang
 		inline ConstructType Type() const override { return ConstructType::Array; }
 		inline std::string ToString() const override { return "[ Array (" + std::to_string(Length()) + ") ]"; }
 
-		inline AnyRef& Set(size_t Index, const AnyRef& Ref) { value[Index] = Ref; }
+		inline AnyRef& Set(size_t Index, const AnyRef& Ref) { return (value[Index] = Ref); }
 		inline AnyRef& Get(size_t Index) { return value[Index]; }
 		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
 		inline const size_t Length() const { return value.Length(); }
@@ -119,7 +119,7 @@ namespace Plang
 	};
 
 	//A fixed size, immutable data type
-	//These are typically meant for storing 
+	//These are typically meant for storing
 	//Supports both named properties (stored in construct props) and indices
 	class Tuple : public Construct
 	{
@@ -139,12 +139,12 @@ namespace Plang
 
 		::Array<AnyRef> value;
 	};
-	
+
 	enum class ArgumentType
 	{
 		Single,
 		Tuple,
-	}; 
+	};
 	struct Argument
 	{
 		StringT name;

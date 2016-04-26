@@ -4,8 +4,6 @@
 
 namespace Plang
 {
-	class Construct;
-
 	template <class T>
 	class Reference
 	{
@@ -85,6 +83,7 @@ namespace Plang
 		friend class Reference;
 	};
 
+	class Construct;
 	using AnyRef = Reference<Construct>;
 	static AnyRef Undefined;
 	static AnyRef Null;
