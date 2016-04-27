@@ -19,9 +19,8 @@ namespace Plang
 		String,
 		Array,
 		Tuple,
-		Script,
 		Function, //native function
-		ScriptFunction,
+		Script,
 	};
 
 	std::string TypeToString(const Plang::ConstructType& Type);
@@ -151,35 +150,47 @@ namespace Plang
 		ArgumentType type;
 	};
 
-	struct Signature
+	class Signature
 	{
-		::Array<Argument> signature;
-		Scope Parse(const Tuple& Arguments); //Parse an arguments tuple using the signature. Named arguments overwrite positional arguments
+	public:
+		Signature(const ::Array<Argument> Arguments);
+
+		//Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
+		Scope Parse(const Tuple& Arguments);
+
+	private:
+		::Array<Argument> arguments;
+		size_t nSingles; //the number of non-tuple arguments in the signature
+		size_t nTuples; //the number of tuple arguments in the signature
 	};
 
 	//A native function
 	class Function : public Construct
 	{
 	public:
+		using FunctionT = std::function<AnyRef(Scope& Scope)>;
+
+		inline Function(const Signature& Signature, const FunctionT& Function) : signature(Signature), function(Function) { }
+
 		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
-		Plang::AnyRef Call(Scope* LexScope, const Tuple& Arguments);
+		Plang::AnyRef Call(const Tuple& Arguments, Scope* LexScope);
 
 		Signature signature;
-
-		std::function<AnyRef(const Scope& Scope)> function;
+		FunctionT function;
 	};
 
 	//A script. All scripts behave like functions, having arguments and a return value
 	class Script : public Construct
 	{
 	public:
-		Script() : Construct() { }
+		inline Script(const Signature& Signature, SyntaxTreeNode* Node)
+			: signature(Signature), node(Node), Construct() { }
 
 		inline ConstructType Type() const override { return ConstructType::Script; }
 		inline std::string ToString() const override { return "[[ Script ]]"; }
 
-		AnyRef Evaluate(Scope* LexScope, const Tuple& Arguments);
+		AnyRef Evaluate(const Tuple& Arguments, Scope* LexScope);
 
 		Signature signature;
 		SyntaxTreeNode* node;

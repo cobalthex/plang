@@ -33,6 +33,22 @@ Plang::AnyRef& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents)
 	return Plang::Undefined;
 }
 
+const Plang::AnyRef& Plang::Scope::Get(const Plang::StringT& Name, bool SearchParents) const
+{
+	auto scope = this;
+
+	do
+	{
+		auto value = scope->variables.find(Name);
+		if (value != scope->variables.end())
+			return value->second;
+
+		scope = scope->parent;
+	} while (scope != nullptr && SearchParents);
+
+	return Plang::Undefined;
+}
+
 
 Plang::Scope* Plang::Scope::Where(const Plang::StringT& Name)
 {

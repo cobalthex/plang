@@ -44,6 +44,9 @@ namespace Plang
 			FreeRef();
 		}
 
+		inline bool operator == (const Reference& Other) const { return ptr == Other.ptr; }
+		inline bool operator != (const Reference& Other) const { return ptr != Other.ptr; }
+
 		inline T& operator *() { return *ptr; }
 		inline const T& operator *() const { return *ptr; }
 

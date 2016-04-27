@@ -11,30 +11,17 @@ int main(int ac, const char* av[])
 	Plang::Reference<Plang::Int> i (5);
 	Plang::Reference<Plang::String> s ("test");
 	Plang::Reference<Plang::Float> f (4.0);
+	Plang::Reference<Plang::Float> b (true);
 
 	std::cout << *i << "\n";
 	Plang::AnyRef c(i);
 	std::cout << *c << "\n";
 
-	Plang::Signature z;
-	z.signature = ::Array<Plang::Argument> { { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Tuple } };
-	auto x = z.Parse(Plang::Tuple({ i, s, f }));
-	std::cout << x << std::endl;
+	Plang::Signature z (::Array<Plang::Argument> { { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Tuple } });
+	auto x = Plang::Tuple({ i, s, f });
 
-	/*auto i = Plang::Reference::Create(Plang::Int(5));
-	auto s = Plang::Reference::Create(Plang::String("test string"));
-	auto c = Plang::Reference::Create(Plang::Construct());
-	c->properties.Set("a", i);
-
-	Plang::Scope test;
-	test.Set("x", i);
-	test.Set("y", s);
-
-	std::cout << test << "\n";
-
-	c->properties.Get("a").get<Plang::Int>().value++;
-
-	std::cout << test << "\n";*/
+	Plang::Function t (z, [](const Plang::Scope& Args) { std::cout << Args << std::endl; return Plang::Undefined; });
+	t.Call(x, nullptr);
 
 	Plang::Lexer lex;
 	Plang::Parser parser;

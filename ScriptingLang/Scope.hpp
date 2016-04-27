@@ -19,7 +19,7 @@ namespace Plang
 
 		AnyRef& Set(const StringT& Name, const AnyRef& Ref, bool SearchParents = false); //If SearchParents is true, property is set where it is defined or in this scope if not found
     	AnyRef& Get(const StringT& Name, bool SearchParents = true);
-		inline const AnyRef& Get(const StringT& Name, bool SearchParents = true) const { return Get(Name, SearchParents); }
+		const AnyRef& Get(const StringT& Name, bool SearchParents = true) const;
         Scope* Where(const StringT& Name); //which scope a property is defined in
     	bool Has(const StringT& Name, bool SearchParents = true) const;
 		inline size_t Count() const { return variables.size(); } //The number of defined variables in this scope
