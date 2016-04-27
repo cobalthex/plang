@@ -2,6 +2,9 @@
 
 #include "pch.hpp"
 
+//todo: WeakArray
+//todo: iterators (+const/reverse)
+
 template <class T>
 class Array
 {

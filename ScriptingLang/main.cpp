@@ -8,20 +8,12 @@
 
 int main(int ac, const char* av[])
 {
-	Plang::Reference<Plang::Int> i (5);
-	Plang::Reference<Plang::String> s ("test");
-	Plang::Reference<Plang::Float> f (4.0);
-	Plang::Reference<Plang::Float> b (true);
+	Plang::Scope global;
 
-	std::cout << *i << "\n";
-	Plang::AnyRef c(i);
-	std::cout << *c << "\n";
+	Plang::Signature sgn ({ { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Single } });
+	Plang::Function plus (sgn, [](const Plang::Scope& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
 
-	Plang::Signature z (::Array<Plang::Argument> { { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Tuple } });
-	auto x = Plang::Tuple({ i, s, f });
-
-	Plang::Function t (z, [](const Plang::Scope& Args) { std::cout << Args << std::endl; return Plang::Undefined; });
-	t.Call(x, nullptr);
+	global.Set("+", Plang::Reference<Plang::Function>(plus));
 
 	Plang::Lexer lex;
 	Plang::Parser parser;
@@ -49,14 +41,13 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
+				Plang::Script(&parser.syntaxTree.root).Evaluate(&global);
 			}
 			catch (const Plang::ParserException& Expt)
 			{
 				std::cout << "! Parser Error: " << Expt << "\n";
 				continue;
 			}
-
-			std::cout << ">> " << parser.syntaxTree << "\n";
 		}
 
 		// std::cout << av[0] << " <script>";

@@ -107,11 +107,16 @@ Plang::Scope& Plang::Scope::Merge(const Plang::Scope& Other, bool Overwrite)
 
 std::ostream & Plang::operator<<(std::ostream & Stream, const Scope& Scope)
 {
-	std::cout << "Parent: " << std::hex << std::showbase << Scope.parent << "\n";
+	std::cout << "Parent: ";
+	if (Scope.parent == nullptr)
+		std::cout << "null\n";
+	else
+		std::cout << std::hex << std::showbase << Scope.parent << "\n";
+
 	std::cout << "Variables:\n";
 	for (auto& prop : Scope.variables)
 	{
-		std::cout << "  " << prop.first << ": " << prop.second->ToString() << "\n";
+		std::cout << "  " << prop.first << ": " << (prop.second == nullptr ? "Undefined" : prop.second->ToString()) << "\n";
 	}
 	std::cout << "\n";
 	return Stream;
