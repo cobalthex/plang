@@ -11,7 +11,7 @@ int main(int ac, const char* av[])
 	Plang::Scope global;
 
 	Plang::Signature sgn ({ { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Single } });
-	Plang::Function plus (sgn, [](const Plang::Scope& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
+	Plang::Function plus(sgn, [](const Plang::Scope& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
 
 	global.Set("+", Plang::Reference<Plang::Function>(plus));
 

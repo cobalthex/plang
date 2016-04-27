@@ -54,10 +54,7 @@ Plang::Scope Plang::Signature::Parse(const Plang::Tuple& Arguments)
 	auto nTupleArgs = Arguments.Length() - nSingles;
 	auto nArgsPerTuple = nTuples > 0 ? (1 + ((nTupleArgs - 1) / nTuples)) : 0;
 
-	if (arguments.Length() < Arguments.Length())
-		throw "invalid signature";
-
-	for (size_t i = 0; i < Arguments.value.Length();)
+	for (size_t i = 0; i < std::min(arguments.Length(), Arguments.Length());)
 	{
 		auto& prop = Arguments.properties.Get(arguments[i].name);
 		if (prop != Undefined)
@@ -117,6 +114,8 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, Plang::Scop
 		auto top = stack.top();
 		stack.pop();
 
+		//todo: handle : and = somehow
+
 		bool nest = false;
 		for (size_t i = top.index; i < top.node->children.size(); i++)
 		{
@@ -162,11 +161,12 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, Plang::Scop
 			}
 			else if (inst.type == InstructionType::Call)
 			{
+
 				auto& fn = scope.Get(inst.value.get<StringT>());
 
 				auto len = top.node->children.size();
 				auto start = registers.size() - len;
-				Plang::Tuple tup(::Array<AnyRef>(registers.data() + start, len));
+				Tuple tup (::Array<AnyRef>(registers.data() + start, len));
 				registers.erase(registers.begin() + start, registers.begin() + start + len);
 
 				if (fn == Undefined)
