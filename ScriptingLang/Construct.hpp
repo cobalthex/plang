@@ -4,276 +4,280 @@
 #include "types.hpp"
 #include "Array.hpp"
 #include "Reference.hpp"
-#include "Scope.hpp"
 #include "SyntaxTree.hpp"
 
 namespace Plang
 {
-	enum class ConstructType
-	{
-		Invalid,
-		Construct,
-		Bool,
-		Int,
-		Float,
-		String,
-		Tuple,
-		Array,
-		List,
-		Function, //native function
-		Script,
-	};
+    enum class ConstructType
+    {
+        Invalid,
+        Construct,
+        Bool,
+        Int,
+        Float,
+        String,
+        Tuple,
+        Array,
+        List,
+        Function, //native function
+        Script,
+    };
 
-	std::string TypeToString(const Plang::ConstructType& Type);
+    std::string TypeToString(const ConstructType& Type);
 
-	//The basic object type. Everything is a construct from literals to lexical blocks to functions
-	class Construct
-	{
-	public:
-		Construct() = default;
-		Construct(const Scope& DefaultProps) : properties(DefaultProps) { }
-		Construct(Scope&& DefaultProps) : properties(DefaultProps) { }
-		virtual ~Construct() = default;
+    //The basic object type. Everything is a construct from literals to lexical blocks to functions to scopes
+    class Construct
+    {
+    public:
+        Construct(const AnyRef& Prototype = nullptr) : prototype(Prototype) { }
+        Construct(const ::Array<std::pair<StringT, AnyRef>>& Defaults) : properties(&Defaults[0], &Defaults[0] + Defaults.Length()) { }
+        virtual ~Construct() = default;
 
-		virtual inline ConstructType Type() const { return ConstructType::Construct; }
-		virtual inline std::string ToString() const { return "[[ Construct (" + std::to_string(Count()) + ") ]]"; } //basic string output (inherited classes may have multiple versions)
+        virtual inline ConstructType Type() const { return ConstructType::Construct; }
+        virtual inline std::string ToString() const { return "[[ Construct (" + std::to_string(Count()) + ") ]]"; } //basic string output (inherited classes may have multiple versions)
 
-		//alises to property functions
+        AnyRef&       Set(const StringT& Name, const AnyRef& Ref, bool SearchParents = false); //If SearchParents is true, property is set where it is defined or in this scope if not found
+        AnyRef&       Get(const StringT& Name, bool SearchParents = true);
+        const AnyRef& Get(const StringT& Name, bool SearchParents = true) const;
+        AnyRef&        Where(const StringT& Name); //which construct in the prototype where a property is defined in
+        bool          Has(const StringT& Name, bool SearchParents = true) const;
+        bool          Remove(const StringT& Name);
+        inline size_t Count() const { return properties.size(); } //The number of defined properties in this construct
 
-		inline AnyRef& Set(const StringT& Name, const AnyRef& Ref) { return properties.Set(Name, Ref, false); }
-		inline AnyRef& Get(const StringT& Name) { return properties.Get(Name, true); }
-		inline const AnyRef& Get(const StringT& Name) const { return properties.Get(Name, true); }
-		inline const size_t Count() const { return properties.Count(); }
+        //Merge another construct's properties into this one (does not modify prototype or copy inherited properties). Returns a reference to this construct
+        Construct& Merge(const Construct& Other, bool Overwrite = true);
 
-		Scope properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
-	};
+        AnyRef prototype; //parent construct. properties inherit
 
-	//Null and Undefined are special references
+    protected:
+        std::map<StringT, AnyRef> properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
+    };
 
-	class Bool : public Construct
-	{
-	public:
-		using ValueType = bool;
+    //Null and Undefined are special references
 
-		Bool() : value(false) { }
-		Bool(const ValueType& Value) : value(Value) { }
+    class Bool : public Construct
+    {
+    public:
+        using ValueType = bool;
 
-		inline ConstructType Type() const override { return ConstructType::Bool; }
-		inline std::string ToString() const override { return std::to_string(value); }
+        Bool() : value(false) { }
+        Bool(const ValueType& Value) : value(Value) { }
 
-		ValueType value;
-	};
+        inline ConstructType Type() const override { return ConstructType::Bool; }
+        inline std::string ToString() const override { return std::to_string(value); }
 
-	class Int : public Construct
-	{
-	public:
-		using ValueType = IntT;
+        ValueType value;
+    };
 
-		Int() : value(0) { }
-		Int(const ValueType& Value) : value(Value) { }
+    class Int : public Construct
+    {
+    public:
+        using ValueType = IntT;
 
-		inline ConstructType Type() const override { return ConstructType::Int; }
-		inline std::string ToString() const override { return std::to_string(value); }
-		inline std::string ToString(int Radix) const { return std::to_string(value); }
+        Int() : value(0) { }
+        Int(const ValueType& Value) : value(Value) { }
 
-		ValueType value;
-	};
+        inline ConstructType Type() const override { return ConstructType::Int; }
+        inline std::string ToString() const override { return std::to_string(value); }
+        inline std::string ToString(int Radix) const { return std::to_string(value); }
 
-	class Float : public Construct
-	{
-	public:
-		using ValueType = FloatT;
+        ValueType value;
+    };
 
-		Float() : value(0.0f) { }
-		Float(const ValueType& Value) : value(Value) { }
+    class Float : public Construct
+    {
+    public:
+        using ValueType = FloatT;
 
-		inline ConstructType Type() const override { return ConstructType::Float; }
-		inline std::string ToString() const override { return std::to_string(value); }
-		inline std::string ToString(int Radix) const { return std::to_string(value); }
+        Float() : value(0.0f) { }
+        Float(const ValueType& Value) : value(Value) { }
 
-		ValueType value;
-	};
+        inline ConstructType Type() const override { return ConstructType::Float; }
+        inline std::string ToString() const override { return std::to_string(value); }
+        inline std::string ToString(int Radix) const { return std::to_string(value); }
 
-	class String : public Construct
-	{
-	public:
-		using ValueType = std::string;
+        ValueType value;
+    };
 
-		String() : value("") { }
-		String(const ValueType& Value) : value(Value) { }
-		String(const ValueType::value_type* Value) : value(Value) { }
+    class String : public Construct
+    {
+    public:
+        using ValueType = std::string;
 
-		inline ConstructType Type() const override { return ConstructType::String; }
-		inline std::string ToString() const override { return "'" + value + "'"; }
+        String() : value("") { }
+        String(const ValueType& Value) : value(Value) { }
+        String(const ValueType::value_type* Value) : value(Value) { }
 
-		ValueType value;
-	};
+        inline ConstructType Type() const override { return ConstructType::String; }
+        inline std::string ToString() const override { return "'" + value + "'"; }
 
-	//A fixed size, immutable data type
-	//These are typically meant for storing
-	//Supports both named properties (stored in construct props) and indices
-	class Tuple : public Construct
-	{
-	public:
-		using KvPair = std::pair<StringT, AnyRef>;
+        ValueType value;
+    };
 
-		Tuple() = default;
-		Tuple(const ::Array<AnyRef>& Indices) : value(Indices) { }
-		Tuple(const ::Array<AnyRef>& Indices, const ::Array<KvPair>& Keys) : value(Indices), Construct(Keys) { }
-		Tuple(std::initializer_list<AnyRef> Init) : value(Init) { }
+    //A fixed size, immutable data type
+    //These are typically meant for storing
+    //Supports both named properties (stored in construct props) and indices
+    class Tuple : public Construct
+    {
+    public:
+        using KvPair = std::pair<StringT, AnyRef>;
 
-		inline ConstructType Type() const override { return ConstructType::Tuple; }
-		inline std::string ToString() const override
-		{
-			std::string s = "(";
-			for (size_t i = 0; i < value.Length(); i++)
-			{
-				s += value[i]->ToString();
-				if (i < value.Length() - 1)
-					s += ",";
-			}
-			s += ")";
-			return s;
-		}
+        Tuple() = default;
+        Tuple(const ::Array<AnyRef>& Indices) : value(Indices) { }
+        Tuple(const ::Array<AnyRef>& Indices, const ::Array<KvPair>& Keys) : value(Indices), Construct(Keys) { }
+        Tuple(std::initializer_list<AnyRef> Init) : value(Init) { }
 
-		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
-		inline const size_t Length() const { return value.Length(); }
+        inline ConstructType Type() const override { return ConstructType::Tuple; }
+        inline std::string ToString() const override
+        {
+            std::string s = "(";
+            for (size_t i = 0; i < value.Length(); i++)
+            {
+                s += value[i]->ToString();
+                if (i < value.Length() - 1)
+                    s += ",";
+            }
+            s += ")";
+            return s;
+        }
 
-		::Array<AnyRef> value;
-	};
+        inline const AnyRef& Get(size_t Index) const { return value[Index]; }
+        inline const size_t Length() const { return value.Length(); }
 
-	class Array : public Construct
-	{
-	public:
-		Array() = default;
-		Array(const ::Array<AnyRef>& Value) : value(Value) { }
-		Array(::Array<AnyRef>&& Value) : value(Value) { }
+        ::Array<AnyRef> value;
+    };
 
-		inline ConstructType Type() const override { return ConstructType::Array; }
-		inline std::string ToString() const override
-		{
-			std::string s = "[|";
-			for (size_t i = 0; i < value.Length(); i++)
-			{
-				s += value[i]->ToString();
-				if (i < value.Length() - 1)
-					s += ",";
-			}
-			s += "|]";
-			return s;
-		}
+    class Array : public Construct
+    {
+    public:
+        Array() = default;
+        Array(const ::Array<AnyRef>& Value) : value(Value) { }
+        Array(::Array<AnyRef>&& Value) : value(Value) { }
 
-		inline AnyRef& Set(size_t Index, const AnyRef& Ref) { return (value[Index] = Ref); }
-		inline AnyRef& Get(size_t Index) { return value[Index]; }
-		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
-		inline const size_t Length() const { return value.Length(); }
+        inline ConstructType Type() const override { return ConstructType::Array; }
+        inline std::string ToString() const override
+        {
+            std::string s = "[|";
+            for (size_t i = 0; i < value.Length(); i++)
+            {
+                s += value[i]->ToString();
+                if (i < value.Length() - 1)
+                    s += ",";
+            }
+            s += "|]";
+            return s;
+        }
 
-		::Array<AnyRef> value;
-	};
+        inline AnyRef& Set(size_t Index, const AnyRef& Ref) { return (value[Index] = Ref); }
+        inline AnyRef& Get(size_t Index) { return value[Index]; }
+        inline const AnyRef& Get(size_t Index) const { return value[Index]; }
+        inline const size_t Length() const { return value.Length(); }
 
-	class List : public Construct
-	{
-	public:
-		List() = default;
-		List(const std::vector<AnyRef>& Value) : value(Value) { }
-		List(std::vector<AnyRef>&& Value) : value(Value) { }
+        ::Array<AnyRef> value;
+    };
 
-		inline ConstructType Type() const override { return ConstructType::Array; }
-		inline std::string ToString() const override
-		{
-			std::string s = "[";
-			for (size_t i = 0; i < value.size(); i++)
-			{
-				s += value[i]->ToString();
-				if (i < value.size() - 1)
-					s += ",";
-			}
-			s += "]";
-			return s;
-		}
+    class List : public Construct
+    {
+    public:
+        List() = default;
+        List(const std::vector<AnyRef>& Value) : value(Value) { }
+        List(std::vector<AnyRef>&& Value) : value(Value) { }
 
-		inline AnyRef& Add(const AnyRef& Ref) { value.push_back(Ref); return value.back(); }
-		inline AnyRef Remove(const AnyRef& Ref) { AnyRef rval = value.back(); value.pop_back(); return rval; }
+        inline ConstructType Type() const override { return ConstructType::Array; }
+        inline std::string ToString() const override
+        {
+            std::string s = "[";
+            for (size_t i = 0; i < value.size(); i++)
+            {
+                s += value[i]->ToString();
+                if (i < value.size() - 1)
+                    s += ",";
+            }
+            s += "]";
+            return s;
+        }
 
-		inline AnyRef& Set(size_t Index, const AnyRef& Ref) { return (value[Index] = Ref); }
-		inline AnyRef& Get(size_t Index) { return value[Index]; }
-		inline const AnyRef& Get(size_t Index) const { return value[Index]; }
-		inline const size_t Length() const { return value.size(); }
+        inline AnyRef& Add(const AnyRef& Ref) { value.push_back(Ref); return value.back(); }
+        inline AnyRef Remove(const AnyRef& Ref) { AnyRef rval = value.back(); value.pop_back(); return rval; }
 
-		std::vector<AnyRef> value;
-	};
+        inline AnyRef& Set(size_t Index, const AnyRef& Ref) { return (value[Index] = Ref); }
+        inline AnyRef& Get(size_t Index) { return value[Index]; }
+        inline const AnyRef& Get(size_t Index) const { return value[Index]; }
+        inline const size_t Length() const { return value.size(); }
 
-	enum class ArgumentType
-	{
-		Single,
-		Tuple,
-	};
-	struct Argument
-	{
-		StringT name;
-		ArgumentType type;
-	};
+        std::vector<AnyRef> value;
+    };
 
-	class Signature
-	{
-	public:
-		Signature() : arguments(), nSingles(0), nTuples(0) { }
-		Signature(const ::Array<Argument> Arguments);
+    enum class ArgumentType
+    {
+        Single,
+        Tuple,
+    };
 
-		//Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
-		Scope Parse(const Tuple& Arguments);
+    struct Argument
+    {
+        StringT name;
+        ArgumentType type;
+    };
 
-	private:
-		::Array<Argument> arguments;
-		size_t nSingles; //the number of non-tuple arguments in the signature
-		size_t nTuples; //the number of tuple arguments in the signature
-	};
+    class Signature
+    {
+    public:
+        Signature() : arguments(), nSingles(0), nTuples(0) { }
+        Signature(const ::Array<Argument> Arguments);
 
-	//A native function
-	class Function : public Construct
-	{
-	public:
-		using FunctionT = std::function<AnyRef(Scope& Scope)>;
+        //Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
+        Construct Parse(const Tuple& Arguments);
 
-		inline Function(const Signature& Signature, const FunctionT& Function) : signature(Signature), function(Function) { }
-		inline Function(const FunctionT& Function) : function(Function) { }
+    private:
+        ::Array<Argument> arguments;
+        size_t nSingles; //the number of non-tuple arguments in the signature
+        size_t nTuples; //the number of tuple arguments in the signature
+    };
 
-		inline ConstructType Type() const override { return ConstructType::Function; }
-		inline std::string ToString() const override { return "[[ Native function ]]"; }
+    //A native function
+    class Function : public Construct
+    {
+    public:
+        using FunctionT = std::function<AnyRef(Construct& Scope)>;
 
-		Plang::AnyRef Call(const Tuple& Arguments, Scope* LexScope);
-		inline Plang::AnyRef Call(Scope* LexScope)
-		{
-			Plang::Tuple args;
-			Scope scope(LexScope);
-			return Call(args, &scope);
-		}
+        inline Function(const Signature& Signature, const FunctionT& Function) : signature(Signature), function(Function) { }
+        inline Function(const FunctionT& Function) : function(Function) { }
 
-		Signature signature;
-		FunctionT function;
-	};
+        inline ConstructType Type() const override { return ConstructType::Function; }
+        inline std::string ToString() const override { return "[[ Native function ]]"; }
 
-	//A script. All scripts behave like functions, having arguments and a return value
-	class Script : public Construct
-	{
-	public:
-		inline Script(const Signature& Signature, SyntaxTreeNode* Node) : signature(Signature), node(Node) { }
-		inline Script(SyntaxTreeNode* Node) : node(Node) { }
+        AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope);
+        inline AnyRef Call(const AnyRef& LexScope)
+        {
+            Tuple args;
+            return Call(args, LexScope);
+        }
 
-		inline ConstructType Type() const override { return ConstructType::Script; }
-		inline std::string ToString() const override { return "[[ Script ]]"; } //todo: print signature
+        Signature signature;
+        FunctionT function;
+    };
 
-		AnyRef Evaluate(const Tuple& Arguments, Scope* LexScope);
-		inline AnyRef Evaluate(Scope* LexScope)
-		{
-			Plang::Tuple args;
-			Scope scope (LexScope);
-			return Evaluate(args, &scope);
-		}
+    //A script. All scripts behave like functions, having arguments and a return value
+    class Script : public Construct
+    {
+    public:
+        inline Script(const Signature& Signature, SyntaxTreeNode* Node) : signature(Signature), node(Node) { }
+        inline Script(SyntaxTreeNode* Node) : node(Node) { }
 
-		Signature signature;
-		SyntaxTreeNode* node;
-	};
+        inline ConstructType Type() const override { return ConstructType::Script; }
+        inline std::string ToString() const override { return "[[ Script ]]"; } //todo: print signature
+
+        AnyRef Evaluate(const Tuple& Arguments, const AnyRef& LexScope);
+        inline AnyRef Evaluate(const AnyRef& LexScope)
+        {
+            Tuple args;
+            return Evaluate(args, LexScope);
+        }
+
+        Signature signature;
+        SyntaxTreeNode* node;
+    };
 };
 
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);

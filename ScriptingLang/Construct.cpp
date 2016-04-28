@@ -3,184 +3,306 @@
 
 std::string Plang::TypeToString(const Plang::ConstructType& Type)
 {
-	switch (Type)
-	{
-	case Plang::ConstructType::Construct:
-		return "Construct";
-	case Plang::ConstructType::Bool:
-		return "Bool";
-	case Plang::ConstructType::Int:
-		return "Int";
-	case Plang::ConstructType::Float:
-		return "Float";
-	case Plang::ConstructType::String:
-		return "String";
-	case Plang::ConstructType::Tuple:
-		return "Tuple";
-	case Plang::ConstructType::Array:
-		return "Array";
-	case Plang::ConstructType::List:
-		return "List";
-	case Plang::ConstructType::Function:
-		return "Function";
-	case Plang::ConstructType::Script:
-		return "Script";
-	default:
-		return "Unknown";
-	}
+    switch (Type)
+    {
+    case Plang::ConstructType::Construct:
+        return "Construct";
+    case Plang::ConstructType::Bool:
+        return "Bool";
+    case Plang::ConstructType::Int:
+        return "Int";
+    case Plang::ConstructType::Float:
+        return "Float";
+    case Plang::ConstructType::String:
+        return "String";
+    case Plang::ConstructType::Tuple:
+        return "Tuple";
+    case Plang::ConstructType::Array:
+        return "Array";
+    case Plang::ConstructType::List:
+        return "List";
+    case Plang::ConstructType::Function:
+        return "Function";
+    case Plang::ConstructType::Script:
+        return "Script";
+    default:
+        return "Unknown";
+    }
+}
+Plang::AnyRef& Plang::Construct::Set(const Plang::StringT& Name, const Plang::AnyRef& Ref, bool SearchParents)
+{
+    auto scope = this;
+
+    if (SearchParents)
+    {
+        scope = Where(Name);
+
+        if (scope == nullptr)
+            scope = this;
+    }
+
+    return (scope->properties[Name] = Ref);
 }
 
-std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct)
+Plang::AnyRef& Plang::Construct::Get(const Plang::StringT& Name, bool SearchParents)
 {
-	Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
-	return Stream;
+    auto scope = this;
+
+    do
+    {
+        auto value = scope->properties.find(Name);
+        if (value != scope->properties.end())
+            return value->second;
+
+        scope = scope->parent;
+    } while (scope != nullptr && SearchParents);
+
+    return Plang::Undefined;
+}
+
+const Plang::AnyRef& Plang::Construct::Get(const Plang::StringT& Name, bool SearchParents) const
+{
+    auto scope = this;
+
+    do
+    {
+        auto value = scope->properties.find(Name);
+        if (value != scope->properties.end())
+            return value->second;
+
+        scope = scope->parent;
+    } while (scope != nullptr && SearchParents);
+
+    return Plang::Undefined;
+}
+
+
+Plang::AnyRef Plang::Construct::Where(const Plang::StringT& Name)
+{
+    auto scope = this;
+
+    do
+    {
+        if (scope->properties.find(Name) != scope->properties.end())
+            break;
+
+        scope = scope->parent;
+    } while (scope != nullptr);
+
+    return scope;
+}
+
+bool Plang::Construct::Has(const Plang::StringT& Name, bool SearchParents) const
+{
+    auto scope = this;
+
+    do
+    {
+        if (scope->properties.find(Name) != scope->properties.end())
+            return true;
+
+        scope = scope->parent;
+    } while (scope != nullptr && SearchParents);
+
+    return false;
+}
+
+bool Plang::Construct::Remove(const Plang::StringT& Name)
+{
+    auto value = properties.find(Name);
+    if (value != properties.end())
+    {
+        properties.erase(value);
+        return true;
+    }
+    return false;
+}
+
+Plang::Construct& Plang::Construct::Merge(const Plang::Construct& Other, bool Overwrite)
+{
+    if (&Other != this)
+    {
+        for (auto& var : Other.properties)
+        {
+            if (Overwrite || properties.find(var.first) != properties.end())
+                properties.insert(var);
+        }
+    }
+
+    return *this;
+}
+
+std::ostream& Plang::operator<<(std::ostream& Stream, const Plang::Construct& Scope)
+{
+    Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
+    // std::cout << "Parent: ";
+    // if (Scope.parent == nullptr)
+    //  std::cout << "null\n";
+    // else
+    //  std::cout << std::hex << std::showbase << Scope.parent << "\n";
+
+    // std::cout << "properties:\n";
+    // for (auto& prop : Scope.properties)
+    // {
+    //  std::cout << "  " << prop.first << ": " << (prop.second == nullptr ? "Undefined" : prop.second->ToString()) << "\n";
+    // }
+    // std::cout << "\n";
+    return Stream;
 }
 
 Plang::Signature::Signature(const ::Array<Argument> Arguments)
-	: arguments(Arguments), nSingles(0)
+    : arguments(Arguments), nSingles(0)
 {
-	for (size_t i = 0; i < arguments.Length(); i++)
-	{
-		if (arguments[i].type == ArgumentType::Tuple)
-			nSingles++;
-	}
-	nTuples = arguments.Length() - nSingles;
+    for (size_t i = 0; i < arguments.Length(); i++)
+    {
+        if (arguments[i].type == ArgumentType::Tuple)
+            nSingles++;
+    }
+    nTuples = arguments.Length() - nSingles;
 }
 
-Plang::Scope Plang::Signature::Parse(const Plang::Tuple& Arguments)
+Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
 {
-	Scope s;
+    Construct scope;
 
-	auto nTupleArgs = Arguments.Length() - nSingles;
-	auto nArgsPerTuple = nTuples > 0 ? (1 + ((nTupleArgs - 1) / nTuples)) : 0;
+    auto nTupleArgs = Arguments.Length() - nSingles;
+    auto nArgsPerTuple = nTuples > 0 ? (1 + ((nTupleArgs - 1) / nTuples)) : 0;
 
-	for (size_t i = 0; i < std::min(arguments.Length(), Arguments.Length());)
-	{
-		auto& prop = Arguments.properties.Get(arguments[i].name);
-		if (prop != Undefined)
-			s.Set(arguments[i].name, prop);
-		else if (arguments[i].type == ArgumentType::Tuple)
-		{
-			size_t nArgs = std::min(nArgsPerTuple, Arguments.value.Length() - i);
-			if (nArgs > 0)
-			{
-				Reference<Tuple> tup (Arguments.value.Slice(i, nArgs));
-				s.Set(arguments[i].name, tup);
-				i += nArgs;
-			}
-		}
-		else
-		{
-			s.Set(arguments[i].name, Arguments.Get(i));
-			i++;
-		}
-	}
+    for (size_t i = 0; i < std::min(arguments.Length(), Arguments.Length());)
+    {
+        auto& prop = Arguments.properties.Get(arguments[i].name);
+        if (prop != Undefined)
+            scope.Set(arguments[i].name, prop);
+        else if (arguments[i].type == ArgumentType::Tuple)
+        {
+            size_t nArgs = std::min(nArgsPerTuple, Arguments.value.Length() - i);
+            if (nArgs > 0)
+            {
+                Reference<Tuple> tup (Arguments.value.Slice(i, nArgs));
+                scope.Set(arguments[i].name, tup);
+                i += nArgs;
+            }
+        }
+        else
+        {
+            scope.Set(arguments[i].name, Arguments.Get(i));
+            i++;
+        }
+    }
 
-	return s;
+    return scope;
 }
 
-Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, Plang::Scope* LexScope)
+Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, const Plang::AnyRef& LexScope)
 {
-	AnyRef rval;
+    auto scope = signature.Parse(Arguments);
+    scope.prototype = LexScope;
 
-	auto s = signature.Parse(Arguments);
-	s.parent = LexScope;
-
-	function(s);
-
-	return rval;
+    return function(scope);
 }
 
 struct Frame
 {
-	Plang::SyntaxTreeNode* node; //the node to evaluate
-	size_t index; //index of current instruction
+    Plang::SyntaxTreeNode* node; //the node to evaluate
+    size_t index; //index of current instruction
 };
 
-Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, Plang::Scope* LexScope)
+inline bool IsSymbol(SyntaxTreeNode* Node, size_t Index)
 {
-	if (node == nullptr)
-		return Undefined;
+    Node = Node->parent;
+    return (
+        Node != nullptr
+        && Index == 0
+        && Node->instruction.type == InstructionType::Call
+        && Node->children.size() > 1
+        && (Node->instruction.value == "=" || Node->instruction.type == ":")
+    );
+}
 
-	std::vector<AnyRef> registers; //holds intermediate values for functions
+Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRef& LexScope)
+{
+    if (node == nullptr)
+        return Undefined;
 
-	auto scope = signature.Parse(Arguments);
-	scope.parent = LexScope;
+    std::vector<AnyRef> registers; //holds intermediate values for functions
 
-	std::stack<Frame> stack;
-	stack.push({ node, 0 });
-	while (!stack.empty())
-	{
-		auto top = stack.top();
-		stack.pop();
+    auto scope = signature.Parse(Arguments);
+    scope.parent = LexScope;
 
-		//todo: handle : and = somehow
+    AnyRef pScope = scope;
 
-		bool nest = false;
-		for (size_t i = top.index; i < top.node->children.size(); i++)
-		{
-			auto& child = top.node->children[i];
+    std::stack<Frame> stack;
+    stack.push({ node, 0 });
+    while (!stack.empty())
+    {
+        auto top = stack.top();
+        stack.pop();
 
-			if (child.instruction.type == InstructionType::Accessor)
-				; //todo
-			if (child.instruction.type == InstructionType::Integer)
-				registers.push_back(Reference<Int>(child.instruction.value.get<Int::ValueType>()));
-			else if (child.instruction.type == InstructionType::Float)
-				registers.push_back(Reference<Float>(child.instruction.value.get<Float::ValueType>()));
-			else if (child.instruction.type == InstructionType::String)
-				registers.push_back(Reference<String>(child.instruction.value.get<String::ValueType>()));
-			else if (child.instruction.type == InstructionType::Identifier)
-				registers.push_back(scope.Get(child.instruction.value.get<StringT>()));
-			else if (child.children.size() > 0)
-			{
-				stack.push({ &child, 0 });
-				nest = true;
-				i++;
-				break;
-			}
-		}
+        bool nest = false;
+        for (size_t i = top.index; i < top.node->children.size(); i++)
+        {
+            auto& child = top.node->children[i];
 
-		if (!nest)
-		{
-			auto& inst = top.node->instruction;
-			if (inst.type == InstructionType::Tuple)
-			{
-				auto len = top.node->children.size();
-				auto start = registers.size() - len;
-				Plang::Tuple tup(::Array<AnyRef>(registers.data() + start, len));
-				registers.erase(registers.begin() + start, registers.begin() + start + len);
-				registers.push_back(tup);
-			}
-			else if (inst.type == InstructionType::Array)
-			{
-				auto len = top.node->children.size();
-				auto start = registers.size() - len;
-				Plang::Array tup(::Array<AnyRef>(registers.data() + start, len));
-				registers.erase(registers.begin() + start, registers.begin() + start + len);
-				registers.push_back(tup);
-			}
-			else if (inst.type == InstructionType::Call)
-			{
+            if (child.instruction.type == InstructionType::Accessor)
+                ; //todo
+            if (child.instruction.type == InstructionType::Integer)
+                registers.push_back(Reference<Int>(child.instruction.value.get<Int::ValueType>()));
+            else if (child.instruction.type == InstructionType::Float)
+                registers.push_back(Reference<Float>(child.instruction.value.get<Float::ValueType>()));
+            else if (child.instruction.type == InstructionType::String)
+                registers.push_back(Reference<String>(child.instruction.value.get<String::ValueType>()));
+            else if (child.instruction.type == InstructionType::Identifier)
+                registers.push_back(scope.Get(child.instruction.value.get<StringT>()));
+            else if (child.children.size() > 0)
+            {
+                stack.push({ &child, 0 });
+                nest = true;
+                i++;
+                break;
+            }
+        }
 
-				auto& fn = scope.Get(inst.value.get<StringT>());
+        if (!nest)
+        {
+            auto& inst = top.node->instruction;
+            if (inst.type == InstructionType::Tuple)
+            {
+                auto len = top.node->children.size();
+                auto start = registers.size() - len;
+                Plang::Tuple tup(::Array<AnyRef>(registers.data() + start, len));
+                registers.erase(registers.begin() + start, registers.begin() + start + len);
+                registers.push_back(tup);
+            }
+            else if (inst.type == InstructionType::Array)
+            {
+                auto len = top.node->children.size();
+                auto start = registers.size() - len;
+                Plang::Array tup(::Array<AnyRef>(registers.data() + start, len));
+                registers.erase(registers.begin() + start, registers.begin() + start + len);
+                registers.push_back(tup);
+            }
+            else if (inst.type == InstructionType::Call)
+            {
 
-				auto len = top.node->children.size();
-				auto start = registers.size() - len;
-				Tuple tup (::Array<AnyRef>(registers.data() + start, len));
-				registers.erase(registers.begin() + start, registers.begin() + start + len);
+                auto& fn = scope.Get(inst.value.get<StringT>());
 
-				if (fn == Undefined)
-					throw inst.value.get<StringT>() + " is undefined and not callable";
-				else if (fn->Type() == ConstructType::Script)
-					registers.push_back(Reference<Script>(fn)->Evaluate(tup, &scope));
-				else if (fn->Type() == ConstructType::Function)
-					registers.push_back(Reference<Function>(fn)->Call(tup, &scope));
-				else
-					throw "not callable";
-			}
-			//any other instructions can be ignored (todo: verify)
-		}
-	}
+                auto len = top.node->children.size();
+                auto start = registers.size() - len;
+                Tuple tup (::Array<AnyRef>(registers.data() + start, len));
+                registers.erase(registers.begin() + start, registers.begin() + start + len);
 
-	return Undefined;
+                if (fn == Undefined)
+                    throw inst.value.get<StringT>() + " is undefined and not callable";
+                else if (fn->Type() == ConstructType::Script)
+                    registers.push_back(Reference<Script>(fn)->Evaluate(tup, pScope));
+                else if (fn->Type() == ConstructType::Function)
+                    registers.push_back(Reference<Function>(fn)->Call(tup, pScope));
+                else
+                    throw "not callable";
+            }
+            //any other instructions can be ignored (todo: verify)
+        }
+    }
+
+    return Undefined;
 }

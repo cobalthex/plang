@@ -2,7 +2,6 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "Scope.hpp"
 #include "Reference.hpp"
 #include "Construct.hpp"
 
