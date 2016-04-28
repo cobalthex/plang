@@ -33,13 +33,16 @@ Plang::AnyRef& Plang::Construct::Set(const Plang::StringT& Name, const Plang::An
 {
     auto scope = this;
 
-    if (SearchParents)
-    {
-        scope = Where(Name);
+	if (prototype != nullptr)
+	{
+		do
+		{
+			if (scope->properties.find(Name) != scope->properties.end())
+				break;
 
-        if (scope == nullptr)
-            scope = this;
-    }
+			scope = scope->prototype.Get();
+		} while (scope != nullptr);
+	}
 
     return (scope->properties[Name] = Ref);
 }
@@ -54,7 +57,7 @@ Plang::AnyRef& Plang::Construct::Get(const Plang::StringT& Name, bool SearchPare
         if (value != scope->properties.end())
             return value->second;
 
-        scope = scope->parent;
+        scope = scope->prototype.Get();
     } while (scope != nullptr && SearchParents);
 
     return Plang::Undefined;
@@ -70,26 +73,10 @@ const Plang::AnyRef& Plang::Construct::Get(const Plang::StringT& Name, bool Sear
         if (value != scope->properties.end())
             return value->second;
 
-        scope = scope->parent;
+        scope = scope->prototype.Get();
     } while (scope != nullptr && SearchParents);
 
     return Plang::Undefined;
-}
-
-
-Plang::AnyRef Plang::Construct::Where(const Plang::StringT& Name)
-{
-    auto scope = this;
-
-    do
-    {
-        if (scope->properties.find(Name) != scope->properties.end())
-            break;
-
-        scope = scope->parent;
-    } while (scope != nullptr);
-
-    return scope;
 }
 
 bool Plang::Construct::Has(const Plang::StringT& Name, bool SearchParents) const
@@ -101,7 +88,7 @@ bool Plang::Construct::Has(const Plang::StringT& Name, bool SearchParents) const
         if (scope->properties.find(Name) != scope->properties.end())
             return true;
 
-        scope = scope->parent;
+        scope = scope->prototype.Get();
     } while (scope != nullptr && SearchParents);
 
     return false;
@@ -132,21 +119,19 @@ Plang::Construct& Plang::Construct::Merge(const Plang::Construct& Other, bool Ov
     return *this;
 }
 
-std::ostream& Plang::operator<<(std::ostream& Stream, const Plang::Construct& Scope)
+std::ostream& operator<<(std::ostream& Stream, const Plang::Construct& Construct)
 {
-    Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
-    // std::cout << "Parent: ";
-    // if (Scope.parent == nullptr)
-    //  std::cout << "null\n";
-    // else
-    //  std::cout << std::hex << std::showbase << Scope.parent << "\n";
+    //Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
+    std::cout << "Prototype: ";
+    if (Construct.prototype == nullptr)
+		std::cout << "null\n";
+    else
+		std::cout << std::hex << std::showbase << Construct.prototype.Get() << "\n";
 
-    // std::cout << "properties:\n";
-    // for (auto& prop : Scope.properties)
-    // {
-    //  std::cout << "  " << prop.first << ": " << (prop.second == nullptr ? "Undefined" : prop.second->ToString()) << "\n";
-    // }
-    // std::cout << "\n";
+    std::cout << "properties:\n";
+    for (auto& prop : Construct.properties)
+		std::cout << "  " << prop.first << ": " << (prop.second == nullptr ? "Undefined" : prop.second->ToString()) << "\n";
+    std::cout << "\n";
     return Stream;
 }
 
@@ -170,7 +155,7 @@ Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
 
     for (size_t i = 0; i < std::min(arguments.Length(), Arguments.Length());)
     {
-        auto& prop = Arguments.properties.Get(arguments[i].name);
+        auto& prop = Arguments.Get(arguments[i].name);
         if (prop != Undefined)
             scope.Set(arguments[i].name, prop);
         else if (arguments[i].type == ArgumentType::Tuple)
@@ -185,7 +170,7 @@ Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
         }
         else
         {
-            scope.Set(arguments[i].name, Arguments.Get(i));
+            scope.Set(arguments[i].name, Arguments[i]);
             i++;
         }
     }
@@ -207,15 +192,15 @@ struct Frame
     size_t index; //index of current instruction
 };
 
-inline bool IsSymbol(SyntaxTreeNode* Node, size_t Index)
+inline bool IsSymbol(Plang::SyntaxTreeNode* Node, size_t Index)
 {
     Node = Node->parent;
     return (
         Node != nullptr
         && Index == 0
-        && Node->instruction.type == InstructionType::Call
+        && Node->instruction.type == Plang::InstructionType::Call
         && Node->children.size() > 1
-        && (Node->instruction.value == "=" || Node->instruction.type == ":")
+        && (Node->instruction.value == "=" || Node->instruction.value == ":")
     );
 }
 
@@ -227,9 +212,10 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
     std::vector<AnyRef> registers; //holds intermediate values for functions
 
     auto scope = signature.Parse(Arguments);
-    scope.parent = LexScope;
+    scope.prototype = LexScope;
 
     AnyRef pScope = scope;
+	Construct* dot; //the construct for which dot properties should be set
 
     std::stack<Frame> stack;
     stack.push({ node, 0 });
@@ -237,6 +223,15 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
     {
         auto top = stack.top();
         stack.pop();
+
+		if (top.node->instruction.type == InstructionType::Block)
+			registers.push_back(Construct());
+		else if (top.node->instruction.type == InstructionType::Expression)
+		{
+			//first child is arguments
+			//second child is script
+			continue;
+		}
 
         bool nest = false;
         for (size_t i = top.index; i < top.node->children.size(); i++)
@@ -264,6 +259,9 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 
         if (!nest)
         {
+			if (top.node->instruction.type == InstructionType::Block)
+				;
+				
             auto& inst = top.node->instruction;
             if (inst.type == InstructionType::Tuple)
             {
@@ -283,7 +281,6 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
             }
             else if (inst.type == InstructionType::Call)
             {
-
                 auto& fn = scope.Get(inst.value.get<StringT>());
 
                 auto len = top.node->children.size();

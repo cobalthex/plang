@@ -7,12 +7,12 @@
 
 int main(int ac, const char* av[])
 {
-	Plang::Scope global;
+	Plang::AnyRef global = Plang::Construct();
 
 	Plang::Signature sgn ({ { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Single } });
-	Plang::Function plus(sgn, [](const Plang::Scope& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
+	Plang::Function plus(sgn, [](const Plang::Construct& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
 
-	global.Set("+", Plang::Reference<Plang::Function>(plus));
+	global->Set("+", Plang::Reference<Plang::Function>(plus));
 
 	Plang::Lexer lex;
 	Plang::Parser parser;
@@ -40,7 +40,7 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
-				Plang::Script(&parser.syntaxTree.root).Evaluate(&global);
+				Plang::Script(&parser.syntaxTree.root).Evaluate(global);
 			}
 			catch (const Plang::ParserException& Expt)
 			{

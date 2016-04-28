@@ -55,6 +55,11 @@ namespace Plang
 
 		inline size_t RefCount() const { return *count; }
 
+		inline T* Get() { return ptr; }
+		inline const T* Get() const { return ptr; }
+		inline Reference& Set(const T& Value) { operator=(Value); }
+		inline Reference& Set(T&& Value) { operator=(Value); }
+
 		template <class U>
 		inline operator Reference<U>() noexcept
 		{

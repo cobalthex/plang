@@ -15,9 +15,6 @@
     <ClCompile Include="StringOps.cpp">
       <Filter>Util</Filter>
     </ClCompile>
-    <ClCompile Include="Scope.cpp">
-      <Filter>Runtime</Filter>
-    </ClCompile>
     <ClCompile Include="Construct.cpp">
       <Filter>Runtime</Filter>
     </ClCompile>
@@ -40,9 +37,6 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Location.hpp" />
-    <ClInclude Include="Scope.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
     <ClInclude Include="types.hpp" />
     <ClInclude Include="Construct.hpp">
       <Filter>Runtime</Filter>
