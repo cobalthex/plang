@@ -61,7 +61,12 @@ namespace Plang
 		inline Reference& Set(T&& Value) { operator=(Value); }
 
 		template <class U>
-		inline operator Reference<U>() noexcept
+		inline operator Reference<U>() noexcept { return As<U>(); }
+		template <class U>
+		inline operator const Reference<U>() const noexcept { return As<U>(); }
+
+		template <class U>
+		inline Reference<U> As() noexcept
 		{
 			Reference<U> u;
 			u.ptr = static_cast<U*>(ptr);
@@ -69,6 +74,17 @@ namespace Plang
 			u.AddRef();
 			return u;
 		}
+		template <class U>
+		inline const Reference<U> As() const noexcept
+		{
+			Reference<U> u;
+			u.ptr = static_cast<U*>(ptr);
+			u.count = count;
+			u.AddRef();
+			return u;
+		}
+
+		inline static Reference New() { return Reference(T()); }
 
 	protected:
 		//assumes reference is not nullptr
@@ -96,3 +112,13 @@ namespace Plang
 	static AnyRef Undefined;
 	static AnyRef Null;
 };
+
+template <typename T>
+inline std::ostream& operator << (std::ostream& Stream, const Plang::Reference<T>& Ref)
+{
+	if (Ref == nullptr)
+		Stream << "[null]";
+	else
+		Stream << *Ref;
+	return Stream;
+}

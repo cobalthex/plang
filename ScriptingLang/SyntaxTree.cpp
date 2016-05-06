@@ -12,11 +12,12 @@ static const std::string types[] =
 	"Block",
 	"Identifier",
 	"Accessor",
+	"Symbol",
+	"Tuple",
 	"Integer",
 	"Float",
 	//"Decimal",
 	"String",
-	"Tuple",
 	"List",
 	"Array"
 };

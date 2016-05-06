@@ -376,5 +376,7 @@ void Parser::CreateOperators()
 	CreateOperator("*", Notation::Infix, Association::RightToLeft, 4);
 	CreateOperator("=", Notation::Infix, Association::RightToLeft, 10);
 	CreateOperator(":", Notation::Infix, Association::RightToLeft, 9);
-	CreateOperator("in", Notation::Infix, Association::RightToLeft, 10);
+	CreateOperator("in", Notation::Infix, Association::LeftToRight, 10);
+	CreateOperator("is", Notation::Infix, Association::None, 10);
+	CreateOperator("as", Notation::Infix, Association::LeftToRight, 10);
 }

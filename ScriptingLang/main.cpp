@@ -9,10 +9,35 @@ int main(int ac, const char* av[])
 {
 	Plang::AnyRef global = Plang::Construct();
 
-	Plang::Signature sgn ({ { "a", Plang::ArgumentType::Single }, { "b", Plang::ArgumentType::Single } });
-	Plang::Function plus(sgn, [](const Plang::Construct& Arguments) { std::cout << ">>> " << Arguments << std::endl; return Plang::Undefined; });
+	Plang::Function as({ { "Val", Plang::ArgumentType::Single }, { "Type", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
+	{
+		auto& asFn = Arguments.Get("Val")->Get("as");
+		if (asFn != Plang::Undefined)
+		{
+			Plang::Tuple args({ Arguments.Get("Type") });
+			if (asFn->Type() == Plang::ConstructType::Function)
+			{
+				auto fn = asFn.As<Plang::Function>();
+				return fn->Call(args);
+			}
+			if (asFn->Type() == Plang::ConstructType::Script)
+			{
+				auto script = asFn.As<Plang::Script>();
+				return script->Evaluate(args);
+			}
+		}
+		return Plang::Undefined;
+	});
+	global->Set("as", Plang::Reference<Plang::Function>(as));
 
-	global->Set("+", Plang::Reference<Plang::Function>(plus));
+	auto& x = global->Set("x", Plang::Reference<Plang::Int>(5));
+	x->Set("test", Plang::Reference<Plang::Float>(10.f));
+
+	Plang::Function log({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
+	{
+		return Arguments.Get("args");
+	});
+	global->Set("log", Plang::Reference<Plang::Function>(log));
 
 	Plang::Lexer lex;
 	Plang::Parser parser;

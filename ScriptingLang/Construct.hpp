@@ -30,13 +30,15 @@ namespace Plang
 	//The basic object type. Everything is a construct from literals to lexical blocks to functions to scopes
 	class Construct
 	{
+		using PropT = std::map<StringT, AnyRef>;
+
 	public:
 		Construct(const AnyRef& Prototype = nullptr) : prototype(Prototype) { }
 		Construct(const ::Array<std::pair<StringT, AnyRef>>& Defaults) : properties(&Defaults[0], &Defaults[0] + Defaults.Length()) { }
 		virtual ~Construct() = default;
 
 		virtual inline ConstructType Type() const { return ConstructType::Construct; }
-		virtual inline std::string ToString() const { return "[[ Construct (" + std::to_string(Count()) + ") ]]"; } //basic string output (inherited classes may have multiple versions)
+		virtual inline std::string ToString() const; //basic value output. Constructs may have custom as operator which has a string conversion
 
 		AnyRef&       Set(const StringT& Name, const AnyRef& Ref, bool SearchParents = false); //If SearchParents is true, property is set where it is defined or in this scope if not found
 		AnyRef&       Get(const StringT& Name, bool SearchParents = true);
@@ -45,13 +47,21 @@ namespace Plang
 		bool          Remove(const StringT& Name);
 		inline size_t Count() const { return properties.size(); } //The number of defined properties in this construct
 
+		//iterators (For public properties)
+		inline PropT::iterator begin() { return properties.begin(); }
+		inline PropT::iterator end() { return properties.end(); }
+		inline PropT::const_iterator begin() const { return properties.begin(); }
+		inline PropT::const_iterator end() const { return properties.end(); }
+		inline PropT::const_iterator cbegin() const { return properties.cbegin(); }
+		inline PropT::const_iterator cend() const { return properties.cend(); }
+
 		//Merge another construct's properties into this one (does not modify prototype or copy inherited properties). Returns a reference to this construct
 		Construct& Merge(const Construct& Other, bool Overwrite = true);
 
 		AnyRef prototype; //parent construct. properties inherit
 
 	protected:
-		std::map<StringT, AnyRef> properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
+		PropT properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
 
 		friend std::ostream& (::operator <<)(std::ostream&, const Construct&);
 	};
@@ -186,7 +196,7 @@ namespace Plang
 		List(const std::vector<AnyRef>& Value) : value(Value) { }
 		List(std::vector<AnyRef>&& Value) : value(Value) { }
 
-		inline ConstructType Type() const override { return ConstructType::Array; }
+		inline ConstructType Type() const override { return ConstructType::List; }
 		inline std::string ToString() const override
 		{
 			std::string s = "[";
@@ -227,6 +237,7 @@ namespace Plang
 	public:
 		Signature() : arguments(), nSingles(0), nTuples(0) { }
 		Signature(const ::Array<Argument> Arguments);
+		Signature(std::initializer_list<Argument> Arguments) : Signature(::Array<Argument>(Arguments)) { }
 
 		//Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
 		Construct Parse(const Tuple& Arguments);
@@ -243,14 +254,16 @@ namespace Plang
 	public:
 		using FunctionT = std::function<AnyRef(Construct& Scope)>;
 
-		inline Function(const Signature& Signature, const FunctionT& Function) : signature(Signature), function(Function) { }
-		inline Function(const FunctionT& Function) : function(Function) { }
+		inline Function(const Signature& Signature, const FunctionT& Function, const Plang::AnyRef& Context = Undefined)
+			: signature(Signature), function(Function), context(Context) { }
+		inline Function(const FunctionT& Function, const Plang::AnyRef& Context = Undefined)
+			: function(Function), context(Context) { }
 
 		inline ConstructType Type() const override { return ConstructType::Function; }
 		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
-		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope);
-		inline AnyRef Call(const AnyRef& LexScope)
+		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope = Undefined);
+		inline AnyRef Call(const AnyRef& LexScope = Undefined)
 		{
 			Tuple args;
 			return Call(args, LexScope);
@@ -258,20 +271,23 @@ namespace Plang
 
 		Signature signature;
 		FunctionT function;
+		AnyRef context; //The lexical scope that this script can see. Typically the parent scope
 	};
 
 	//A script. All scripts behave like functions, having arguments and a return value
 	class Script : public Construct
 	{
 	public:
-		inline Script(const Signature& Signature, SyntaxTreeNode* Node) : signature(Signature), node(Node) { }
-		inline Script(SyntaxTreeNode* Node) : node(Node) { }
+		inline Script(const Signature& Signature, SyntaxTreeNode* Node, const Plang::AnyRef& Context = Undefined)
+			: signature(Signature), node(Node), context(Context) { }
+		inline Script(SyntaxTreeNode* Node, const Plang::AnyRef& Context = Undefined)
+			: node(Node), context(Context) { }
 
 		inline ConstructType Type() const override { return ConstructType::Script; }
 		inline std::string ToString() const override { return "[[ Script ]]"; } //todo: print signature
 
-		AnyRef Evaluate(const Tuple& Arguments, const AnyRef& LexScope);
-		inline AnyRef Evaluate(const AnyRef& LexScope)
+		AnyRef Evaluate(const Tuple& Arguments, const AnyRef& LexScope = Undefined);
+		inline AnyRef Evaluate(const AnyRef& LexScope = Undefined)
 		{
 			Tuple args;
 			return Evaluate(args, LexScope);
@@ -279,5 +295,6 @@ namespace Plang
 
 		Signature signature;
 		SyntaxTreeNode* node;
+		AnyRef context; //The lexical scope that this script can see. Typically the parent scope
 	};
 };
