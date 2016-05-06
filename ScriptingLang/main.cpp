@@ -31,7 +31,16 @@ int main(int ac, const char* av[])
 	global->Set("as", Plang::Reference<Plang::Function>(as));
 
 	auto& x = global->Set("x", Plang::Reference<Plang::Int>(5));
-	x->Set("test", Plang::Reference<Plang::Float>(10.f));
+	x->Set("as", Plang::Reference<Plang::Function>({ { { "Type", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
+	{
+		auto ty = Arguments.Get("Type");
+
+		Plang::AnyRef rval (Plang::Undefined);
+		if (ty->Type() == Plang::ConstructType::String)
+			rval = Plang::Reference<Plang::String>("ecks");
+
+		return rval;
+	} }));
 
 	Plang::Function log({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
 	{
