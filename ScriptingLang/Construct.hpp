@@ -278,9 +278,9 @@ namespace Plang
 	class Script : public Construct
 	{
 	public:
-		inline Script(const Signature& Signature, SyntaxTreeNode* Node, const Plang::AnyRef& Context = Undefined)
+		inline Script(const Signature& Signature, const SyntaxTreeNode& Node, const Plang::AnyRef& Context = Undefined)
 			: signature(Signature), node(Node), context(Context) { }
-		inline Script(SyntaxTreeNode* Node, const Plang::AnyRef& Context = Undefined)
+		inline Script(const SyntaxTreeNode& Node, const Plang::AnyRef& Context = Undefined)
 			: node(Node), context(Context) { }
 
 		inline ConstructType Type() const override { return ConstructType::Script; }
@@ -294,7 +294,7 @@ namespace Plang
 		}
 
 		Signature signature;
-		SyntaxTreeNode* node;
+		SyntaxTreeNode node;
 		AnyRef context; //The lexical scope that this script can see. Typically the parent scope
 	};
 };

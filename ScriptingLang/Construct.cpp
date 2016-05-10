@@ -31,17 +31,14 @@ std::string Plang::TypeToString(const Plang::ConstructType& Type)
 }
 Plang::AnyRef& Plang::Construct::Set(const Plang::StringT& Name, const Plang::AnyRef& Ref, bool SearchParents)
 {
-    auto scope = this;
+	auto scope = this;
 
-	if (prototype != nullptr)
+	while (scope->prototype != nullptr)
 	{
-		do
-		{
-			if (scope->properties.find(Name) != scope->properties.end())
-				break;
+		if (scope->properties.find(Name) != scope->properties.end())
+			break;
 
-			scope = scope->prototype.Get();
-		} while (scope != nullptr);
+		scope = scope->prototype.Get();
 	}
 
     return (scope->properties[Name] = Ref);
@@ -196,12 +193,6 @@ Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, const Plang::
     return function(scope);
 }
 
-struct Frame
-{
-    Plang::SyntaxTreeNode* node; //the node to evaluate
-    size_t index; //index of current instruction
-};
-
 inline bool IsSymbol(Plang::SyntaxTreeNode* Node, size_t Index)
 {
     return (Index == 0
@@ -211,54 +202,103 @@ inline bool IsSymbol(Plang::SyntaxTreeNode* Node, size_t Index)
     );
 }
 
+inline Plang::StringT GetNameString(const Plang::Instruction& Instruction)
+{
+	switch (Instruction.type)
+	{
+	case Plang::InstructionType::Integer:
+		return std::to_string(Instruction.value.get<Plang::IntT>());
+	case Plang::InstructionType::Float:
+		return std::to_string(Instruction.value.get<Plang::FloatT>());
+	default:
+		return Instruction.value.get<Plang::StringT>();
+	}
+}
+
+struct Frame
+{
+	Plang::SyntaxTreeNode* node; //the node to evaluate
+	size_t index; //index of current instruction
+
+	Plang::AnyRef* assignment; //assignment
+};
+
 Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRef& LexScope)
 {
-    if (node == nullptr)
-        return Undefined;
-
     std::vector<AnyRef> registers; //holds intermediate values for functions
+	std::stack<AnyRef> dot; //object scopes
 
+	//scope here is the local scope
     auto scope = signature.Parse(Arguments);
     scope.prototype = (LexScope == Undefined ? context : LexScope);
-
     AnyRef pScope = scope;
 
     std::stack<Frame> stack;
-    stack.push({ node, 0 });
+    stack.push({ &node, 0 });
     while (!stack.empty())
     {
-        auto top = stack.top();
-        stack.pop();
+        auto& top = stack.top();
 
-		if (top.node->instruction.type == InstructionType::Block) //todo: verify necessary
-			registers.push_back(Construct());
-		else if (top.node->instruction.type == InstructionType::Expression)
+		if (top.index == 0 && top.node->instruction.type == InstructionType::Block)
+		{
+			dot.push(Reference<Construct>::New());
+			registers.push_back(dot.top());
+		}
+
+		/*if (top.node->instruction.type == InstructionType::Expression)
 		{
 			//first child is arguments
 			//second child is script
 			continue;
-		}
+		}*/
 
         bool nest = false;
-		for (size_t i = top.index; i < top.node->children.size(); i++)
+		for (; top.index < top.node->children.size(); top.index++)
 		{
-			auto& child = top.node->children[i];
+			auto& child = top.node->children[top.index];
 
-			if (child.instruction.type == InstructionType::Accessor)
-				; //todo
+			//todo: handling setting non identifiers as properties
+
 			if (child.instruction.type == InstructionType::Integer)
 				registers.push_back(Reference<Int>(child.instruction.value.get<Int::ValueType>()));
 			else if (child.instruction.type == InstructionType::Float)
 				registers.push_back(Reference<Float>(child.instruction.value.get<Float::ValueType>()));
 			else if (child.instruction.type == InstructionType::String)
 				registers.push_back(Reference<String>(child.instruction.value.get<String::ValueType>()));
+			else if (child.instruction.type == InstructionType::Accessor)
+			{
+				AnyRef* acc = &scope.Get(GetNameString(child.children[0].instruction));
+				for (auto i = 1; i < child.children.size(); i++)
+				{
+
+				}
+			}
 			else if (child.instruction.type == InstructionType::Identifier)
 			{
-				if (IsSymbol(top.node, i))
+				if (IsSymbol(top.node, top.index))
 				{
-					//node is a symbol and therefore is an assignment
+					//node is an assignment and therefore the first operator is an assignment
 
-					registers.push_back(scope.Get(child.instruction.value.get<StringT>()));
+					auto name = child.instruction.value.get<StringT>();
+					auto iname = top.node->instruction.value.get<StringT>();
+
+					//store in existing location if found, otherwise create new in current scope
+					if (iname == "=")
+					{
+						auto& assn = scope.Get(name);
+						if (assn == Undefined)
+							top.assignment = &scope.Set(name, AnyRef());
+						else
+							top.assignment = &assn;
+					}
+					else if (iname == ":")
+					{
+						if (dot.size() < 1)
+							throw "Invalid assignment, must be in object/tuple"; //must cancel outer call
+						else
+							top.assignment = &dot.top()->Set(name, AnyRef());
+					}
+					//else what?
 				}
 				else
 					registers.push_back(scope.Get(child.instruction.value.get<StringT>()));
@@ -268,7 +308,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 			{
 				stack.push({ &child, 0 });
 				nest = true;
-				i++;
+				top.index++;
 				break;
 			}
 			//empty containers
@@ -286,54 +326,74 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 
         if (!nest)
         {
-			if (top.node->instruction.type == InstructionType::Block)
-				;
-				
-            auto& inst = top.node->instruction;
+			stack.pop();
+
+			auto& inst = top.node->instruction;
+
 			if (inst.type == InstructionType::Tuple)
 			{
 				auto len = top.node->children.size();
 				auto start = registers.size() - len;
-				Plang::Tuple tup(::Array<AnyRef>(registers.data() + start, len));
+				::Array<AnyRef> vals (registers.data() + start, len);
 				registers.erase(registers.end() - len, registers.end());
-				registers.push_back(tup);
+				registers.push_back(Reference<Tuple>(vals));
 			}
 			else if (inst.type == InstructionType::Array)
 			{
 				auto len = top.node->children.size();
 				auto start = registers.size() - len;
-				Plang::Array arr(::Array<AnyRef>(registers.data() + start, len));
+				::Array<AnyRef> vals (registers.data() + start, len);
 				registers.erase(registers.end() - len, registers.end());
-				registers.push_back(arr);
+				registers.push_back(Reference<Array>(vals));
 			}
 			else if (inst.type == InstructionType::List)
 			{
 				auto len = top.node->children.size();
 				auto start = registers.size() - len;
-				Plang::List list(std::vector<AnyRef>(registers.end() - len, registers.end()));
+				std::vector<AnyRef> vals (registers.end() - len, registers.end());
 				registers.erase(registers.end() - len, registers.end());
-				registers.push_back(list);
+				registers.push_back(Reference<List>(vals));
 			}
 			else if (inst.type == InstructionType::Call)
 			{
-				auto& fn = scope.Get(inst.value.get<StringT>());
+				auto fnName = inst.value.get<StringT>();
+				auto& fn = scope.Get(fnName);
 
 				auto len = top.node->children.size();
-				auto start = registers.size() - len;
-				Tuple tup(::Array<AnyRef>(registers.data() + start, len));
-				registers.erase(registers.end() - len, registers.end());
 
-				//todo: nested tuples don't work
-
-				if (fn == Undefined)
-					//throw inst.value.get<StringT>() + " is undefined and not callable";
-					std::cout << inst.value.get<StringT>() + " is undefined and not callable\n";
-				else if (fn->Type() == ConstructType::Script)
-					registers.push_back(Reference<Script>(fn)->Evaluate(tup));
-				else if (fn->Type() == ConstructType::Function)
-					registers.push_back(Reference<Function>(fn)->Call(tup));
+				if (len > 0 && (fnName == "=" || fnName == ":"))
+				{
+					len--;
+					*top.assignment = *(registers.end() - len);
+					registers.erase(registers.end() - len, registers.end());
+					registers.push_back(*top.assignment);
+				}
+				//todo: return
 				else
-					throw "not callable";
+				{
+					auto start = registers.size() - len;
+					Tuple tup (::Array<AnyRef>(registers.data() + start, len));
+					registers.erase(registers.end() - len, registers.end());
+
+					//todo: nested tuples don't work
+
+					if (fn == Undefined)
+						//throw fnName + " is undefined and not callable";
+						std::cout << fnName + " is undefined and not callable\n";
+					else if (fn->Type() == ConstructType::Script)
+						registers.push_back(Reference<Script>(fn)->Evaluate(tup));
+					else if (fn->Type() == ConstructType::Function)
+						registers.push_back(Reference<Function>(fn)->Call(tup));
+					else
+						throw "not callable";
+				}
+			}
+			else if (inst.type == InstructionType::Block)
+			{
+				//statements will store their return value as a register
+				//without a return statement however, the block is the return value
+				while (registers.back() != dot.top())
+					registers.pop_back();
 			}
 			//todo: expressions, etc
 
@@ -343,7 +403,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 
 	//return value of statement
 	if (registers.size() > 0)
-		std::cout << ">> " << registers.back() << "\n";
+		std::cout << ">> " << registers.front() << "\n";
 
     return Undefined;
 }

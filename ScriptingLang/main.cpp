@@ -9,12 +9,12 @@ int main(int ac, const char* av[])
 {
 	Plang::AnyRef global = Plang::Construct();
 
-	Plang::Function as({ { "Val", Plang::ArgumentType::Single }, { "Type", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
+	Plang::Function as ({ { "From", Plang::ArgumentType::Single }, { "To", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
 	{
-		auto& asFn = Arguments.Get("Val")->Get("as");
+		auto& asFn = Arguments.Get("From")->Get("as");
 		if (asFn != Plang::Undefined)
 		{
-			Plang::Tuple args({ Arguments.Get("Type") });
+			Plang::Tuple args({ Arguments.Get("From"), Arguments.Get("To") });
 			if (asFn->Type() == Plang::ConstructType::Function)
 			{
 				auto fn = asFn.As<Plang::Function>();
@@ -31,18 +31,19 @@ int main(int ac, const char* av[])
 	global->Set("as", Plang::Reference<Plang::Function>(as));
 
 	auto& x = global->Set("x", Plang::Reference<Plang::Int>(5));
-	x->Set("as", Plang::Reference<Plang::Function>({ { { "Type", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
+	x->Set("as", Plang::Reference<Plang::Function>({ { { "From", Plang::ArgumentType::Single }, { "To", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
 	{
-		auto ty = Arguments.Get("Type");
+		auto from = Arguments.Get("From");
+		auto to = Arguments.Get("To");
 
 		Plang::AnyRef rval (Plang::Undefined);
-		if (ty->Type() == Plang::ConstructType::String)
+		if (to != Plang::Undefined && to->Type() == Plang::ConstructType::String)
 			rval = Plang::Reference<Plang::String>("ecks");
 
 		return rval;
 	} }));
 
-	Plang::Function log({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
+	Plang::Function log ({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
 	{
 		return Arguments.Get("args");
 	});
@@ -74,7 +75,7 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
-				Plang::Script(&parser.syntaxTree.root).Evaluate(global);
+				Plang::Script(parser.syntaxTree.root).Evaluate(global);
 			}
 			catch (const Plang::ParserException& Expt)
 			{

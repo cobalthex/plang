@@ -57,8 +57,14 @@ namespace Plang
 
 		inline T* Get() { return ptr; }
 		inline const T* Get() const { return ptr; }
-		inline Reference& Set(const T& Value) { operator=(Value); }
-		inline Reference& Set(T&& Value) { operator=(Value); }
+		inline Reference& Set(const T& Value)
+		{
+			throw "todo";
+		}
+		inline Reference& Set(T&& Value)
+		{
+			throw "todo";
+		}
 
 		template <class U>
 		inline operator Reference<U>() noexcept { return As<U>(); }
