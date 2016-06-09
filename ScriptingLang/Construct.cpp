@@ -267,11 +267,37 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 				registers.push_back(Reference<String>(child.instruction.value.get<String::ValueType>()));
 			else if (child.instruction.type == InstructionType::Accessor)
 			{
-				AnyRef* acc = &scope.Get(GetNameString(child.children[0].instruction));
+				//if first accessor is . use current scope; all others use prototype
+				auto name = GetNameString(child.children[0].instruction);
+				AnyRef* acc = name == "" ? &pScope : &scope.Get(name);
+				AnyRef* last = nullptr;
+
 				for (auto i = 1; i < child.children.size(); i++)
 				{
+					if (*acc == Undefined)
+					{
+						std::cout << "Error " << name << " is undefined\n";
+						return Undefined;
+					}
 
+					last = acc;
+
+					name = GetNameString(child.children[i].instruction);
+					if (name == "")
+						acc = &(*acc)->prototype;
+					else
+						acc = &(*acc)->Get(name);
 				}
+
+				if (IsSymbol(top.node, top.index))
+				{
+					if (*acc == Undefined)
+						top.assignment = &(*last)->Set(name, Undefined);
+					else
+						top.assignment = acc;
+				}
+				else
+					registers.push_back(*acc);
 			}
 			else if (child.instruction.type == InstructionType::Identifier)
 			{
@@ -361,6 +387,8 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 
 				auto len = top.node->children.size();
 
+				//todo: handle assignment == null (=5;)
+
 				if (len > 0 && (fnName == "=" || fnName == ":"))
 				{
 					len--;
@@ -368,7 +396,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 					registers.erase(registers.end() - len, registers.end());
 					registers.push_back(*top.assignment);
 				}
-				//todo: return
+				//todo: return statements
 				else
 				{
 					auto start = registers.size() - len;

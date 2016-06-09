@@ -60,14 +60,15 @@ namespace Plang
 		Parser& operator = (const Parser& Other);
 
 		SyntaxTree syntaxTree;
-		std::map<std::string, Operator> operators; //predefined operators
+		std::map<std::string, Operator> operators; //predefined operators name->operator
+		std::map<std::string, size_t> controlStructures; //predefined control structures name->argument count
 
 		static Instruction ParseNumber(std::string Input);
 		static StringT ParseString(std::string Input);
 		static bool IsRegion(const Instruction& Instruction);
 
 	protected:
-		void CreateOperators();
+		void CreatePredefinitions();
 		void CreateOperator(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence);
 		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
 

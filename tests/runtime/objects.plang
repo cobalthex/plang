@@ -1,4 +1,0 @@
-System.Console.WriteLine({});
-System.Console.Writeline([]);
-System.Console.Writeline([||]);
-System.Console.Writeline(());

@@ -23,7 +23,7 @@ bool Parser::IsRegion(const Instruction& Instruction)
 
 Parser::Parser(const Lexer::TokenList& Tokens)
 {
-	CreateOperators();
+	CreatePredefinitions();
 
 	parent = &syntaxTree.root;
 	parent->children.push_back({ { InstructionType::Statement }, parent, Location() });
@@ -58,6 +58,27 @@ Parser& Parser::operator = (const Parser& Other)
 	return *this;
 }
 
+//Convert a function call to a control structure (see asserts for requirements) - does not add block
+//does not do anything if cannot be converted
+//Returns Node
+SyntaxTreeNode* ToControlStructure(SyntaxTreeNode* Node)
+{
+	if (Node->instruction.type != InstructionType::Call
+		|| Node->children.front().instruction.type != InstructionType::Identifier
+		|| Node->children.back().children.size() != 1)
+		return Node;
+
+	auto condition = std::move(Node->children.back().children.front());
+	condition.parent = Node;
+
+	Node->instruction.type = InstructionType::ControlStructure;
+	Node->instruction.value = Node->children.front().instruction.value;
+	Node->children.clear();
+	Node->children.push_back(std::move(condition));
+
+	return Node;
+}
+
 void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List)
 {
 	//all arguments are directly following
@@ -70,7 +91,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		auto number = ParseNumber(Token->value);
 
-		SyntaxTreeNode node (number, parent, Token->location);
+		SyntaxTreeNode node(number, parent, Token->location);
 
 		if ((Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor) ||
 			(parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor))
@@ -79,7 +100,13 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			parent->children.push_back(node);
 	}
 	else if (Token->type == LexerTokenType::String)
-		parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent, Token->location });
+	{
+		//concatinate adjacent strings
+		if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::String)
+			parent->children.back().instruction.value.get<StringT>().append(ParseString(Token->value));
+		else
+			parent->children.push_back({ { InstructionType::String, ParseString(Token->value) }, parent, Token->location });
+	}
 	else if (Token->type == LexerTokenType::Terminator)
 	{
 		//todo possibly handle (1;2;3)
@@ -94,7 +121,16 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		ParseStatement(parent);
 		parent = parent->parent;
 
-		if (parent->instruction.type != InstructionType::Program && parent->instruction.type != InstructionType::Block)
+		//todo: if (...) { }; ...; does not work
+		if (parent->instruction.type == InstructionType::ControlStructure)
+		{
+			parent = parent->parent;
+			ParseStatement(parent);
+			parent = parent->parent;
+		}
+
+		if (parent->instruction.type != InstructionType::Program
+			&& parent->instruction.type != InstructionType::Block)
 			throw ParserException("Invalid terminator", Token->value, Token->location);
 
 		parent->children.push_back({ { InstructionType::Statement }, parent, Token->location });
@@ -134,9 +170,16 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		if (Token->value == "{")
 		{
-			//if previous particle is tuple, convert to expression
-			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
+			if (parent != nullptr && parent->instruction.type == InstructionType::ControlStructure)
 			{
+				auto ival = parent->instruction.value.get<StringT>();
+				if (controlStructures[ival] != parent->children.front().children.size())
+					throw ParserException("Incorrect number of arguments for control structure (expected " + std::to_string(controlStructures[ival]) + ")", ival, Token->location);
+			}
+			//if previous particle is tuple, convert to expression
+			else if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
+			{
+				//todo: revisit
 				auto tuple = parent->children.back();
 				parent->children.pop_back();
 
@@ -146,32 +189,23 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 				node.children.push_back(tuple);
 				tuple.parent = &node;
 
-				node.children.push_back({ { InstructionType::Block }, &node, Token->location });
-				parent = &node.children.back();
+				parent = &node;
 			}
-			else if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Call)
-			{
-				parent = &parent->children.back();
-				parent->instruction.type = InstructionType::ControlStructure;
 
-				SyntaxTreeNode tuple { { InstructionType::Tuple }, parent, Token->location };
-				tuple.children = std::move(parent->children);
-				parent->children.clear();
-				parent->children.push_back(tuple);
-
-				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
-				parent = &parent->children.back();
-			}
-			else
-			{
-				parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
-				parent = &parent->children.back();
-			}
+			parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
+			parent = &parent->children.back();
 		}
-		else if (Token->value == "(" && parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Identifier)
+		else if (Token->value == "(" && parent->children.size() > 0)
 		{
-			auto& ident = parent->children.back();
-			ident.instruction.type = InstructionType::Call;
+			auto ident = parent->children.back();
+			parent->children.pop_back();
+
+			parent->children.push_back({ { InstructionType::Call, "" }, parent, ident.location });
+			parent = &parent->children.back();
+
+			ident.parent = parent;
+			parent->children.push_back(ident); //function to call
+			parent->children.push_back({ { InstructionType::Tuple, "" }, parent, Token->location }); //arguments
 			parent = &parent->children.back();
 		}
 		else
@@ -218,7 +252,17 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		parent = parent->parent;
 
-		if (parent->instruction.type == InstructionType::ControlStructure)
+		if (parent->instruction.type == InstructionType::ControlStructure && Token->value == ")")
+		{
+			auto ival = parent->instruction.value.get<StringT>();
+			if (controlStructures[ival] != parent->children.front().children.size())
+				throw ParserException("Incorrect number of arguments for control structure (expected " + std::to_string(controlStructures[ival]) + ")", ival, Token->location);
+
+			parent->children.push_back({ { InstructionType::Block, "" }, parent, Token->location });
+		}
+		else if (parent->instruction.type == InstructionType::Call
+				 || parent->instruction.type == InstructionType::Expression
+				 || parent->instruction.type == InstructionType::ControlStructure)
 			parent = parent->parent;
 	}
 	else if (Token->type == LexerTokenType::Identifier)
@@ -240,13 +284,48 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		else*/
 
-		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
+		//control structures
+		bool isParentAccessor = (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor);
+		auto ctrl = controlStructures.find(Token->value);
+		if (ctrl != controlStructures.end() && !isParentAccessor)
+		{
+			parent->children.push_back({ { InstructionType::ControlStructure, Token->value }, parent, Token->location });
+			parent = &parent->children.back();
 
-		if ((Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor) ||
-			(parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor))
-			parent->children.back().children.push_back(node);
+			//control structures that dont take arguments: e.g. else { }
+			if (ctrl->second == 0)
+			{
+				parent->children.push_back({ { InstructionType::Tuple, "" }, parent, Token->location });
+				parent->children.push_back({ { InstructionType::Block, "" }, parent, Token->location });
+				parent = &parent->children.back();
+			}
+		}
+		else if (parent->instruction.type == InstructionType::ControlStructure)
+			throw ParserException("Incorrect format, missing condition tuple", Token->value, Token->location);
 		else
-			parent->children.push_back(node);
+		{
+			SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
+
+			bool isLastTokenAccessor = (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor);
+			if (isLastTokenAccessor && isParentAccessor) //part of an accessor
+				parent->children.back().children.push_back(node);
+			else
+				parent->children.push_back(node);
+		}
+	}
+}
+
+bool CanDisolveTuple(InstructionType Type)
+{
+	switch (Type)
+	{
+	case InstructionType::Call:
+	case InstructionType::Expression:
+	case InstructionType::ControlStructure:
+		return false;
+
+	default:
+		return true;
 	}
 }
 
@@ -259,16 +338,18 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 
 	if (Statement->children.size() == 1)
 	{
-		new (Statement) SyntaxTreeNode(Statement->children.back());
+		auto temp = Statement->children.back();
+		*Statement = temp;
 		Reparent(Statement, _parent);
 		return;
 	}
 
+	//create output/op stacks (shunting yard)
 	std::vector<SyntaxTreeNode> output, ops;
 	for (auto& i : Statement->children)
 	{
 		//only identifiers can be operators
-		if (i.instruction.type != InstructionType::Identifier)
+		if (i.instruction.type != InstructionType ::Identifier)
 		{
 			output.push_back(i);
 			continue;
@@ -289,36 +370,38 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 				output.push_back(ops.back());
 				ops.pop_back();
 			}
+			i.instruction.type = InstructionType::Operation;
 			ops.push_back(i);
 		}
 		else
-		{
 			output.push_back(i);
-		}
 	}
 
 	if (ops.size() < 1)
 		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support should go
 
+	//push rest of ops onto output stack
 	while (ops.size() > 1)
 	{
 		output.push_back(ops.back());
 		ops.pop_back();
 	}
 
-	new (Statement) SyntaxTreeNode(ops.back());
+	//create root call
+	*Statement = std::move(ops.back());
 	Reparent(Statement, _parent);
-	Statement->instruction.type = InstructionType::Call;
-
 	_parent = Statement;
+	
+	//todo: auto perform integer/float/dec operations
+
+	//build syntax tree from output stack
 	while (output.size() > 0)
 	{
-		if (output.back().instruction.type == InstructionType::Identifier && operators.find(output.back().instruction.value.get<std::string>()) != operators.end())
+		//nested operators (remember that outputs are read rtl but operands are in ltr order)
+		if (output.back().instruction.type == InstructionType::Operation)
 		{
-			_parent->children.insert(_parent->children.begin(), output.back());
+			_parent->children.insert(_parent->children.begin(), std::move(output.back()));
 			Reparent(&_parent->children.front(), _parent);
-			_parent->children.front().instruction.type = InstructionType::Call;
-
 			_parent = &_parent->children.front();
 		}
 		else
@@ -327,7 +410,12 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			Reparent(&_parent->children.front(), _parent);
 
 			if (_parent->children.size() > 1)
+			{
 				_parent = _parent->parent;
+
+				if (_parent->parent == nullptr)
+					throw ParserException("Error, too many statements", "", output.back().location);
+			}
 		}
 
 		output.pop_back();
@@ -367,8 +455,11 @@ void Parser::CreateOperator(const std::string& Name, Notation Notat, Association
 {
 	operators[Name] = { Name, Notat, Assoc, Precedence };
 }
-void Parser::CreateOperators()
+void Parser::CreatePredefinitions()
 {
+	controlStructures["if"] = 1;
+	controlStructures["else"] = 0;
+
 	CreateOperator("!", Notation::Prefix , Association::None, 3);
 	CreateOperator("?", Notation::Postfix, Association::None, 7);
 	CreateOperator(",", Notation::Infix, Association::LeftToRight, 8);

@@ -30,4 +30,3 @@
 #include "StringOps.hpp"
 
 using codepoint = int32_t;
-

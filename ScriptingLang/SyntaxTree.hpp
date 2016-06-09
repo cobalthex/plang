@@ -15,6 +15,7 @@ namespace Plang
 		Statement,
 		Expression, //functions
 		Call, //call to an expression
+		Operation, //A call to an operator (x + y) -- simplified node structure
 		ControlStructure, //a control structure, such as an if statement or loop
 
 		Block,
@@ -23,13 +24,37 @@ namespace Plang
 
 		Integer,
 		Float,
-		//Decimal,
+		Decimal,
 		String,
 
 		Tuple,
 		List,
 		Array
 	};
+
+	/*node structure for various instruction types:
+
+		Expression:
+			tuple
+				** (Arguments)
+			block
+				** (Body)
+	
+		Call:
+			* (function: can be accessor, identifier, etc)
+			tuple
+				** (Arguments)
+
+		Operation: (id)
+			* (left side argument)
+			* (right side argument)
+
+		ControlStructure: (id)
+			* (condition: can be call/operation)
+			block
+				** (body)
+	*/
+
 	class Instruction
 	{
 	public:

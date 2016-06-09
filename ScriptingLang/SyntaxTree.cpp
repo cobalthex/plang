@@ -5,23 +5,28 @@ static const std::string types[] =
 {
 	"Unknown",
 	"Program",
+
 	"Statement",
 	"Expression",
 	"Call",
+	"Operation",
 	"Control Structure",
+
 	"Block",
 	"Identifier",
 	"Accessor",
-	"Symbol",
-	"Tuple",
+
 	"Integer",
 	"Float",
-	//"Decimal",
+	"Decimal",
 	"String",
+
+	"Tuple",
 	"List",
 	"Array"
 };
 
+//get the length of the type name of the longest child of a node. Used for column alignment
 size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)
 {
 	size_t length = 0;
@@ -37,10 +42,10 @@ size_t GetChildrenMaxNameLength(Plang::SyntaxTreeNode* Node)
 
 void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode& Node)
 {
-	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(GetChildrenMaxNameLength(Node.parent) + 3) << types[(size_t)Node.instruction.type];
+	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(GetChildrenMaxNameLength(Node.parent) + 3) << types[(size_t)Node.instruction.type] + ":";
 	Stream << (std::string)Node.instruction;
 
-	if (Node.location.module.length() > 10000)
+	if (false)
 		Stream << " @ " << Node.location;
 	Stream << "\n";
 
