@@ -172,11 +172,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		if (Token->value == "{")
 		{
-			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Call)
-			{
-				std::cout<<*parent<<std::endl;
-			}
-
 			//if previous particle is tuple, convert to expression
 			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
 			{
@@ -281,7 +276,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		}
 		else*/
 
-		//control structures
 		bool isParentAccessor = (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor);
 	
 		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
@@ -389,6 +383,15 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			Reparent(Statement, _parent);
 			return;
 		}
+		else if (output.size() == 2 && output.back().instruction.type == InstructionType::Block)
+		{
+			//todo: maybe change to just 2 args to handle else x;
+			*Statement = { { InstructionType::ControlStructure }, _parent, output.front().location };
+			Statement->children.push_back(std::move(output.front()));
+			Statement->children.push_back(std::move(output.back()));
+			Reparent(Statement, _parent);
+			return;
+		}
 
 		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support whould go
 	}
@@ -404,7 +407,7 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 	*Statement = std::move(ops.back());
 	Reparent(Statement, _parent);
 	_parent = Statement;
-	
+
 	//todo: auto perform integer/float/dec operations
 
 	//build syntax tree from output stack
@@ -419,9 +422,9 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 		}
 		else
 		{
-			_parent->children.insert(_parent->children.begin(), output.back());
+			std::cout << output.back() << std::endl;
+			_parent->children.insert(_parent->children.begin(), std::move(output.back()));
 			Reparent(&_parent->children.front(), _parent);
-
 			if (_parent->children.size() > 1)
 			{
 				_parent = _parent->parent;

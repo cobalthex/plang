@@ -43,19 +43,17 @@ int main(int ac, const char* av[])
 		return rval;
 	} }));
 
-	Plang::Function log ({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
+	Plang::Function ast ({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
 	{
 		auto& args = Arguments.Get("args").As<Plang::Tuple>();
 		for (auto i = 0; i < args->Length(); i++)
 		{
 			auto& val = (*args)[i];
 			std::cout << val << "\n";
-			for (auto& p : *val)
-				std::cout << "\t" << p.first << ": " << (p.second == nullptr ? "undefined" : p.second->ToString()) << "\n";
 		}
 		return Plang::Undefined;
 	});
-	global->Set("log", Plang::Reference<Plang::Function>(log));
+	global->Set("ast", Plang::Reference<Plang::Function>(ast));
 
 	Plang::Lexer lex;
 	Plang::Parser parser;
@@ -74,6 +72,12 @@ int main(int ac, const char* av[])
 			{
 				std::cout << "Bye!\n";
 				return 0;
+			}
+			
+			if (line.length() > 2 && line[0] == '#' && line[1] == '!')
+			{
+				system(line.data() + 2);
+				continue;
 			}
 
 			iss.str(line);
