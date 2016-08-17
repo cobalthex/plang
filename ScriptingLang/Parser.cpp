@@ -359,7 +359,39 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 	//todo: maybe handle control structures here
 	//if call then has statement/block after, convert to control structure
 	if (ops.size() < 1)
-		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support should go
+	{
+		//control structures
+		if (output.front().instruction.type == InstructionType::Call)
+		{
+			if (output.size() > 2)
+				throw ParserException("Unexpected identifier", output[2].instruction, output[2].location);
+
+			output.front().instruction.type = InstructionType::ControlStructure;
+
+			//handle if (...) { }
+			if (output.back().instruction.type == InstructionType::Block)
+			{
+				auto block = output.back();
+				output.pop_back();
+				output.front().children.push_back(block);
+			}
+			//handle if (...) x;
+			else
+			{
+				auto node = output.back();
+				output.pop_back();
+				SyntaxTreeNode block = { { InstructionType::Block }, &output.front(), node.location };
+				block.children.push_back(node);
+				output.front().children.push_back(block);
+			}
+
+			*Statement = std::move(output.front());
+			Reparent(Statement, _parent);
+			return;
+		}
+
+		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support whould go
+	}
 
 	//push rest of ops onto output stack
 	while (ops.size() > 1)
