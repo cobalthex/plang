@@ -125,6 +125,6 @@ inline std::ostream& operator << (std::ostream& Stream, const Plang::Reference<T
 	if (Ref == nullptr)
 		Stream << "[null]";
 	else
-		Stream << *Ref;
+		Stream << Ref.Get();
 	return Stream;
 }

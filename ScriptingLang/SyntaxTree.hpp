@@ -60,9 +60,7 @@ namespace Plang
 	public:
 		Instruction() : type(InstructionType::Unknown) { }
 		Instruction(InstructionType Type) : type(Type) { }
-		Instruction(InstructionType Type, IntT Value) : type(Type), value(Value) { }
-		Instruction(InstructionType Type, FloatT Value) : type(Type), value(Value) { }
-		Instruction(InstructionType Type, StringT Value) : type(Type), value(Value) { }
+		Instruction(InstructionType Type, const mapbox::util::variant<IntT, FloatT, StringT>& Value) : type(Type), value(Value) { }
 
 		InstructionType type;
 		mapbox::util::variant<IntT, FloatT, StringT> value;

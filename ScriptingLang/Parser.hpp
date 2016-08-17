@@ -61,7 +61,6 @@ namespace Plang
 
 		SyntaxTree syntaxTree;
 		std::map<std::string, Operator> operators; //predefined operators name->operator
-		std::map<std::string, size_t> controlStructures; //predefined control structures name->argument count
 
 		static Instruction ParseNumber(std::string Input);
 		static StringT ParseString(std::string Input);

@@ -150,6 +150,8 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	//chains all acccessors: a.b.c.d => accessor { a, b, c, d }
 	else if (Token->type == LexerTokenType::Accessor)
 	{
+		//todo: z.1.x or z.1.x.y don't work
+
 		if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor)
 			return;
 		else if (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor)
@@ -170,22 +172,20 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		if (Token->value == "{")
 		{
-			if (parent != nullptr && parent->instruction.type == InstructionType::ControlStructure)
+			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Call)
 			{
-				auto ival = parent->instruction.value.get<StringT>();
-				if (controlStructures[ival] != parent->children.front().children.size())
-					throw ParserException("Incorrect number of arguments for control structure (expected " + std::to_string(controlStructures[ival]) + ")", ival, Token->location);
+				std::cout<<*parent<<std::endl;
 			}
+
 			//if previous particle is tuple, convert to expression
-			else if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
+			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
 			{
-				//todo: revisit
 				auto tuple = parent->children.back();
 				parent->children.pop_back();
-
+				
 				parent->children.push_back({ { InstructionType::Expression }, parent, tuple.location });
+				
 				auto& node = parent->children.back();
-
 				node.children.push_back(tuple);
 				tuple.parent = &node;
 
@@ -195,6 +195,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 			parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
 			parent = &parent->children.back();
 		}
+		//call
 		else if (Token->value == "(" && parent->children.size() > 0)
 		{
 			auto ident = parent->children.back();
@@ -254,10 +255,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		if (parent->instruction.type == InstructionType::ControlStructure && Token->value == ")")
 		{
-			auto ival = parent->instruction.value.get<StringT>();
-			if (controlStructures[ival] != parent->children.front().children.size())
-				throw ParserException("Incorrect number of arguments for control structure (expected " + std::to_string(controlStructures[ival]) + ")", ival, Token->location);
-
 			parent->children.push_back({ { InstructionType::Block, "" }, parent, Token->location });
 		}
 		else if (parent->instruction.type == InstructionType::Call
@@ -267,7 +264,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 	else if (Token->type == LexerTokenType::Identifier)
 	{
-		//handle prefix/postfix
+		//todo: handle prefix/postfix
 		//-a - b <--- if - and op #2 is also op, use prefix
 
 		/*if (Token->value == "=" || Token->value == ":")
@@ -286,32 +283,14 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 		//control structures
 		bool isParentAccessor = (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor);
-		auto ctrl = controlStructures.find(Token->value);
-		if (ctrl != controlStructures.end() && !isParentAccessor)
-		{
-			parent->children.push_back({ { InstructionType::ControlStructure, Token->value }, parent, Token->location });
-			parent = &parent->children.back();
+	
+		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
 
-			//control structures that dont take arguments: e.g. else { }
-			if (ctrl->second == 0)
-			{
-				parent->children.push_back({ { InstructionType::Tuple, "" }, parent, Token->location });
-				parent->children.push_back({ { InstructionType::Block, "" }, parent, Token->location });
-				parent = &parent->children.back();
-			}
-		}
-		else if (parent->instruction.type == InstructionType::ControlStructure)
-			throw ParserException("Incorrect format, missing condition tuple", Token->value, Token->location);
+		bool isLastTokenAccessor = (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor);
+		if (isLastTokenAccessor && isParentAccessor) //part of an accessor
+			parent->children.back().children.push_back(node);
 		else
-		{
-			SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
-
-			bool isLastTokenAccessor = (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor);
-			if (isLastTokenAccessor && isParentAccessor) //part of an accessor
-				parent->children.back().children.push_back(node);
-			else
-				parent->children.push_back(node);
-		}
+			parent->children.push_back(node);
 	}
 }
 
@@ -377,6 +356,8 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			output.push_back(i);
 	}
 
+	//todo: maybe handle control structures here
+	//if call then has statement/block after, convert to control structure
 	if (ops.size() < 1)
 		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support should go
 
@@ -457,9 +438,6 @@ void Parser::CreateOperator(const std::string& Name, Notation Notat, Association
 }
 void Parser::CreatePredefinitions()
 {
-	controlStructures["if"] = 1;
-	controlStructures["else"] = 0;
-
 	CreateOperator("!", Notation::Prefix , Association::None, 3);
 	CreateOperator("?", Notation::Postfix, Association::None, 7);
 	CreateOperator(",", Notation::Infix, Association::LeftToRight, 8);
