@@ -440,10 +440,9 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			Reparent(&_parent->children.front(), _parent);
 			if (_parent->children.size() > 1)
 			{
-				std::cout << *_parent << std::endl;
 				_parent = _parent->parent;
 
-				if (_parent->parent == nullptr)
+				if (_parent == nullptr)
 					throw ParserException("Error, too many statements", "", output.back().location);
 			}
 		}

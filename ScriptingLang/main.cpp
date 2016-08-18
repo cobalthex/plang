@@ -100,29 +100,16 @@ int main(int ac, const char* av[])
 		// std::cout << av[0] << " <script>";
 		// return 1;
 	}
-
-
-	if (StringOps::StartsWith(av[1], "-s"))
+	
+	if (StringOps::StartsWith(av[1], "-e") || StringOps::StartsWith(av[1], "--eval"))
 	{
-		std::istringstream iss;
-
-		/*const char* sp = av[2];
+		const char* sp = av[2];
 		if (strlen(av[1]) > 2)
 			sp = av[1] + 2;
 		
-		auto spl = strlen(sp);
-		if (sp[0] == '\'' || sp[0] == '"')
-		{
-			auto s = std::string(sp[1], sp[spl - 1]);
-			iss << s;
-		}
-		else
-		{
-			std::string s (sp);
-			iss << s;
-		}
+		std::istringstream iss(sp);
 
-		lex = Plang::Lexer("#!", iss);*/
+		lex = Plang::Lexer("#!", iss);
 	}
 
 	else
