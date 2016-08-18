@@ -101,27 +101,54 @@ int main(int ac, const char* av[])
 		// return 1;
 	}
 
-	std::ifstream fin;
-	fin.open(av[1], std::ios::in);
-	if (!fin.is_open())
+
+	if (StringOps::StartsWith(av[1], "-s"))
 	{
-		std::cerr << "Error opening " << av[1];
-		return 2;
+		std::istringstream iss;
+
+		/*const char* sp = av[2];
+		if (strlen(av[1]) > 2)
+			sp = av[1] + 2;
+		
+		auto spl = strlen(sp);
+		if (sp[0] == '\'' || sp[0] == '"')
+		{
+			auto s = std::string(sp[1], sp[spl - 1]);
+			iss << s;
+		}
+		else
+		{
+			std::string s (sp);
+			iss << s;
+		}
+
+		lex = Plang::Lexer("#!", iss);*/
 	}
 
-	lex = Plang::Lexer(av[1], fin);
-	fin.close();
+	else
+	{
+		std::ifstream fin;
+		fin.open(av[1], std::ios::in);
+		if (!fin.is_open())
+		{
+			std::cerr << "Error opening " << av[1];
+			return 2;
+		}
 
-	std::ofstream fout;
-	fout.open("tests/out.lex", std::ios::out);
-	fout << lex;
-	fout.close();
+		lex = Plang::Lexer(av[1], fin);
+		fin.close();
+	}
+
+	//std::ofstream fout;
+	//fout.open("tests/out.lex", std::ios::out);
+	//fout << lex;
+	//fout.close();
 
 
 	parser = Plang::Parser(lex.tokens);
-	fout.open("tests/out.parse", std::ios::out);
-	fout << parser.syntaxTree << "\n";
-	fout.close();
+	//fout.open("tests/out.parse", std::ios::out);
+	std::cout << parser.syntaxTree << "\n";
+	//fout.close();
 
 	return 0;
 }

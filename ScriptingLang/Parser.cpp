@@ -4,6 +4,16 @@
 
 using namespace Plang;
 
+void PrintTree(SyntaxTreeNode* Node)
+{
+	if (Node == nullptr)
+		std::cout << "** (PrintTree) Node is null **\n";
+
+	while (Node->parent != nullptr)
+		Node = Node->parent;
+	std::cout << *Node << std::endl;
+}
+
 void Parser::Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent)
 {
 	Node->parent = Parent;
@@ -279,7 +289,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		bool isParentAccessor = (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Accessor);
 	
 		SyntaxTreeNode node = { { InstructionType::Identifier, Token->value }, parent, Token->location };
-
+		
 		bool isLastTokenAccessor = (Token != List.cbegin() && (Token - 1)->type == LexerTokenType::Accessor);
 		if (isLastTokenAccessor && isParentAccessor) //part of an accessor
 			parent->children.back().children.push_back(node);
@@ -362,14 +372,14 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 
 			output.front().instruction.type = InstructionType::ControlStructure;
 
-			//handle if (...) { }
+			//handle ctrl (...) { }
 			if (output.back().instruction.type == InstructionType::Block)
 			{
 				auto block = output.back();
 				output.pop_back();
 				output.front().children.push_back(block);
 			}
-			//handle if (...) x;
+			//handle ctrl (...) x;
 			else
 			{
 				auto node = output.back();
@@ -383,11 +393,15 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			Reparent(Statement, _parent);
 			return;
 		}
+		//handle ctrl { }
 		else if (output.size() == 2 && output.back().instruction.type == InstructionType::Block)
 		{
+			//todo: replace *...= with place new (elsewhere)
 			//todo: maybe change to just 2 args to handle else x;
-			*Statement = { { InstructionType::ControlStructure }, _parent, output.front().location };
+			Statement->~SyntaxTreeNode();
+			new (Statement) SyntaxTreeNode { { InstructionType::ControlStructure }, _parent, output.front().location };
 			Statement->children.push_back(std::move(output.front()));
+			Statement->children.push_back({ { InstructionType::Tuple }, Statement, output.front().location });
 			Statement->children.push_back(std::move(output.back()));
 			Reparent(Statement, _parent);
 			return;
@@ -422,11 +436,11 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 		}
 		else
 		{
-			std::cout << output.back() << std::endl;
 			_parent->children.insert(_parent->children.begin(), std::move(output.back()));
 			Reparent(&_parent->children.front(), _parent);
 			if (_parent->children.size() > 1)
 			{
+				std::cout << *_parent << std::endl;
 				_parent = _parent->parent;
 
 				if (_parent->parent == nullptr)

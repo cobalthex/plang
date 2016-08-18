@@ -29,6 +29,8 @@ namespace Plang
 		LexerToken() = default;
 	};
 
+	//todo: change to work like stringstream
+
 	class Lexer
 	{
 	public:
