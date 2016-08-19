@@ -131,7 +131,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		ParseStatement(parent);
 		parent = parent->parent;
 
-		//todo: if (...) { }; ...; does not work
 		if (parent->instruction.type == InstructionType::ControlStructure)
 		{
 			parent = parent->parent;
@@ -182,19 +181,30 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	{
 		if (Token->value == "{")
 		{
-			//if previous particle is tuple, convert to expression
-			if (parent->children.size() > 0 && parent->children.back().instruction.type == InstructionType::Tuple)
+			if (parent->children.size() > 0)
 			{
-				auto tuple = parent->children.back();
-				parent->children.pop_back();
-				
-				parent->children.push_back({ { InstructionType::Expression }, parent, tuple.location });
-				
-				auto& node = parent->children.back();
-				node.children.push_back(tuple);
-				tuple.parent = &node;
+				//if previous particle is call, convert to control structure
+				if (parent->children.back().instruction.type == InstructionType::Call)
+				{
+					parent->children.back().instruction.type = InstructionType::ControlStructure;
 
-				parent = &node;
+					parent = &parent->children.back();
+				}
+
+				//if previous particle is tuple, convert to expression
+				else if (parent->children.back().instruction.type == InstructionType::Tuple)
+				{
+					auto tuple = parent->children.back();
+					parent->children.pop_back();
+					
+					parent->children.push_back({ { InstructionType::Expression }, parent, tuple.location });
+					
+					auto& node = parent->children.back();
+					node.children.push_back(tuple);
+					tuple.parent = &node;
+
+					parent = &node;
+				}
 			}
 
 			parent->children.push_back({ { InstructionType::Block }, parent, Token->location });
@@ -298,20 +308,6 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 	}
 }
 
-bool CanDisolveTuple(InstructionType Type)
-{
-	switch (Type)
-	{
-	case InstructionType::Call:
-	case InstructionType::Expression:
-	case InstructionType::ControlStructure:
-		return false;
-
-	default:
-		return true;
-	}
-}
-
 void Parser::ParseStatement(SyntaxTreeNode* Statement)
 {
 	auto _parent = Statement->parent;
@@ -360,56 +356,11 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			output.push_back(i);
 	}
 
-	//todo: maybe handle control structures here
-	//if call then has statement/block after, convert to control structure
+	//todo: if (..) ...
+
 	if (ops.size() < 1)
-	{
-		//control structures
-		if (output.front().instruction.type == InstructionType::Call)
-		{
-			if (output.size() > 2)
-				throw ParserException("Unexpected identifier", output[2].instruction, output[2].location);
-
-			output.front().instruction.type = InstructionType::ControlStructure;
-
-			//handle ctrl (...) { }
-			if (output.back().instruction.type == InstructionType::Block)
-			{
-				auto block = output.back();
-				output.pop_back();
-				output.front().children.push_back(block);
-			}
-			//handle ctrl (...) x;
-			else
-			{
-				auto node = output.back();
-				output.pop_back();
-				SyntaxTreeNode block = { { InstructionType::Block }, &output.front(), node.location };
-				block.children.push_back(node);
-				output.front().children.push_back(block);
-			}
-
-			*Statement = std::move(output.front());
-			Reparent(Statement, _parent);
-			return;
-		}
-		//handle ctrl { }
-		else if (output.size() == 2 && output.back().instruction.type == InstructionType::Block)
-		{
-			//todo: replace *...= with place new (elsewhere)
-			//todo: maybe change to just 2 args to handle else x;
-			Statement->~SyntaxTreeNode();
-			new (Statement) SyntaxTreeNode { { InstructionType::ControlStructure }, _parent, output.front().location };
-			Statement->children.push_back(std::move(output.front()));
-			Statement->children.push_back({ { InstructionType::Tuple }, Statement, output.front().location });
-			Statement->children.push_back(std::move(output.back()));
-			Reparent(Statement, _parent);
-			return;
-		}
-
 		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support whould go
-	}
-
+	
 	//push rest of ops onto output stack
 	while (ops.size() > 1)
 	{
