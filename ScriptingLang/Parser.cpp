@@ -14,6 +14,11 @@ void PrintTree(SyntaxTreeNode* Node)
 	std::cout << *Node << std::endl;
 }
 
+SyntaxTreeNode MakeNode(InstructionType Type, const Location& Location, SyntaxTreeNode* Parent = nullptr, const std::string& Value = "")
+{
+	return { { Type, Value }, Parent, Location };
+}
+
 void Parser::Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent)
 {
 	Node->parent = Parent;
@@ -317,8 +322,8 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 
 	if (Statement->children.size() == 1)
 	{
-		auto temp = Statement->children.back();
-		*Statement = temp;
+		auto temp = Statement->children.front();
+		new (Statement) SyntaxTreeNode(temp);
 		Reparent(Statement, _parent);
 		return;
 	}
@@ -338,6 +343,7 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 		if (op != operators.end())
 		{
 			//should be while new < top, move top to values
+			//move operators over that have higher precedence
 			while (ops.size() > 0)
 			{
 				auto precedence = operators.find(ops.back().instruction.value.get<std::string>())->second.precedence;
@@ -353,10 +359,34 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			ops.push_back(i);
 		}
 		else
-			output.push_back(i);
+		{
+			//control structures: ctrl (...) ...;
+			if (output.size() > 0 && output.back().instruction.type == InstructionType::Call)
+			{
+				output.back().instruction.type = InstructionType::ControlStructure;
+
+				if (i.instruction.type == InstructionType::Block)
+					output.back().children.push_back(i);
+				else
+				{
+					auto node = MakeNode(InstructionType::Block, i.location);
+					node.children.push_back(i);
+					output.back().children.push_back(node);
+				}
+				Reparent(&output.back(), output.back().parent);
+			}
+			else
+				output.push_back(i);
+		}
 	}
 
-	//todo: if (..) ...
+	//some particles may be combined above
+	if (output.size() == 1 && ops.size() == 0)
+	{
+		new (Statement) SyntaxTreeNode(output.front()); //todo: maybe move() ?
+		Reparent(Statement, _parent);
+		return;
+	}
 
 	if (ops.size() < 1)
 		throw ParserException("Unexpected identifier", output.back().instruction, output.back().location); //where bare words support whould go
@@ -369,11 +399,10 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 	}
 
 	//create root call
-	*Statement = std::move(ops.back());
+	new (Statement) SyntaxTreeNode(ops.back());
+	//*Statement = std::move(ops.back()); //maybe ?
 	Reparent(Statement, _parent);
 	_parent = Statement;
-
-	//todo: auto perform integer/float/dec operations
 
 	//build syntax tree from output stack
 	while (output.size() > 0)
@@ -391,6 +420,8 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 			Reparent(&_parent->children.front(), _parent);
 			if (_parent->children.size() > 1)
 			{
+				//todo: eval intrinsic ops here like # + #
+
 				_parent = _parent->parent;
 
 				if (_parent == nullptr)
@@ -400,6 +431,9 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
 
 		output.pop_back();
 	}
+	//todo: leftover ops should give errors
+
+	//todo: error reporting to allow for finding all errors w/ option to fail fast
 }
 
 Instruction Parser::ParseNumber(std::string Input)
