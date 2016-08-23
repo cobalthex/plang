@@ -8,7 +8,7 @@
 int main(int ac, const char* av[])
 {
 	Plang::AnyRef global = Plang::Construct();
-
+	
 	Plang::Function as ({ { "From", Plang::ArgumentType::Single }, { "To", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
 	{
 		auto& asFn = Arguments.Get("From")->Get("as");
@@ -87,8 +87,8 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
-				std::cout << parser.syntaxTree.root << std::endl;
-				//Plang::Script(parser.syntaxTree.root).Evaluate(global);
+				//std::cout << parser.syntaxTree.root << std::endl;
+				Plang::Script(parser.syntaxTree.root).Evaluate(global);
 			}
 			catch (const Plang::ParserException& Expt)
 			{

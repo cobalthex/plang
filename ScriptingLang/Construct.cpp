@@ -431,7 +431,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 
 	//return value of statement
 	if (registers.size() > 0)
-		std::cout << ">> " << registers.front() << "\n";
+		std::cout << ">> " << *registers.front() << "\n";
 
     return Undefined;
 }

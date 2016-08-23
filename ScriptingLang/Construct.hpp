@@ -38,7 +38,7 @@ namespace Plang
 		virtual ~Construct() = default;
 
 		virtual inline ConstructType Type() const { return ConstructType::Construct; }
-		virtual inline std::string ToString() const; //basic value output. Constructs may have custom as operator which has a string conversion
+		virtual std::string ToString() const; //basic value output. Constructs may have custom as operator which has a string conversion
 
 		AnyRef&       Set(const StringT& Name, const AnyRef& Ref, bool SearchParents = false); //If SearchParents is true, property is set where it is defined or in this scope if not found
 		AnyRef&       Get(const StringT& Name, bool SearchParents = true);
@@ -92,7 +92,7 @@ namespace Plang
 
 		inline ConstructType Type() const override { return ConstructType::Int; }
 		inline std::string ToString() const override { return std::to_string(value); }
-		inline std::string ToString(int Radix) const { return std::to_string(value); }
+		inline std::string ToString(int Radix) const { return std::to_string(value); } //todo
 
 		ValueType value;
 	};
