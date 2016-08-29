@@ -90,7 +90,11 @@ namespace Plang
 			return u;
 		}
 
-		inline static Reference New() { return Reference(T()); }
+		inline static Reference New()
+		{
+			//todo: make adjacent
+			return Reference(T());
+		}
 
 	protected:
 		//assumes reference is not nullptr

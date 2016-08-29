@@ -2,11 +2,12 @@
 Debug/
 Release/
 bin/
+x64/
 
 # Other folders
 .vs/
 ipch/
-*.dSYM/
+*.dSYM
 
 # Compiled Object files
 *.slo
@@ -21,5 +22,6 @@ ipch/
 # Settings
 *.user
 *.sdf
+xcuserdata/
 
 .DS_STORE

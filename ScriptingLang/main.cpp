@@ -136,8 +136,9 @@ int main(int ac, const char* av[])
 
 		parser = Plang::Parser(lex.tokens);
 		//fout.open("tests/out.parse", std::ios::out);
-		std::cout << parser.syntaxTree << "\n";
+		//std::cout << parser.syntaxTree << "\n";
 		//fout.close();
+		Plang::Script(parser.syntaxTree.root).Evaluate(global);
 	}
 	catch (const Plang::ParserException& Expt)
 	{

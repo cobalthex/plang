@@ -1,5 +1,7 @@
 #include "pch.hpp"
 #include "Construct.hpp"
+#include "Parser.hpp"
+#include "Lexer.hpp"
 
 std::string Plang::TypeToString(const Plang::ConstructType& Type)
 {
@@ -118,7 +120,7 @@ Plang::Construct& Plang::Construct::Merge(const Plang::Construct& Other, bool Ov
 
 std::ostream& operator<<(std::ostream& Stream, const Plang::Construct& Construct)
 {
-    Stream << TypeToString(Construct.Type()) << "(" << Construct.ToString() << ")";
+    Stream << TypeToString(Construct.Type()) << "{" << Construct.ToString() << "}";
     return Stream;
 }
 
@@ -150,6 +152,27 @@ Plang::Signature::Signature(const ::Array<Argument> Arguments)
     }
     nTuples = arguments.Length() - nSingles;
 }
+
+Plang::Signature::Signature(const Plang::StringT& ArgsString)
+{
+    std::istringstream iss (ArgsString);
+	Lexer lex ("@", iss);
+	Parser parse (lex.tokens);
+
+	auto* tup = &parse.syntaxTree.root;
+	assert(tup->children.size() > 0);
+	tup = &tup->children[0];
+	assert(tup->instruction.type == InstructionType::Tuple);
+
+    for (size_t i = 0; i < tup->children.size(); i++)
+    {
+        auto* node = &tup->children[i];
+
+        //if (node->children[i].instruction.type != ArgumentType::Tuple)
+        //    nSingles++;
+    }
+    nTuples = arguments.Length() - nSingles;
+} 
 
 Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
 {
@@ -196,7 +219,7 @@ Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, const Plang::
 inline bool IsSymbol(Plang::SyntaxTreeNode* Node, size_t Index)
 {
     return (Index == 0
-        && Node->instruction.type == Plang::InstructionType::Call
+        && Node->instruction.type == Plang::InstructionType::Operation
         && Node->children.size() > 1
         && (Node->instruction.value == "=" || Node->instruction.value == ":")
     );
@@ -301,6 +324,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 			}
 			else if (child.instruction.type == InstructionType::Identifier)
 			{
+				//todo: maybe refactor into operation code
 				if (IsSymbol(top.node, top.index))
 				{
 					//node is an assignment and therefore the first operator is an assignment
@@ -375,19 +399,19 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 			else if (inst.type == InstructionType::List)
 			{
 				auto len = top.node->children.size();
-				auto start = registers.size() - len;
 				std::vector<AnyRef> vals (registers.end() - len, registers.end());
 				registers.erase(registers.end() - len, registers.end());
 				registers.push_back(Reference<List>(vals));
 			}
-			else if (inst.type == InstructionType::Call)
+			else if (inst.type == InstructionType::Call || 
+					 inst.type == InstructionType::Operation)
 			{
 				auto fnName = inst.value.get<StringT>();
 				auto& fn = scope.Get(fnName);
 
 				auto len = top.node->children.size();
 
-				//todo: handle assignment == null (=5;)
+				//todo: handle assignment == null (=5;) -- may be handled by parser
 
 				if (len > 0 && (fnName == "=" || fnName == ":"))
 				{

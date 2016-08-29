@@ -45,8 +45,7 @@ void PrintDepth(std::ostream& Stream, size_t Depth, const Plang::SyntaxTreeNode&
 	Stream << std::string(Depth * 4, ' ') << std::left << std::setw(GetChildrenMaxNameLength(Node.parent) + 3) << types[(size_t)Node.instruction.type] + ":";
 	Stream << (std::string)Node.instruction;
 
-	if (false)
-		Stream << " @ " << Node.location;
+    //Stream << " @ " << Node.location;
 	Stream << "\n";
 
 	for (auto& i : Node.children)

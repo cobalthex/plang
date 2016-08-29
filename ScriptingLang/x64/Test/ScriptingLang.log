@@ -1,9 +1,0 @@
-﻿  pch.cpp
-  SyntaxTree.cpp
-  StringOps.cpp
-  Parser.cpp
-  Lexer.cpp
-  main.cpp
-  Construct.cpp
-  Generating Code...
-  ScriptingLang.vcxproj -> B:\Code\ScriptingLang\x64\Test\ScriptingLang.exe

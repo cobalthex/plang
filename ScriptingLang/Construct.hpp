@@ -238,6 +238,7 @@ namespace Plang
 		Signature() : arguments(), nSingles(0), nTuples(0) { }
 		Signature(const ::Array<Argument> Arguments);
 		Signature(std::initializer_list<Argument> Arguments) : Signature(::Array<Argument>(Arguments)) { }
+		Signature(const StringT& ArgsString);
 
 		//Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
 		Construct Parse(const Tuple& Arguments);
@@ -263,11 +264,7 @@ namespace Plang
 		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
 		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope = Undefined);
-		inline AnyRef Call(const AnyRef& LexScope = Undefined)
-		{
-			Tuple args;
-			return Call(args, LexScope);
-		}
+		inline AnyRef Call(const AnyRef& LexScope = Undefined);
 
 		Signature signature;
 		FunctionT function;
