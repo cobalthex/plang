@@ -299,7 +299,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 				{
 					if (*acc == Undefined)
 					{
-						std::cout << "Error " << name << " is undefined\n";
+						throw name + " is undefined\n";
 						return Undefined;
 					}
 
@@ -454,8 +454,10 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
     }
 
 	//return value of statement
-	if (registers.size() > 0)
-		std::cout << ">> " << *registers.front() << "\n";
+	if (registers.size() > 1)
+    {
+        throw "???";
+    }
 
-    return Undefined;
+    return registers.size() > 0 ? registers[0] : Undefined;
 }

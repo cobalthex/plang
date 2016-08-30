@@ -42,19 +42,7 @@ int main(int ac, const char* av[])
 
 		return rval;
 	} }));
-
-	Plang::Function ast ({ { "args", Plang::ArgumentType::Tuple } }, [](const Plang::Construct& Arguments)
-	{
-		auto& args = Arguments.Get("args").As<Plang::Tuple>();
-		for (auto i = 0; i < args->Length(); i++)
-		{
-			auto& val = (*args)[i];
-			std::cout << val << "\n";
-		}
-		return Plang::Undefined;
-	});
-	global->Set("ast", Plang::Reference<Plang::Function>(ast));
-
+    
 	Plang::Lexer lex;
 	Plang::Parser parser;
 	if (ac < 2)
@@ -87,8 +75,13 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
-				//std::cout << parser.syntaxTree.root << std::endl;
-				Plang::Script(parser.syntaxTree.root).Evaluate(global);
+				std::cout << parser.syntaxTree.root << std::endl;
+				/*auto rval = Plang::Script(parser.syntaxTree.root).Evaluate(global);
+                if (rval == Plang::Undefined)
+                    std::cout << "Undefined\n";
+                else
+                    std::cout << *rval << "\n";*/
+                
 			}
 			catch (const Plang::ParserException& Expt)
 			{

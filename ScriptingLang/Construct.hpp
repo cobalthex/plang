@@ -264,7 +264,11 @@ namespace Plang
 		inline std::string ToString() const override { return "[[ Native function ]]"; }
 
 		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope = Undefined);
-		inline AnyRef Call(const AnyRef& LexScope = Undefined);
+		inline AnyRef Call(const AnyRef& LexScope = Undefined)
+		{
+			Tuple args;
+			return Call(args, LexScope);
+		}
 
 		Signature signature;
 		FunctionT function;

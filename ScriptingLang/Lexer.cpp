@@ -324,7 +324,6 @@ std::string Lexer::ReadWhile(std::istream& Stream, std::function<bool(codepoint 
 		{
 			lineNum++;
 			lastLine = (size_t)Stream.tellg();
-			auto x = 0;
 		}
 		s += ch;
 	}

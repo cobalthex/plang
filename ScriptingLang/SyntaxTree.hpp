@@ -15,7 +15,7 @@ namespace Plang
 		Statement,
 		Expression, //functions
 		Call, //call to an expression
-		Operation, //A call to an operator (x + y) -- simplified node structure
+        Operation, //a + b, etc.
 		ControlStructure, //a control structure, such as an if statement or loop
 
 		Block,
@@ -80,6 +80,12 @@ namespace Plang
 		std::vector<SyntaxTreeNode> children;
 
 		Location location;
+        
+        inline SyntaxTreeNode& AddChild(const SyntaxTreeNode& Node)
+        {
+            children.push_back(Node);
+            return children.back();
+        } //todo: use everywhere
 	};
 
 	class SyntaxTree
