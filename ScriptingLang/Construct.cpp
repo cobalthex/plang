@@ -370,8 +370,11 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 				registers.push_back(Reference<Tuple>::New());
 			else if (child.instruction.type == InstructionType::List)
 				registers.push_back(Reference<List>::New());
-			else if (child.instruction.type == InstructionType::Call)
+			else if (child.instruction.type == InstructionType::Call ||
+                     child.instruction.type == InstructionType::Operation)
+            {
 				stack.push({ &child, 0 });
+            }
         }
 
         if (!nest)
@@ -406,10 +409,10 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 			else if (inst.type == InstructionType::Call || 
 					 inst.type == InstructionType::Operation)
 			{
-				auto fnName = inst.value.get<StringT>();
-				auto& fn = scope.Get(fnName);
+                auto fnName = top.node->children[0].GetValue<StringT>();
+                auto& fn = scope.Get(fnName);
 
-				auto len = top.node->children.size();
+				auto len = top.node->children[1].children.size();
 
 				//todo: handle assignment == null (=5;) -- may be handled by parser
 

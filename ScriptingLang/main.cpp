@@ -75,12 +75,12 @@ int main(int ac, const char* av[])
 			{
 				lex = Plang::Lexer("#!", iss);
 				parser = Plang::Parser(lex.tokens);
-				std::cout << parser.syntaxTree.root << std::endl;
-				/*auto rval = Plang::Script(parser.syntaxTree.root).Evaluate(global);
+				//std::cout << parser.syntaxTree.root << std::endl;
+				auto rval = Plang::Script(parser.syntaxTree.root).Evaluate(global);
                 if (rval == Plang::Undefined)
                     std::cout << "Undefined\n";
                 else
-                    std::cout << *rval << "\n";*/
+                    std::cout << *rval << "\n";
                 
 			}
 			catch (const Plang::ParserException& Expt)

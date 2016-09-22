@@ -81,6 +81,12 @@ namespace Plang
 
 		Location location;
         
+        template <typename T>
+        T& GetValue() { return instruction.value.get<T>(); }
+        
+        template <typename T>
+        const T& GetValue() const { return instruction.value.get<T>(); }
+        
         inline SyntaxTreeNode& AddChild(const SyntaxTreeNode& Node)
         {
             children.push_back(Node);

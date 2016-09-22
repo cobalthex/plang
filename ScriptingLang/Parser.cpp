@@ -242,7 +242,7 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 
 			if (Token->value == "(")
 				node.instruction.type = InstructionType::Tuple;
-			else if (Token->value == "[")
+            else if (Token->value == "[")
                 node.instruction.type = InstructionType::List;
 			else if (Token->value == "[|")
 				node.instruction.type = InstructionType::Array;
@@ -289,19 +289,15 @@ void Parser::ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::To
 		//todo: handle prefix/postfix
 		//-a - b <--- if - and op #2 is also op, use prefix
 
-		/*if (Token->value == "=" || Token->value == ":")
-		{
-			parent = parent->parent;
-			auto previous = parent->children.back();
-			parent->children.pop_back();
-
-			parent->children.push_back({ { InstructionType::Call, Token->value }, parent });
-			parent = &parent->children.back();
-			parent->children.push_back(previous);
-			Reparent(parent, parent->parent);
-			NextStatement();
-		}
-		else*/
+        const auto& op = operators.find(Token->value);
+        if (op != operators.end())
+        {
+            if (op->second.notation == Notation::Prefix &&
+                (parent->children.size() < 1 ||
+                 (IsIType(&parent->children.back(), InstructionType::Identifier) &&
+                  operators.find(parent->children.back().instruction.value.get<std::string>()) != operators.end())))
+                std::cout << "moo\n";
+        }
 
         bool isParentAccessor = (parent->children.size() > 0 && IsIType(&parent->children.back(), InstructionType::Accessor));
 	
@@ -334,14 +330,9 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
         std::vector<SyntaxTreeNode> output, ops;
         for (auto& i : Statement->children)
         {
-            //only identifiers can be parsed as operators
-            if (!IsIType(&i, InstructionType::Identifier))
-            {
-                output.push_back(i);
-                continue;
-            }
-
-            auto op = operators.find(i.instruction.value.get<std::string>());
+            auto op = operators.find(i.instruction.value.is<std::string>() ?
+                                     i.instruction.value.get<std::string>() :
+                                     "");
             if (op != operators.end())
             {
                 //should be while new < top, move top to values
@@ -365,8 +356,11 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
             }
             else
             {
+                //todo: f() + x does not work
+                //todo: (f()) + x does not work
+                
                 //control structures: ctrl (...) ...;
-                if (output.size() > 0 && IsIType(&output.back(), InstructionType::Call))
+                /*if (output.size() > 0 && IsIType(&output.back(), InstructionType::Call))
                 {
                     output.back().instruction.type = InstructionType::ControlStructure;
 
@@ -379,6 +373,18 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
                         output.back().children.push_back(node);
                     }
                     Reparent(&output.back(), output.back().parent);
+                }
+                //x[] accessor
+                else*/ if (output.size() > 0 && IsIType(&i, InstructionType::List))
+                {
+                    i.instruction.type = InstructionType::Accessor;
+                    
+                    if (i.children.size() < 1)
+                        throw ParserException("Missing accessor", i.instruction, i.location);
+                    
+                    i.children.insert(i.children.begin(), std::move(output.back()));
+                    Reparent(&i, i.parent);
+                    output.back() = std::move(i);
                 }
                 else
                     output.push_back(i);
@@ -445,7 +451,7 @@ void Parser::ParseStatement(SyntaxTreeNode* Statement)
         auto temp = Statement->children[0];
         *Statement = std::move(temp);
     }
-    
+
 	//todo: leftover ops should give errors
 
 	//todo: error reporting to allow for finding all errors w/ option to fail fast
@@ -482,6 +488,7 @@ std::string Parser::ParseString(std::string Input)
 
 void Parser::CreateOperator(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence)
 {
+    assert(!Name.empty());
 	operators[Name] = { Name, Notat, Assoc, Precedence };
 }
 void Parser::CreatePredefinitions()
