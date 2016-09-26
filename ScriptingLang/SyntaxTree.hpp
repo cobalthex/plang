@@ -92,6 +92,12 @@ namespace Plang
             children.push_back(Node);
             return children.back();
         } //todo: use everywhere
+        
+        inline SyntaxTreeNode& PushChild(const SyntaxTreeNode& Node)
+        {
+            children.insert(children.begin(), Node);
+            return children.front();
+        }
 	};
 
 	class SyntaxTree

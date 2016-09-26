@@ -80,6 +80,23 @@ namespace Plang
 	};
 };
 
+//todo: operators should use map<name, map<notation, op>>
+
+//todo: reporter:
+//  Level: Info, Warning, Error, Message
+//  isFatal
+//  code (enum?) - defindes messages
+//  condition
+//  argument
+//  location (+ file pointer)
+
+//reporter can be used for compile and runtime
+//stream output to file/terminal/etc
+//sort by type and time
+//report immediately or wait
+//grouping
+
+
 inline std::ostream& operator << (std::ostream& Stream, const Plang::ParserException& Exception)
 {
 	Stream << Exception.what() << " [ " << Exception.token << " ] @ " << Exception.location;
