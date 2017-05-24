@@ -9,14 +9,15 @@
     <ClCompile Include="Parser.cpp">
       <Filter>Parser</Filter>
     </ClCompile>
-    <ClCompile Include="SyntaxTree.cpp">
-      <Filter>Parser</Filter>
-    </ClCompile>
     <ClCompile Include="StringOps.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="Construct.cpp">
       <Filter>Runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportLog.cpp" />
+    <ClCompile Include="Instruction.cpp">
+      <Filter>Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -27,17 +28,10 @@
     <ClInclude Include="StringOps.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="SyntaxTree.hpp">
-      <Filter>Parser</Filter>
-    </ClInclude>
     <ClInclude Include="recursive_wrapper.hpp">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="variant.hpp">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="Location.hpp" />
-    <ClInclude Include="types.hpp" />
     <ClInclude Include="Construct.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
@@ -52,6 +46,10 @@
     </ClInclude>
     <ClInclude Include="TestLexer.hpp">
       <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportLog.hpp" />
+    <ClInclude Include="Instruction.hpp">
+      <Filter>Parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

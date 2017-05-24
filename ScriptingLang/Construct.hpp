@@ -4,7 +4,7 @@
 #include "types.hpp"
 #include "Array.hpp"
 #include "Reference.hpp"
-#include "SyntaxTree.hpp"
+#include "Instruction.hpp"
 
 std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);
 

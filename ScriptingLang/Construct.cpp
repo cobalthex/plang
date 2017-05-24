@@ -172,7 +172,7 @@ Plang::Signature::Signature(const Plang::StringT& ArgsString)
         //    nSingles++;
     }
     nTuples = arguments.Length() - nSingles;
-} 
+}
 
 Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
 {
@@ -406,7 +406,7 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& Arguments, const AnyRe
 				registers.erase(registers.end() - len, registers.end());
 				registers.push_back(Reference<List>(vals));
 			}
-			else if (inst.type == InstructionType::Call || 
+			else if (inst.type == InstructionType::Call ||
 					 inst.type == InstructionType::Operation)
 			{
                 auto fnName = top.node->children[0].GetValue<StringT>();

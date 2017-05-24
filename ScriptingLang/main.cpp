@@ -2,49 +2,28 @@
 #include "StringOps.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
-#include "Reference.hpp"
-#include "Construct.hpp"
+#include "Instruction.hpp"
+//#include "Reference.hpp"
+//#include "Construct.hpp"
 
 int main(int ac, const char* av[])
 {
-	Plang::AnyRef global = Plang::Construct();
-	
-	Plang::Function as ({ { "From", Plang::ArgumentType::Single }, { "To", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
-	{
-		auto& asFn = Arguments.Get("From")->Get("as");
-		if (asFn != Plang::Undefined)
-		{
-			Plang::Tuple args({ Arguments.Get("From"), Arguments.Get("To") });
-			if (asFn->Type() == Plang::ConstructType::Function)
-			{
-				auto fn = asFn.As<Plang::Function>();
-				return fn->Call(args);
-			}
-			if (asFn->Type() == Plang::ConstructType::Script)
-			{
-				auto script = asFn.As<Plang::Script>();
-				return script->Evaluate(args);
-			}
-		}
-		return Plang::Undefined;
-	});
-	global->Set("as", Plang::Reference<Plang::Function>(as));
+    using namespace std::literals::string_literals;
+    using I = Plang::Instruction;
 
-	auto& x = global->Set("x", Plang::Reference<Plang::Int>(5));
-	x->Set("as", Plang::Reference<Plang::Function>({ { { "From", Plang::ArgumentType::Single }, { "To", Plang::ArgumentType::Single } }, [](const Plang::Construct& Arguments)
-	{
-		auto from = Arguments.Get("From");
-		auto to = Arguments.Get("To");
+    I root(Plang::InstructionType::Program, Plang::TList {
+        I(Plang::InstructionType::Float, 5.0),
+        I(Plang::InstructionType::Identifier, "taco"s),
+        I(Plang::InstructionType::List, Plang::TList {
+            I(Plang::InstructionType::String, "Moo"s)
+        })
+    });
 
-		Plang::AnyRef rval (Plang::Undefined);
-		if (to != Plang::Undefined && to->Type() == Plang::ConstructType::String)
-			rval = Plang::Reference<Plang::String>("ecks");
+    /*std::cout << root.As<Plang::Instructions::List>()[0];
+    std::cin.get();*/
 
-		return rval;
-	} }));
-    
-	Plang::Lexer lex;
-	Plang::Parser parser;
+	/*Plang::Parser parser;
+	Plang::AnyRef scope = Plang::Construct();*/
 	if (ac < 2)
 	{
 		std::cout << "Interactive mode\n";
@@ -61,7 +40,16 @@ int main(int ac, const char* av[])
 				std::cout << "Bye!\n";
 				return 0;
 			}
-			
+            else if (line == "clear")
+            {
+#ifdef _WIN32
+                system("cls");
+#elif
+                system("clear");
+#endif
+                continue;
+            }
+
 			if (line.length() > 2 && line[0] == '#' && line[1] == '!')
 			{
 				system(line.data() + 2);
@@ -73,19 +61,15 @@ int main(int ac, const char* av[])
 
 			try
 			{
-				lex = Plang::Lexer("#!", iss);
-				parser = Plang::Parser(lex.tokens);
-				//std::cout << parser.syntaxTree.root << std::endl;
-				auto rval = Plang::Script(parser.syntaxTree.root).Evaluate(global);
-                if (rval == Plang::Undefined)
-                    std::cout << "Undefined\n";
-                else
-                    std::cout << *rval << "\n";
-                
+				Plang::Lexer lex("#!", iss);
+                Plang::Parser parser;
+                parser.Parse(lex.tokens);
+
+                std::cout << parser.root << std::endl;
 			}
-			catch (const Plang::ParserException& Expt)
+			catch (const std::exception& x)
 			{
-				std::cout << "! Parser Error: " << Expt << "\n";
+				std::cout << "! Error: " << x.what() << "\n";
 				continue;
 			}
 		}
@@ -93,15 +77,15 @@ int main(int ac, const char* av[])
 		// std::cout << av[0] << " <script>";
 		// return 1;
 	}
-	
-	try
+
+	/*try
 	{
 		if (StringOps::StartsWith(av[1], "-e") || StringOps::StartsWith(av[1], "--eval"))
 		{
 			const char* sp = av[2];
 			if (strlen(av[1]) > 2)
 				sp = av[1] + 2;
-			
+
 			std::istringstream iss(sp);
 
 			lex = Plang::Lexer("#!", iss);
@@ -133,11 +117,11 @@ int main(int ac, const char* av[])
 		//fout.close();
 		Plang::Script(parser.syntaxTree.root).Evaluate(global);
 	}
-	catch (const Plang::ParserException& Expt)
+	catch (const Plang::EParser& Expt)
 	{
 		std::cout << "! Parser Error: " << Expt << "\n";
 		return 1;
-	}
+	}*/
 
 	return 0;
 }

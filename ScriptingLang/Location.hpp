@@ -2,20 +2,33 @@
 
 #include "pch.hpp"
 
-struct Location
+namespace Plang
 {
-	std::string module;
-	size_t line;
-	size_t column;
+    struct Location
+    {
+        std::string module;
+        size_t line = 0;
+        size_t column = 0;
 
-	inline operator std::string() const
-	{
-		return module + " (" + std::to_string(line) + ", " + std::to_string(column) + ")";
-	}
-};
+        inline bool operator != (const Location& other) const
+        {
+            return (module != other.module ||
+                    line != other.line ||
+                    column != other.column);
+        }
 
-inline std::ostream& operator << (std::ostream& Stream, const Location& Location)
-{
-	Stream << Location.module << std::dec << std::noshowbase << " (" << Location.line << ", " << Location.column << ")";
-	return Stream;
+        inline operator std::string() const
+        {
+            return module + ":" + std::to_string(line) + "," + std::to_string(column);
+        }
+    };
+
+    inline std::ostream& operator << (std::ostream& stream, const Location& location)
+    {
+        stream << (location.module.empty() ? "(no-module)" : location.module);
+        stream << std::dec << std::noshowbase << ":";
+        stream << location.line << ",";
+        stream << location.column;
+        return stream;
+    }
 }

@@ -8,11 +8,13 @@ std::ostream& operator << (std::ostream& Stream, const Plang::LexerToken& Token)
 	static const std::string types[] = {
 		"invalid",
 		"Comment",
-		"PreprocessCmd",
-		"PreprocessArg",
 		"Terminator",
-		"RegionOpen",
-		"RegionClose",
+        "TupleOpen",
+        "TupleClose",
+		"ListOpen",
+		"ListClose",
+        "BlockOpen",
+        "BlockClose",
 		"Separator",
 		"Identifier",
 		"Accessor",
@@ -37,32 +39,6 @@ bool Lexer::CharIsWhitespace(codepoint Char)
 	switch (Char)
 	{
 	case 160:
-		return true;
-
-	default:
-		return false;
-	}
-}
-bool Lexer::CharIsRegionOpener(codepoint Char)
-{
-	switch (Char)
-	{
-	case '(':
-	case '[':
-	case '{':
-		return true;
-
-	default:
-		return false;
-	}
-}
-bool Lexer::CharIsRegionCloser(codepoint Char)
-{
-	switch (Char)
-	{
-	case ')':
-	case ']':
-	case '}':
 		return true;
 
 	default:
@@ -96,14 +72,22 @@ bool Lexer::CharIsSpecial(codepoint Char)
 
 bool Lexer::CharIsLiteral(codepoint Char)
 {
-	return !(CharIsWhitespace(Char)
-		|| CharIsRegionOpener(Char)
-		|| CharIsRegionCloser(Char)
-		|| CharIsSpecial(Char)
-		|| Char == ';'
-		|| Char == ','
-		|| Char == '#'
-		|| Char == '.');
+    switch (Char)
+    {
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case '{':
+    case '}':
+    case ';':
+    case ',':
+    case '.':
+        return false;
+    default:
+        return !CharIsWhitespace(Char) &&
+               !CharIsSpecial(Char);
+    }
 }
 
 Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
@@ -124,35 +108,6 @@ Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 
 		if (ch < 0)
 			return;
-
-		if (ch == '#')
-		{
-			token.type = LexerTokenType::PreprocessCmd;
-			Stream >> token.value;
-			tokens.push_back(token);
-			std::string line;
-			std::getline(Stream, line);
-			lineNum++;
-			lastLine = (size_t)Stream.tellg();
-
-			token.type = LexerTokenType::PreprocessArg;
-			size_t next = 0;
-			for (size_t i = 0; i < line.length(); i++)
-			{
-				if (CharIsWhitespace(line[i]))
-				{
-					if (i - next > 0)
-					{
-						token.value = line.substr(next, i - next);
-						tokens.push_back(token);
-					}
-					next = i + 1;
-				}
-			}
-			token.value = line.substr(next);
-			tokens.push_back(token);
-			continue;
-		}
 		else if (ch == ';')
 			token.type = LexerTokenType::Terminator;
 		else if (ch == ',')
@@ -168,14 +123,18 @@ Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 			else
 				token.type = LexerTokenType::Accessor;
 		}
-		else if (CharIsRegionOpener(ch))
-		{
-			token.type = LexerTokenType::RegionOpen;
-			if (Stream.peek() == '|') //arrays
-				token.value += Stream.get();
-		}
-		else if (CharIsRegionCloser(ch))
-			token.type = LexerTokenType::RegionClose;
+        else if (ch == '(')
+            token.type = LexerTokenType::TupleOpen;
+        else if (ch == ')')
+            token.type = LexerTokenType::TupleClose;
+		else if (ch == '[')
+			token.type = LexerTokenType::ListOpen;
+		else if (ch == ']')
+			token.type = LexerTokenType::ListClose;
+        else if (ch == '{')
+            token.type = LexerTokenType::BlockOpen;
+        else if (ch == '}')
+            token.type = LexerTokenType::BlockClose;
 		else if (CharIsSpecial(ch))
 		{
 			nc = Stream.peek();
@@ -190,11 +149,6 @@ Lexer::Lexer(const std::string& ModuleName, std::istream& Stream)
 				token.value += ReadUntil(Stream, "*/");
 				token.value += "*/";
 				Stream.seekg(2, std::ios::cur);
-			}
-			else if (ch == '|' && nc == ']')
-			{
-				token.type = LexerTokenType::RegionClose;
-				token.value += Stream.get();
 			}
 			else
 			{

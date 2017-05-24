@@ -1,6 +1,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 
 #include <vector>
+#include <queue>
 #include <stack>
 #include <map>
 #include <unordered_map>
@@ -15,6 +16,7 @@
 #include <cassert>
 #include <algorithm>
 #include <functional>
+#include <variant>
 
 #include <utility>
 #include <iterator>
@@ -23,8 +25,8 @@
 #include <stdexcept>
 #include <new>
 #include <memory>
+#include <cstdint>
 
-#include "variant.hpp"
 #include "StringOps.hpp"
 
 using codepoint = int32_t;

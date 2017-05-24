@@ -2,103 +2,105 @@
 
 #include "pch.hpp"
 #include "Lexer.hpp"
-#include "variant.hpp"
-#include "SyntaxTree.hpp"
-#include "types.hpp"
+#include "Instruction.hpp"
 
 namespace Plang
 {
-	//Notation
-	//Only prefix can be called with an unbounded, uncommented tuple
-	enum class Notation
-	{
-		Prefix,
-		Infix,
-		Postfix
-	};
-	enum class Association
-	{
-		None,
-		LeftToRight,
-		RightToLeft
-	};
-	struct Operator
-	{
-		std::string name;
-		Notation notation;
-		Association association;
-		unsigned precedence; //lower numbers = higher precedence
-	};
+    enum class Association
+    {
+        None,
+        LeftToRight,
+        RightToLeft
+    };
+    struct BinaryOperator
+    {
+        std::string name;
+        Association association;
+        unsigned precedence; //lower numbers = higher precedence
 
-	class ParserException : public std::exception
-	{
-	public:
-		ParserException(const std::string& Message, const std::string& Token, const Location& Location)
-			: message(Message), token(Token), location(Location) { }
+        BinaryOperator(const std::string& name, Association association, unsigned precedence)
+            : name(name), association(association), precedence(precedence) { }
+    };
 
-		std::string token;
-		Location location;
+    class EParser : public std::exception
+    {
+    public:
+        EParser(const std::string& message, const LexerToken& token)
+            : message(message), token(token.value), location(token.location)
+        {
+        }
+        EParser(const std::string& message, const Instruction& instruction)
+            : message(message), token(instruction.TypeName()), location(instruction.location)
+        {
+        }
 
-		inline virtual const char* what() const noexcept override { return message.c_str(); }
+        virtual const std::string Severity() const = 0;
 
-	protected:
-		std::string message;
-	};
+        const std::string token;
+        const Location location;
+        const std::string message;
 
-	class Parser
-	{
-	public:
-		Parser() = default;
-		Parser(const Lexer::TokenList& Tokens);
-		Parser(const Parser& Parser)
-			: syntaxTree(Parser.syntaxTree), operators(Parser.operators)
-		{
-			Reparent(&syntaxTree.root, nullptr);
-		}
-		~Parser() = default;
+        inline virtual const char* what() const noexcept override
+        {
+            return message.c_str();
+        }
+    };
+    class EParserWarning : public EParser
+    {
+    public:
+        EParserWarning(const std::string& message, const LexerToken& token)
+            : EParser(message, token) { }
+        EParserWarning(const std::string& message, const Instruction& instruction)
+            : EParser(message, instruction) { }
 
-		Parser& operator = (const Parser& Other);
+        const std::string Severity() const override { return "Warning"; }
+    };
+    class EParserError : public EParser
+    {
+    public:
+        EParserError(const std::string& message, const LexerToken& token)
+            : EParser(message, token) { }
+        EParserError(const std::string& message, const Instruction& instruction)
+            : EParser(message, instruction) { }
 
-		SyntaxTree syntaxTree;
-		std::map<std::string, Operator> operators; //predefined operators name->operator
+        const std::string Severity() const override { return "Error"; }
+    };
 
-		static Instruction ParseNumber(std::string Input);
-		static StringT ParseString(std::string Input);
-		static bool IsRegion(const Instruction& Instruction);
+    class Parser
+    {
+    public:
+        Parser();
+        Parser(const Parser& Parser)
+            : root(Parser.root)
+        {
+            Reparent(root, nullptr);
+        }
+        ~Parser() = default;
 
-	protected:
-		void CreatePredefinitions();
-		void CreateOperator(const std::string& Name, Notation Notat, Association Assoc, unsigned Precedence);
-		void Reparent(SyntaxTreeNode* Node, SyntaxTreeNode* Parent); //Reconnect all children to parents
+        void Parse(const Lexer::TokenList& tokens, bool failOnFirstError = false);
 
-		void ParseToken(Lexer::TokenList::const_iterator& Token, const Lexer::TokenList& List);
+        Instruction root;
 
-		void ParseStatement(SyntaxTreeNode* Statement); //parse a statement for operators. Converts Statement to the root op
+        static Instruction ParseNumber(std::string Input);
+        static std::string ParseString(std::string Input);
 
-		std::stack<std::string> blocks; //block matching
-		SyntaxTreeNode* parent;
-	};
+    protected:
+        void ParseNext(Lexer::TokenList::const_iterator& token, const Lexer::TokenList& list);
+        void EvaluateStatement(Instruction& instruction);
+
+        void Reparent(Instruction& instruction, const NonOwningRef<Instruction>& parent);
+        Instruction& AddChild(const Instruction& instruction);
+        Instruction& AddStatement(InstructionType parentType);
+        Instruction* LastInstruction();
+
+        bool IsPunctuation(InstructionType instruction) const;
+
+        NonOwningRef<Instruction> parent;
+
+        static std::set<std::string> prefixOperators;
+        static std::set<std::string> postfixOperators;
+        static std::map<std::string, BinaryOperator> infixOperators;
+    };
 };
 
 //todo: operators should use map<name, map<notation, op>>
-
-//todo: reporter:
-//  Level: Info, Warning, Error, Message
-//  isFatal
-//  code (enum?) - defindes messages
-//  condition
-//  argument
-//  location (+ file pointer)
-
-//reporter can be used for compile and runtime
-//stream output to file/terminal/etc
-//sort by type and time
-//report immediately or wait
-//grouping
-
-
-inline std::ostream& operator << (std::ostream& Stream, const Plang::ParserException& Exception)
-{
-	Stream << Exception.what() << " [ " << Exception.token << " ] @ " << Exception.location;
-	return Stream;
-}
