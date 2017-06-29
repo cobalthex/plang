@@ -18,7 +18,8 @@ static std::string instructionTypeStrings[] =
     "Block",
     "Tuple",
 
-    "Call"
+    "Call",
+    "Expression"
 };
 
 //get the length of the type name of the longest child of a node. Used for column alignment

@@ -95,6 +95,17 @@ namespace Plang
 
         bool IsPunctuation(InstructionType instruction) const;
 
+        const Instruction& TryCollapseTuple(const Instruction& instruction) const
+        {
+            if (instruction.type == InstructionType::Tuple)
+            {
+                auto l = std::get_if<TList>(&instruction.value);
+                if (l != nullptr && l->size() == 1)
+                    return l->front();
+            }
+            return instruction;
+        }
+
         NonOwningRef<Instruction> parent;
 
         static std::set<std::string> prefixOperators;

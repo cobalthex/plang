@@ -3,8 +3,7 @@
 #include "Lexer.hpp"
 #include "Parser.hpp"
 #include "Instruction.hpp"
-//#include "Reference.hpp"
-//#include "Construct.hpp"
+#include "Construct.hpp"
 
 int main(int ac, const char* av[])
 {
@@ -22,8 +21,8 @@ int main(int ac, const char* av[])
     /*std::cout << root.As<Plang::Instructions::List>()[0];
     std::cin.get();*/
 
-	/*Plang::Parser parser;
-	Plang::AnyRef scope = Plang::Construct();*/
+	Plang::Parser parser;
+	Plang::AnyRef scope(new Plang::Construct);
 	if (ac < 2)
 	{
 		std::cout << "Interactive mode\n";
@@ -65,7 +64,9 @@ int main(int ac, const char* av[])
                 Plang::Parser parser;
                 parser.Parse(lex.tokens);
 
-                std::cout << parser.root << std::endl;
+                std::cout << parser.root << "\n---\n";
+                auto x = Plang::Script(parser.root).Evaluate(scope);
+                std::cout << ">> " << (x ? x->ToString() : "Undefined") << std::endl;
 			}
 			catch (const std::exception& x)
 			{

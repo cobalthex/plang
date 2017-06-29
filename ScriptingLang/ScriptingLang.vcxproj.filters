@@ -35,12 +35,6 @@
     <ClInclude Include="Construct.hpp">
       <Filter>Runtime</Filter>
     </ClInclude>
-    <ClInclude Include="Script.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
-    <ClInclude Include="Reference.hpp">
-      <Filter>Runtime</Filter>
-    </ClInclude>
     <ClInclude Include="Array.hpp">
       <Filter>Util</Filter>
     </ClInclude>

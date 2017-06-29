@@ -19,7 +19,7 @@ public:
 	Array(T Array[]) : length(sizeof(Array) / sizeof(T)), indices(Array) { }
 
 	Array(const Array& Array) : length(Array.length), indices(new T[Array.length]) { std::copy(Array.indices, Array.indices + Array.length, indices); }
-	Array(Array&& Array) : length(Array.length), indices(Array.indices) { Array.indices = nullptr; Array.length = 0; }
+	Array(Array&& Array) : length(Array.length), indices(std::move(Array.indices)) { Array.indices = nullptr; Array.length = 0; }
 
 	~Array() { if (indices != nullptr) delete[] indices; length = 0; }
 
@@ -64,7 +64,7 @@ public:
 	constexpr size_t Length() const noexcept { return length; }
 
 	inline T& operator [](size_t Index) { return indices[Index]; }
-	constexpr const T& operator [](size_t Index) const { 
+	constexpr const T& operator [](size_t Index) const {
 		return indices[Index]; }
 	inline T& At(size_t Index) { return indices[Index]; }
 	constexpr const T& At(size_t Index) const { return indices[Index]; }

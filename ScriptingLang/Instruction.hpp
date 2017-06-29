@@ -65,7 +65,8 @@ namespace Plang
         Block,
         Tuple,
 
-        Call
+        Call,
+        Expression
     };
 
     class Instruction;
@@ -138,6 +139,19 @@ namespace Plang
                 auto& items = std::get<TList>(value);
                 return *items.insert(items.begin() + index, instruction);
             }
+            inline bool Remove(const Instruction& instruction)
+            {
+                auto& items = std::get<TList>(value);
+                for (auto i = items.begin(); i != items.end(); ++i)
+                {
+                    if (&*i == &instruction)
+                    {
+                        items.erase(i);
+                        return true;
+                    }
+                }
+                return false;
+            }
 
             inline size_t Count() const
             {
@@ -163,6 +177,8 @@ namespace Plang
         public:
             Call(const Instruction& callee, std::initializer_list<Instruction> arguments)
                 : InstructionFacade(InstructionType::Call, TList{ callee, Instruction(InstructionType::Tuple, TList(arguments)) }) { }
+            Call(const Instruction& callee, const Instruction& arguments)
+                : InstructionFacade(InstructionType::Call, TList{ callee, arguments }) { }
 
             Instruction& Callee()
             {
@@ -171,6 +187,25 @@ namespace Plang
             }
 
             Instruction& Arguments()
+            {
+                auto& def = std::get<TList>(value);
+                return def.at(1);
+            }
+        };
+
+        class Expression : public InstructionFacade
+        {
+        public:
+            Expression(const Instruction& arguments, const Instruction& body)
+                : InstructionFacade(InstructionType::Expression, TList{ arguments, body }) { }
+
+            Instruction& Arguments()
+            {
+                auto& def = std::get<TList>(value);
+                return def.at(0);
+            }
+
+            Instruction& Body()
             {
                 auto& def = std::get<TList>(value);
                 return def.at(1);

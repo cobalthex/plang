@@ -128,6 +128,7 @@
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -182,9 +183,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Construct.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="Construct.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Parser.cpp">
@@ -204,21 +203,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Array.hpp" />
-    <ClInclude Include="Construct.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="Construct.hpp" />
     <ClInclude Include="Lexer.hpp" />
     <ClInclude Include="Location.hpp" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="recursive_wrapper.hpp" />
-    <ClInclude Include="Reference.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="ReportLog.hpp" />
     <ClInclude Include="TestLexer.hpp" />
-    <ClInclude Include="Script.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Instruction.hpp" />
     <ClInclude Include="StringOps.hpp" />
   </ItemGroup>

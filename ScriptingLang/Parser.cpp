@@ -4,22 +4,47 @@
 
 using namespace Plang;
 
-std::set<std::string> Parser::prefixOperators
-{
-    "++", "--", "!", "+", "-",
-};
 std::set<std::string> Parser::postfixOperators
 {
     "++", "--",
+};
+std::set<std::string> Parser::prefixOperators
+{
+    "++", "--", "!", "+", "-", "~", "="
 };
 std::map<std::string, BinaryOperator> Parser::infixOperators
 {
     { "*", BinaryOperator("*", Association::LeftToRight, 3) },
     { "/", BinaryOperator("/", Association::LeftToRight, 3) },
+    { "/", BinaryOperator("%", Association::LeftToRight, 3) },
+
     { "+", BinaryOperator("+", Association::LeftToRight, 4) },
     { "-", BinaryOperator("-", Association::LeftToRight, 4) },
-    { "=", BinaryOperator("=", Association::RightToLeft, 14) },
+
+    { "<<", BinaryOperator("<<", Association::LeftToRight, 5) },
+    { ">>", BinaryOperator(">>", Association::LeftToRight, 5) },
+
+    { "<", BinaryOperator("<", Association::LeftToRight, 6) },
+    { "<=", BinaryOperator("<=", Association::LeftToRight, 6) },
+    { ">=", BinaryOperator(">=", Association::LeftToRight, 6) },
+    { ">", BinaryOperator(">", Association::LeftToRight, 6) },
+
+    { "==", BinaryOperator("==", Association::LeftToRight, 7) },
+    { "!=", BinaryOperator("!=", Association::LeftToRight, 7) },
+
+    { "&", BinaryOperator("&", Association::LeftToRight, 8) },
+
+    { "^", BinaryOperator("^", Association::LeftToRight, 9) },
+
+    { "|", BinaryOperator("|", Association::LeftToRight, 10) },
+
+    { "&&", BinaryOperator("&&", Association::LeftToRight, 11) },
+
+    { "||", BinaryOperator("!=", Association::LeftToRight, 12) },
+
     { ":", BinaryOperator(":", Association::RightToLeft, 14) },
+    { "=", BinaryOperator("=", Association::RightToLeft, 14) },
+    //todo: other assignments
 };
 
 void Parser::Reparent(Instruction& node, const NonOwningRef<Instruction>& parent)
@@ -195,7 +220,6 @@ void Parser::ParseNext(Lexer::TokenList::const_iterator& token, const Lexer::Tok
             parent = parent->parent;
         }
 
-        std::cout << "!!! " << root << std::endl;
         if (parent->type != InstructionType::List)
             throw EParserError("Mismatched ]", *token);
 
@@ -300,102 +324,119 @@ void Parser::EvaluateStatement(Instruction& statement)
     auto list = statement.As<Instructions::List>();
     auto stmtParent = statement.parent;
 
-    if (list.Count() == 1)
-        statement = list.First();
-    else if (list.Count() > 1)
+    if (list.Count() == 0)
     {
-        std::stack<BinaryOperator> ops;
-        std::stack<Instruction> output;
+        stmtParent->As<Instructions::List>().Remove(statement);
+        return;
+    }
 
-        auto infix = [&]()
+    std::stack<BinaryOperator> ops;
+    std::stack<Instruction> output;
+
+    auto infix = [&]()
+    {
+		if (output.size() == 0)
+			output.push(Instruction(InstructionType::Identifier, ops.top().name));
+        else if (output.size() == 1)
+            throw EParserError("invalid operator", statement); //todo (should be operator location)
+
+		else
+		{
+			auto second = output.top(); output.pop();
+			auto first = output.top(); output.pop();
+
+			output.push(Instructions::Call(
+				Instruction(InstructionType::Identifier, ops.top().name),
+				{ TryCollapseTuple(first), TryCollapseTuple(second) }
+			));
+		}
+        ops.pop();
+    };
+
+    bool wasLastOp = false;
+    for (size_t i = 0; i < list.Count(); ++i)
+    {
+        auto str = std::get_if<std::string>(&list[i].value);
+        if (str != nullptr)
         {
-            if (output.size() < 2)
-                throw EParserError("invalid operator", statement); //todo (should be operator location)
-
-            auto second = output.top(); output.pop();
-            auto first = output.top(); output.pop();
-
-            //todo: (pre)parse things like numbers
-
-            output.push(Instructions::Call(
-                Instruction(InstructionType::Identifier, ops.top().name),
-                { first, second }
-            ));
-            ops.pop();
-        };
-
-        bool wasLastOp = false;
-        for (size_t i = 0; i < list.Count(); ++i) //range based support
-        {
-            auto str = std::get_if<std::string>(&list[i].value);
-            if (str != nullptr)
+            auto unaryFind(postfixOperators.find(*str));
+            if (unaryFind != postfixOperators.end() && !output.empty() && output.top().type != InstructionType::Unknown)
             {
-                auto unaryFind(postfixOperators.find(*str));
-                if (unaryFind != postfixOperators.end() && !output.empty() && output.top().type != InstructionType::Unknown)
-                {
-                    output.top() = Instructions::Call(list[i], { Instruction(), output.top() });
-                    wasLastOp = true;
-                    continue;
-                }
-
-                unaryFind = prefixOperators.find(*str);
-                if (unaryFind != prefixOperators.end() && (i == 0 || (wasLastOp && i < list.Count() - 1)))
-                {
-                    output.push(Instructions::Call(list[i], { list[i + 1], Instruction() }));
-                    wasLastOp = true;
-                    ++i;
-                    continue;
-                }
-
-                auto binaryFind(infixOperators.find(*str));
-                if (binaryFind != infixOperators.end())
-                {
-                    auto& op = binaryFind->second;
-                    while (!ops.empty())
-                    {
-                        auto& top = ops.top();
-                        if ((op.association == Association::LeftToRight && op.precedence >= top.precedence) ||
-                            (op.association == Association::RightToLeft && op.precedence > top.precedence))
-                            infix();
-                        else
-                            break;
-                    }
-
-                    ops.push(op);
-
-                    wasLastOp = true;
-                    continue;
-                }
-            }
-
-            //test if bracket accessor (a[x]) or function (f())
-            if (list[i].type == InstructionType::List && !output.empty())
-            {
-                auto& top = output.top();
-                list[i].As<Instructions::List>().Insert(top);
-                top = list[i];
-                top.type = InstructionType::Accessor;
+                output.top() = Instructions::Call(list[i], { Instruction(), output.top() });
+                wasLastOp = true;
                 continue;
             }
 
-            if (list[i].type == InstructionType::Tuple && !output.empty() && !wasLastOp)
+            unaryFind = prefixOperators.find(*str);
+            if (unaryFind != prefixOperators.end() && (i == 0 || (wasLastOp && i < list.Count() - 1)))
             {
-                auto& top = output.top();
-                top = Instruction(InstructionType::Call, TList { top, list[i] });
+				output.push(Instructions::Call(list[i], { list[i + 1], Instruction() }));
+				++i;
                 continue;
             }
 
-            output.push(list[i]);
-            wasLastOp = false;
+            auto binaryFind(infixOperators.find(*str));
+            if (binaryFind != infixOperators.end())
+            {
+                auto& op = binaryFind->second;
+                while (!ops.empty())
+                {
+                    auto& top = ops.top();
+                    if ((op.association == Association::LeftToRight && op.precedence >= top.precedence) ||
+                        (op.association == Association::RightToLeft && op.precedence > top.precedence))
+                        infix();
+                    else
+                        break;
+                }
+
+                ops.push(op);
+
+                wasLastOp = true;
+                continue;
+            }
         }
 
-        while (!ops.empty())
-            infix();
+        //list accessor ( a[x] )
+        if (list[i].type == InstructionType::List && !output.empty())
+        {
+            auto& top = output.top();
+            list[i].As<Instructions::List>().Insert(top);
+            top = list[i];
+            top.type = InstructionType::Accessor;
+        }
 
-        if (output.size() != 1)
-            throw EParserError("Too many operands", output.top());
-        statement = output.top();
+        //function call ( f() )
+        else if (list[i].type == InstructionType::Tuple && !output.empty() && !wasLastOp)
+        {
+            auto& top = output.top();
+            top = Instructions::Call(top, list[i]);
+        }
+
+        //expression ( () { } )
+        else if (list[i].type == InstructionType::Block && !output.empty() && !wasLastOp)
+        {
+            auto& top = output.top();
+            top = Instructions::Expression(top, list[i]);
+        }
+
+        else
+        {
+            output.push(TryCollapseTuple(list[i])); //todo: maybe collapse tuples in later pass (some places dont allow tuple collapse maybe)
+            wasLastOp = false;
+        }
     }
+
+    while (!ops.empty())
+        infix();
+
+	if (output.size() != 1)
+	{
+		std::cout << "!! ";
+		for (const auto& o : *((std::deque<Instruction>*)&output))
+			std::cout << ">> " << o;
+		throw EParserError("Too many operands", output.top());
+	}
+    statement = output.top();
 
     Reparent(statement, stmtParent);
 }
