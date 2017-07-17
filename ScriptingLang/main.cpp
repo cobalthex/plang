@@ -7,22 +7,26 @@
 
 int main(int ac, const char* av[])
 {
-    using namespace std::literals::string_literals;
-    using I = Plang::Instruction;
-
-    I root(Plang::InstructionType::Program, Plang::TList {
-        I(Plang::InstructionType::Float, 5.0),
-        I(Plang::InstructionType::Identifier, "taco"s),
-        I(Plang::InstructionType::List, Plang::TList {
-            I(Plang::InstructionType::String, "Moo"s)
-        })
-    });
-
-    /*std::cout << root.As<Plang::Instructions::List>()[0];
-    std::cin.get();*/
-
 	Plang::Parser parser;
 	Plang::AnyRef scope(new Plang::Construct);
+
+    scope->Set("+", std::make_shared<Plang::Function>(Plang::Signature("(a,b)"), [](const Plang::Construct& scope)
+    {
+        std::cout << "hoopla!\n";
+        return std::make_shared<Plang::Int>(5);
+    }));
+
+    scope->Set("-", std::make_shared<Plang::Function>(Plang::Signature({ { "a" }, { "b" } }), [](const Plang::Construct& scope)
+    {
+        std::cout << "xyz!\n";
+        return std::make_shared<Plang::Int>(5);
+    }));
+
+    using namespace std::literals::string_literals;
+    auto a(std::make_shared<Plang::Construct>());
+    a->Set("b", std::make_shared<Plang::Int>(10));
+    scope->Set("a", a);
+
 	if (ac < 2)
 	{
 		std::cout << "Interactive mode\n";
@@ -65,8 +69,9 @@ int main(int ac, const char* av[])
                 parser.Parse(lex.tokens);
 
                 std::cout << parser.root << "\n---\n";
-                auto x = Plang::Script(parser.root).Evaluate(scope);
-                std::cout << ">> " << (x ? x->ToString() : "Undefined") << std::endl;
+                auto s = Plang::Script(parser.root);
+                auto x = s.Evaluate(scope);
+                std::cout << ">> " << x << std::endl;
 			}
 			catch (const std::exception& x)
 			{

@@ -11,18 +11,12 @@ std::string Plang::TypeToString(const Plang::ConstructType& Type)
     {
     case Plang::ConstructType::Construct:
         return "Construct";
-    case Plang::ConstructType::Bool:
-        return "Bool";
     case Plang::ConstructType::Int:
         return "Int";
     case Plang::ConstructType::Float:
         return "Float";
     case Plang::ConstructType::String:
         return "String";
-    case Plang::ConstructType::Tuple:
-        return "Tuple";
-    case Plang::ConstructType::Array:
-        return "Array";
     case Plang::ConstructType::List:
         return "List";
     case Plang::ConstructType::Function:
@@ -120,9 +114,18 @@ Plang::Construct& Plang::Construct::Merge(const Plang::Construct& Other, bool Ov
     return *this;
 }
 
-std::ostream& operator<<(std::ostream& Stream, const Plang::Construct& Construct)
+std::ostream& Plang::operator<<(std::ostream& Stream, const Plang::Construct& Construct)
 {
     Stream << TypeToString(Construct.Type()) << "{" << Construct.ToString() << "}";
+    return Stream;
+}
+
+std::ostream& Plang::operator<<(std::ostream& Stream, const Plang::AnyRef& Ref)
+{
+    if (Ref == Plang::Undefined)
+        Stream << "Undefined";
+    else
+        Stream << *Ref;
     return Stream;
 }
 
@@ -144,6 +147,16 @@ std::string Plang::Construct::ToString() const
 	return out;
 }
 
+Plang::Construct Plang::Int::Prototype
+{
+    { std::make_pair("!", std::make_shared<Plang::Function>([](Construct& scope)
+    {
+
+        return Undefined;
+    })
+    )}
+};
+
 Plang::Signature::Signature(const ::Array<Argument> Arguments)
     : arguments(Arguments), nSingles(0)
 {
@@ -160,26 +173,34 @@ Plang::Signature::Signature(const std::string& ArgsString)
     std::istringstream iss (ArgsString);
 	Lexer lex ("@", iss);
     Parser parse;
-    parse.Parse(lex.tokens, true);
+    parse.Parse(lex.tokens, true); //todo: maybe return value?
 
-    throw "todo";
+    //skip program and optionally tuple
+
+    auto& root(parse.root.As<Instructions::List>());
+    if (root.Count() > 0)
+    {
+
+    }
+
+    //throw "todo";
 }
 
-Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
+Plang::Construct Plang::Signature::Parse(const Plang::Tuple& evaluation)
 {
     Construct scope;
 
-	auto nListArgs = (Arguments.Length() > nSingles ? Arguments.Length() - nSingles : 0); //the number of arguments passed in that will go into tuples
+	auto nListArgs = (evaluation.Length() > nSingles ? evaluation.Length() - nSingles : 0); //the number of arguments passed in that will go into tuples
     auto nArgsPerList = nLists > 0 ? (1 + ((nListArgs - 1) / nLists)) : 0;
 
     for (size_t i = 0, j = 0; i < arguments.Length(); i++)
     {
 		if (arguments[i].type == ArgumentType::List)
 		{
-			size_t nArgs = std::min(nArgsPerList, Arguments.value.Length() - j);
+			size_t nArgs = std::min(nArgsPerList, evaluation.Length() - j);
 			if (nArgs > 0)
 			{
-				auto list(std::make_shared<List>(Arguments.value.Slice(j, nArgs)));
+				auto list(std::make_shared<List>(evaluation.Slice(j, nArgs)));
 				scope.Set(arguments[i].name, list);
 				j += nArgs;
 			}
@@ -188,8 +209,8 @@ Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
 				scope.Set(arguments[i].name, std::make_shared<List>());
 			}
 		}
-		else if (j < Arguments.Length())
-			scope.Set(arguments[i].name, Arguments[j++]);
+		else if (j < evaluation.Length())
+			scope.Set(arguments[i].name, evaluation[j++]);
 		else
 			scope.Set(arguments[i].name, Undefined);
     }
@@ -199,10 +220,10 @@ Plang::Construct Plang::Signature::Parse(const Plang::Tuple& Arguments)
     return scope;
 }
 
-Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, const Plang::AnyRef& LexScope)
+Plang::AnyRef Plang::Function::Call(const Plang::Tuple& Arguments, const Plang::AnyRef& localScope)
 {
     auto scope = signature.Parse(Arguments);
-	scope.prototype = (LexScope == Undefined ? context : LexScope);
+	scope.prototype = localScope;
 
     return function(scope);
 }
@@ -213,15 +234,13 @@ struct ScriptFrame
     size_t index; //index of current instruction
 };
 
-Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& arguments, const AnyRef& lexScope)
+Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& arguments, const AnyRef& parentScope)
 {
     std::vector<AnyRef> registers; //holds intermediate values for functions
     std::stack<AnyRef> dot; //object scopes
 
-
-    auto localScope(signature.Parse(arguments));
-    localScope.prototype = (lexScope == Undefined ? context : lexScope);
-    AnyRef pScope = std::make_shared<Construct>(localScope);
+   auto localScope(std::make_shared<Construct>(signature.Parse(arguments)));
+   localScope->prototype = parentScope;
 
     std::stack<ScriptFrame> stack;
     stack.push({ instructions, 0 });
@@ -230,11 +249,35 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& arguments, const AnyRe
     {
         auto& top = stack.top();
         auto children = std::get_if<TList>(&top.instruction.value);
-        if (children != nullptr && top.index < children->size())
+
+        if (children != nullptr)
         {
-            stack.push({ children->at(top.index), 0 });
-            ++top.index;
-            continue;
+            if (top.instruction.type == InstructionType::Accessor)
+            {
+                //todo: change the way accessors are parsed
+                auto& list(top.instruction.As<Instructions::List>());
+                assert(list.Count() > 0);
+
+                AnyRef next = list[0].type == InstructionType::Unknown
+                    ? Undefined /*todo*/ :
+                    localScope->Get(list[0]);
+                for (size_t i = 1; i < list.Count(); ++i)
+                {
+                    if (next == nullptr)
+                        throw (std::string)list[i - 1] + "is undefined";
+
+                    next = next->Get(std::get<std::string>(list[i].value));
+                }
+                registers.push_back(next);
+                stack.pop();
+                continue;
+            }
+            else if (top.index < children->size())
+            {
+                stack.push({ children->at(top.index), 0 });
+                ++top.index;
+                continue;
+            }
         }
 
         switch (top.instruction.type)
@@ -249,21 +292,9 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& arguments, const AnyRe
             registers.push_back(std::make_shared<Plang::String>(top.instruction.value));
             break;
         case InstructionType::Identifier:
-            registers.push_back(localScope.Get(std::get<std::string>(top.instruction.value)));
+            registers.push_back(localScope->Get(std::get<std::string>(top.instruction.value)));
             break;
 
-        case InstructionType::Accessor:
-            break;
-
-        case InstructionType::Tuple:
-        {
-            auto count(top.instruction.As<Instructions::List>().Count());
-            auto tup(std::make_shared<Tuple>(count));
-            std::move(registers.end() - count, registers.end(), tup->value.Data()); //todo: revisit
-            registers.resize(registers.size() - count);
-            registers.push_back(tup);
-            break;
-        }
         case InstructionType::List:
         {
             auto count(top.instruction.As<Instructions::List>().Count());
@@ -273,6 +304,35 @@ Plang::AnyRef Plang::Script::Evaluate(const Plang::Tuple& arguments, const AnyRe
             registers.push_back(list);
             break;
         }
+        case InstructionType::Call:
+        {
+            auto& fn(top.instruction.As<Instructions::Call>());
+            auto nArgs(fn.Arguments().Count());
+            auto& id(registers[registers.size() - nArgs - 1]);
+
+            if (id == Undefined)
+                throw "Undefined (" + (std::string)fn.Callee() + ") is not a function";
+
+            //assert(args->Type() == ConstructType::Tuple);
+            //auto& argsTup(*std::static_pointer_cast<Tuple>(args));
+
+            Tuple args(registers.end() - nArgs, registers.end());
+
+            AnyRef rval;
+            if (id->Type() == ConstructType::Function)
+                rval = std::static_pointer_cast<Function>(id)->Call(args, localScope);
+            else if (id->Type() == ConstructType::Script)
+                rval = std::static_pointer_cast<Script>(id)->Evaluate(args, localScope);
+            else
+                throw (std::string)fn.Callee() + " is not a function";
+
+            registers.resize(registers.size() - nArgs);
+            registers.back() = rval;
+            break;
+        }
+        case InstructionType::Unknown:
+            registers.push_back(Undefined);
+            break;
         }
 
         stack.pop();

@@ -127,6 +127,9 @@ void Parser::Parse(const Lexer::TokenList& tokens, bool failOnFirstError)
         }
     }
 
+    if (parent->type == InstructionType::Accessor)
+        parent = parent->parent;
+
     parent = parent->parent;
     if (parent != root)
     {

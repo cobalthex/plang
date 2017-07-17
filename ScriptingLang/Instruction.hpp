@@ -186,10 +186,10 @@ namespace Plang
                 return def.at(0);
             }
 
-            Instruction& Arguments()
+            Instructions::List& Arguments()
             {
                 auto& def = std::get<TList>(value);
-                return def.at(1);
+                return def.at(1).As<Instructions::List>();
             }
         };
 
@@ -199,10 +199,10 @@ namespace Plang
             Expression(const Instruction& arguments, const Instruction& body)
                 : InstructionFacade(InstructionType::Expression, TList{ arguments, body }) { }
 
-            Instruction& Arguments()
+            Instructions::List& Arguments()
             {
                 auto& def = std::get<TList>(value);
-                return def.at(0);
+                return def.at(0).As<Instructions::List>();
             }
 
             Instruction& Body()

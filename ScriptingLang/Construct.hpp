@@ -16,12 +16,9 @@ namespace Plang
 	{
 		Invalid,
 		Construct,
-		Bool,
 		Int,
 		Float,
 		String,
-		Tuple,
-		Array,
 		List,
 		Function, //native function
 		Script,
@@ -35,18 +32,18 @@ namespace Plang
 		using PropMap = std::map<std::string, AnyRef>;
 
 	public:
-		Construct(const AnyRef& Prototype = nullptr) : prototype(Prototype) { }
-		Construct(const ::Array<std::pair<std::string, AnyRef>>& Defaults) : properties(&Defaults[0], &Defaults[0] + Defaults.Length()) { }
+        Construct(const AnyRef& prototype = nullptr) : prototype(prototype) { }
+        Construct(const ::Array<std::pair<std::string, AnyRef>>& defaults) : properties(&defaults[0], &defaults[0] + defaults.Length()) { }
 		virtual ~Construct() = default;
 
 		virtual inline ConstructType Type() const { return ConstructType::Construct; }
 		virtual std::string ToString() const; //basic value output. Constructs may have custom as operator which has a string conversion
 
-		AnyRef&       Set(const std::string& Name, const AnyRef& Ref, bool SearchParents = false); //If SearchParents is true, property is set where it is defined or in this scope if not found
-		AnyRef&       Get(const std::string& Name, bool SearchParents = true);
-		const AnyRef& Get(const std::string& Name, bool SearchParents = true) const;
-		bool          Has(const std::string& Name, bool SearchParents = true) const;
-		bool          Remove(const std::string& Name);
+		AnyRef&       Set(const std::string& name, const AnyRef& ref, bool searchInParents = false); //If searchInParents is true, property is set where it is defined or in this scope if not found
+		AnyRef&       Get(const std::string& name, bool searchInParents = true);
+		const AnyRef& Get(const std::string& name, bool searchInParents = true) const;
+		bool          Has(const std::string& name, bool searchInParents = true) const;
+		bool          Remove(const std::string& name);
 		inline size_t Count() const { return properties.size(); } //The number of defined properties in this construct
 
 		//iterators (For public properties)
@@ -60,7 +57,7 @@ namespace Plang
 		//Merge another construct's properties into this one (does not modify prototype or copy inherited properties). Returns a reference to this construct
 		Construct& Merge(const Construct& Other, bool Overwrite = true);
 
-		AnyRef prototype; //parent construct. properties inherit
+        AnyRef prototype;
 
 	protected:
 		PropMap properties; //the public property scope. Inherits from accessor that calls this. Created on call (or instantiation)
@@ -73,16 +70,18 @@ namespace Plang
 	public:
 		using ValueType = TInt;
 
-		Int() : value(0) { }
-		Int(const ValueType& value) : value(value) { }
+		Int() : value(0) { Merge(Prototype); }
+		Int(const ValueType& value) : value(value) { Merge(Prototype); }
         Int(const Instruction::ValueType& value)
-            : value(std::get<TInt>(value)) { }
+            : value(std::get<TInt>(value)) { Merge(Prototype); }
 
 		inline ConstructType Type() const override { return ConstructType::Int; }
 		inline std::string ToString() const override { return std::to_string(value); }
 		inline std::string ToString(int Radix) const { return std::to_string(value); } //todo
 
 		ValueType value;
+
+        static Construct Prototype;
 	};
 
 	class Float : public Construct
@@ -90,7 +89,7 @@ namespace Plang
 	public:
 		using ValueType = TFloat;
 
-		Float() : value(0.0f) { }
+        Float() : value(0.0f) { }
 		Float(const ValueType& value) : value(value) { }
         Float(const Instruction::ValueType& value)
             : value(std::get<TFloat>(value)) { }
@@ -119,37 +118,27 @@ namespace Plang
 		ValueType value;
 	};
 
-    //stores arguments (revisit)
-	class Tuple : public Construct
-	{
-	public:
-		using KvPair = std::pair<std::string, AnyRef>;
+    struct Tuple
+    {
+        using Iterator = std::vector<AnyRef>::const_iterator;
+        Tuple() { }
+        Tuple(const Iterator& begin, const Iterator& end) : begin(begin), end(end) { }
 
-		Tuple() = default;
-		Tuple(const ::Array<AnyRef>& Indices) : value(Indices) { }
-		Tuple(const ::Array<AnyRef>& Indices, const ::Array<KvPair>& Keys) : value(Indices), Construct(Keys) { }
-		Tuple(std::initializer_list<AnyRef> Init) : value(Init) { }
+        Iterator begin, end;
 
-		inline ConstructType Type() const override { return ConstructType::Tuple; }
-		inline std::string ToString() const override
-		{
-			std::string s = "(";
-			for (size_t i = 0; i < value.Length(); i++)
-			{
-				s += value[i]->ToString();
-				if (i < value.Length() - 1)
-					s += ",";
-			}
-			s += ")";
-			return s;
-		}
+        size_t Length() const { return std::distance(begin, end); }
 
-		inline AnyRef& operator[](size_t Index) { return value[Index]; }
-		inline const AnyRef& operator[](size_t Index) const { return value[Index]; }
-		inline const size_t Length() const { return value.Length(); }
+        Tuple Slice(size_t start, size_t count) const
+        {
+            count = std::min(Length(), count) - start;
+            return Tuple(begin + start, begin + start + count);
+        }
 
-		::Array<AnyRef> value;
-	};
+        const AnyRef& operator[](size_t index) const
+        {
+            return *(begin + index);
+        }
+    };
 
     /*
 	class Array : public Construct
@@ -187,6 +176,7 @@ namespace Plang
 		List() = default;
 		List(const std::vector<AnyRef>& values) : value(values) { }
         List(const ::Array<AnyRef>& array) : value(array.Data(), array.Data() + array.Length()) { }
+        List(const Tuple& tuple) : value(tuple.begin, tuple.end) { }
 
 		inline ConstructType Type() const override { return ConstructType::List; }
 		inline std::string ToString() const override
@@ -220,6 +210,10 @@ namespace Plang
 
 	struct Argument
 	{
+        Argument() = default;
+        Argument(std::string name, ArgumentType type = ArgumentType::Single)
+            : name(std::move(name)), type(type) { }
+
 		std::string name;
 		ArgumentType type;
 	};
@@ -227,18 +221,18 @@ namespace Plang
 	class Signature
 	{
 	public:
-		Signature() : arguments(), nSingles(0), nLists(0) { }
-		Signature(const ::Array<Argument> Arguments);
-		Signature(std::initializer_list<Argument> Arguments) : Signature(::Array<Argument>(Arguments)) { }
-		Signature(const std::string& ArgsString);
+		Signature() = default;
+		Signature(const ::Array<Argument> arguments);
+		Signature(std::initializer_list<Argument> arguments) : Signature(::Array<Argument>(arguments)) { }
+		Signature(const std::string& argsString);
 
 		//Parse an arguments tuple using this signature. Named arguments overwrite positional arguments
 		Construct Parse(const Tuple& Arguments);
 
 	private:
 		::Array<Argument> arguments;
-		size_t nSingles; //the number of non-list arguments in the signature
-		size_t nLists; //the number of list arguments in the signature
+		size_t nSingles = 0; //the number of non-list arguments in the signature
+		size_t nLists = 0; //the number of list arguments in the signature
 	};
 
 	//A native function
@@ -247,15 +241,15 @@ namespace Plang
 	public:
 		using TFunction = std::function<AnyRef(Construct& Scope)>;
 
-		inline Function(const Signature& Signature, const TFunction& Function, const Plang::AnyRef& Context = Undefined)
-			: signature(Signature), function(Function), context(Context) { }
-		inline Function(const TFunction& Function, const Plang::AnyRef& Context = Undefined)
-			: function(Function), context(Context) { }
+		inline Function(const Signature& signature, const TFunction& callable)
+			: signature(signature), function(callable) { }
+		inline Function(const TFunction& callable)
+			: function(callable) { }
 
 		inline ConstructType Type() const override { return ConstructType::Function; }
 		inline std::string ToString() const override { return "[[ Native function ]]"; } //todo: base 16
 
-		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope = Undefined);
+		AnyRef Call(const Tuple& Arguments, const AnyRef& LexScope = Undefined); //raw construct?
 		inline AnyRef Call(const AnyRef& LexScope = Undefined)
 		{
 			Tuple args;
@@ -264,17 +258,17 @@ namespace Plang
 
 		Signature signature;
 		TFunction function;
-		AnyRef context; //The lexical scope that this script can see. Typically the parent scope
+        AnyRef boundScope; //todo
 	};
 
 	//A parsed script. All scripts behave like functions, having arguments and a return value
 	class Script : public Construct
 	{
 	public:
-		inline Script(const Signature& signature, const Instruction& instructions, const Plang::AnyRef& context = Undefined)
-			: signature(signature), instructions(instructions), context(context) { }
-		inline Script(const Instruction& instructions, const Plang::AnyRef& context = Undefined)
-			: instructions(instructions), context(context) { }
+		Script(const Signature& signature, const Instruction& rootInstruction)
+			: signature(signature), instructions(rootInstruction) { }
+		Script(const Instruction& rootInstruction)
+			: instructions(rootInstruction)  { }
 
 		inline ConstructType Type() const override { return ConstructType::Script; }
 		inline std::string ToString() const override { return "[[ Script (" + instructions.TypeName() + ") ]]"; } //todo: print signature
@@ -289,8 +283,11 @@ namespace Plang
 
 		Signature signature;
 		Instruction instructions;
-		AnyRef context; //The lexical scope that this script can see. Typically the parent scope
+        AnyRef boundScope; //todo
+
+    protected:
 	};
 
     std::ostream& operator << (std::ostream& Stream, const Plang::Construct& Construct);
+    std::ostream& operator << (std::ostream& Stream, const Plang::AnyRef& Ref);
 };
